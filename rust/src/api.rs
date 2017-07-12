@@ -5,15 +5,15 @@ use r2pipe::r2::R2;
 use serde_json::{Error, from_str};
 
 impl R2Api for R2 {
+    fn analyze(&mut self) {
+        self.send("aaa");
+        self.flush();
+    }
+
     fn init(&mut self) {
         self.send("e asm.esil = true");
         self.send("e scr.color = false");
         self.analyze();
-    }
-
-    fn analyze(&mut self) {
-        self.send("aaa");
-        self.flush();
     }
 
     fn function<T: AsRef<str>>(&mut self, func: T) -> Result<LFunctionInfo, Error> {
@@ -65,9 +65,7 @@ impl R2Api for R2 {
     fn fn_list(&mut self) -> Result<Vec<FunctionInfo>, Error> {
         self.send("aflj");
         let raw_json = self.recv();
-        let mut finfo: Result<Vec<FunctionInfo>, Error> =
-            from_str::<Vec<FunctionInfo_>>(&raw_json)
-            .map(|x| x.iter().map(From::from).collect());
+        let mut finfo: Result<Vec<FunctionInfo>, Error> = from_str::<Vec<FunctionInfo>>(&raw_json);
         if let Ok(ref mut fns) = finfo {
             for f in fns.iter_mut() {
                 let res = self.locals_of(f.offset.unwrap());

@@ -75,6 +75,7 @@ pub struct FunctionInfo {
     pub size: Option<u64>,
     #[serde(rename="type")]
     pub ftype: Option<String>,
+    #[serde(skip)]
     pub locals: Option<Vec<LVarInfo>>,
 }
 
@@ -115,7 +116,7 @@ pub struct LStringInfo {
 pub struct LVarInfo {
     pub name: Option<String>,
     pub kind: Option<String>,
-    #[serde(rename="vtype")]
+    #[serde(rename="type")]
     pub vtype: Option<String>,
     #[serde(rename="ref")]
     pub reference: Option<LVarRef>,
@@ -125,36 +126,4 @@ pub struct LVarInfo {
 pub struct LVarRef {
     pub base: Option<String>,
     pub offset: Option<i64>,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct FunctionInfo_ {
-    callrefs: Option<Vec<LCallInfo>>,
-    calltype: Option<String>,
-    codexrefs: Option<Vec<LCallInfo>>,
-    datarefs: Option<Vec<u64>>,
-    dataxrefs: Option<Vec<u64>>,
-    name: Option<String>,
-    offset: Option<u64>,
-    realsz: Option<u64>,
-    size: Option<u64>,
-    ftype: Option<String>,
-}
-
-impl<'a> From<&'a FunctionInfo_> for FunctionInfo {
-    fn from(finfo: &'a FunctionInfo_) -> FunctionInfo {
-        FunctionInfo {
-            callrefs: finfo.callrefs.clone(),
-            calltype: finfo.calltype.clone(),
-            codexrefs: finfo.codexrefs.clone(),
-            datarefs: finfo.datarefs.clone(),
-            dataxrefs: finfo.dataxrefs.clone(),
-            name: finfo.name.clone(),
-            offset: finfo.offset.clone(),
-            realsz: finfo.realsz.clone(),
-            size: finfo.size.clone(),
-            ftype: finfo.ftype.clone(),
-            locals: None,
-        }
-    }
 }
