@@ -1,0 +1,32 @@
+[package]
+name = "r2api"
+version = "0.0.1"
+authors = [ "pancake <pancake@nopcode.org>",
+"sushant94 <sushant.dinesh94@gmail.com>",
+"chinmaydd <chinmay1dd@gmail.com>"]
+
+description = "Library containing structures and functions used to abstract over the underlying communication interface(r2pipe.rs) and r2-specific commands for better scripting and usage."
+
+# Repository
+repository = "https://github.com/radare/radare2-r2pipe-api"
+
+keywords = ["r2", "debugger", "hex" , "editor", "radare"]
+
+# Readme link
+readme = "README.md"
+
+# License information
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+
+[dependencies]
+libc = "*"
+clippy = { version = "*", optional = true }
+serde = "*"
+serde_json = "*"
+serde_derive = "*"
+
+[dependencies.r2pipe]
+git = "https://github.com/radare/r2pipe.rs"
