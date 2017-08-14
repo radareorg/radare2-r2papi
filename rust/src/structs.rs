@@ -127,3 +127,11 @@ pub struct LVarRef {
     pub base: Option<String>,
     pub offset: Option<i64>,
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LCCInfo {
+    pub ret: Option<String>,
+    pub args: Option<Vec<String>>,
+    #[serde(rename="float_args")]
+    pub fargs: Option<Vec<String>>,
+}

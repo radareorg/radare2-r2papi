@@ -56,6 +56,12 @@ impl R2Api for R2 {
         from_str(&raw_json)
     }
 
+    fn cc_info(&mut self) -> Result<LCCInfo, Error> {
+        self.send("afcrj");
+        let raw_json = self.recv();
+        from_str(&raw_json)
+    }
+
     fn locals_of(&mut self, location: u64) -> Result<Vec<LVarInfo>, Error> {
         self.send(&format!("afvbj @ {}", location));
         let x: Result<Vec<LVarInfo>, Error> = from_str(&self.recv());
