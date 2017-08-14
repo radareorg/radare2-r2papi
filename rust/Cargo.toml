@@ -30,3 +30,7 @@ serde_derive = "*"
 
 [dependencies.r2pipe]
 git = "https://github.com/radare/r2pipe.rs"
+
+[[bin]]
+name = "api_example"
+path = "examples/api_example.rs"

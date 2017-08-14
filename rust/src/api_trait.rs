@@ -28,6 +28,9 @@ pub trait R2Api {
     /// Get list of functions
     fn fn_list(&mut self) -> Result<Vec<FunctionInfo>, Error>;
 
+    /// Get calling convention information for registers
+    fn cc_info(&mut self) -> Result<LCCInfo, Error>;
+
     /// Get list of sections
     fn sections(&mut self) -> Result<Vec<LSectionInfo>, Error>;
 
