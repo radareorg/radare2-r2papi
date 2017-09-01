@@ -57,9 +57,20 @@ pub struct LCoreInfo {
     pub size: Option<usize>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename="endian")]
+pub enum Endian {
+    #[serde(rename="big")]
+    Big,
+    #[serde(rename="little")]
+    Little,
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LBin {
     pub arch: Option<String>,
+    pub bits: Option<usize>,
+    pub endian: Option<Endian>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
