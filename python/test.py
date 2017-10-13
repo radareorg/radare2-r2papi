@@ -25,7 +25,7 @@ print r.at('entry0 + 8').read(10)
 for bb in r.basicBlocks():
 	print "B %s %s"%(bb.addr, bb.size)
 	try:
-		print r.at(bb.addr).disasmBytes(bb.size)
+		print r.at(bb.addr).opInfo().opcode #disasmBytes(bb.size)
 		print "J %s"%(bb.jump)
 		print "F %s"%(bb.fail)
 	except:

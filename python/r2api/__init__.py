@@ -41,6 +41,7 @@ class R2Api:
 		self.basicBlocks = lambda: ResultArray(self.r2.cmdj('afbj'))
 		self.xrefsAt = lambda: ResultArray(self.r2.cmdj('axtj'))
 		self.refsTo = lambda: ResultArray(self.r2.cmdj('axfj'))
+		self.opInfo = lambda: ResultArray(self.r2.cmdj('aoj'))[0]
 		self.seek = lambda x: self.r2.cmd('s %s'%(x))
 
 	def read(self, len):
