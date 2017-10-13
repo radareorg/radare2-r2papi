@@ -12,12 +12,23 @@ r.analyzeCalls()
 print r.at('entry0').hexdump(16)
 print r.at('sym.imp.setenv').hexdump(16)
 
-print r.at('entry0').disassemble(10)
+print r.at('entry0').disasm(10)
 
 print r.seek('entry0');
 print r.analyzeFunction()
-print r.disassembleFunction()
+print r.disasmFunction()
 for fcn in r.functions():
 	print fcn.name
+
+print r.at('entry0 + 8').read(10)
+
+for bb in r.basicBlocks():
+	print "B %s %s"%(bb.addr, bb.size)
+	try:
+		print r.at(bb.addr).disasmBytes(bb.size)
+		print "J %s"%(bb.jump)
+		print "F %s"%(bb.fail)
+	except:
+		pass
 
 r.quit()
