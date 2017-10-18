@@ -101,5 +101,10 @@ impl R2Api for R2 {
         }
     }
 
+    fn symbols(&mut self) -> Result<Vec<LSymbolInfo>, Error> {
+        self.send("isj");
+        from_str(&self.recv())
+    }
+
 }
 

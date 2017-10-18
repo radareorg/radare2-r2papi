@@ -8,6 +8,7 @@ pub struct LOpInfo {
     #[serde(rename="type")]
     pub optype: Option<String>,
     pub size: Option<u64>,
+    pub bytes: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -145,4 +146,24 @@ pub struct LCCInfo {
     pub args: Option<Vec<String>>,
     #[serde(rename="float_args")]
     pub fargs: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all="SCREAMING_SNAKE_CASE")]
+pub enum LSymbolType {
+    Func,
+    Object,
+    Notype,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LSymbolInfo {
+    pub demname: Option<String>,
+    pub flagname: Option<String>,
+    pub name: Option<String>,
+    pub paddr: Option<u64>,
+    pub size: Option<u64>,
+    #[serde(rename="type")]
+    pub stype: Option<LSymbolType>,
+    pub vaddr: Option<u64>,
 }
