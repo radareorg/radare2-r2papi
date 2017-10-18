@@ -39,5 +39,8 @@ pub trait R2Api {
 
     /// Get list of local variables in function defined at a particular address
     fn locals_of(&mut self, u64) -> Result<Vec<LVarInfo>, Error>;
+
+    /// Get a list of all symbols defined in the binary
+    fn symbols(&mut self) -> Result<Vec<LSymbolInfo>, Error>;
 }
 
