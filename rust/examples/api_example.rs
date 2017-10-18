@@ -11,4 +11,9 @@ fn main() {
     r2.init();
     println!("{:#?}", r2.cc_info().expect("Failed to get function list."));
     println!("{:#?}", r2.symbols());
+    println!("{:#?}", r2.imports());
+    println!("{:#?}", r2.exports());
+    println!("{:#?}", r2.relocs());
+    println!("{:#?}", r2.entrypoint());
+    println!("{:#?}", r2.libraries());
 }
