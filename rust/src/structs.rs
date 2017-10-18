@@ -150,10 +150,19 @@ pub struct LCCInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all="SCREAMING_SNAKE_CASE")]
+// Taken from ELF Spec
 pub enum LSymbolType {
-    Func,
-    Object,
     Notype,
+    Object,
+    Func,
+    Section,
+    File,
+    Common,
+    Loos,
+    Hios,
+    Loproc,
+    SparcRegister,
+    HiProc
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -166,4 +175,62 @@ pub struct LSymbolInfo {
     #[serde(rename="type")]
     pub stype: Option<LSymbolType>,
     pub vaddr: Option<u64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all="SCREAMING_SNAKE_CASE")]
+// Taken from ELF Spec
+pub enum LBindType {
+    Local,
+    Global,
+    Weak,
+    Loos,
+    Hios,
+    Loproc,
+    Hiproc,
+}
+
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LImportInfo {
+    pub bind: Option<LBindType>,
+    pub name: Option<String>,
+    pub ordinal: Option<u64>,
+    pub plt: Option<u64>,
+    #[serde(rename="type")]
+    pub itype: Option<LSymbolType>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LExportInfo {
+    pub demname: Option<String>,
+    pub flagname: Option<String>,
+    pub name: Option<String>,
+    pub paddr: Option<u64>,
+    pub size: Option<u64>,
+    #[serde(rename="type")]
+    pub etype: Option<LSymbolType>,
+    pub vaddr: Option<u64>,
+}
+
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LRelocInfo {
+    pub is_ifunc: Option<bool>,
+    pub name: Option<String>,
+    pub paddr: Option<u64>,
+    #[serde(rename="type")]
+    // TODO
+    pub rtype: Option<String>,
+    pub vaddr: Option<u64>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LEntryInfo {
+    pub vaddr: Option<u64>,
+    pub paddr: Option<u64>,
+    pub baddr: Option<u64>,
+    pub laddr: Option<u64>,
+    pub haddr: Option<u64>,
+    pub etype: Option<String>,
 }

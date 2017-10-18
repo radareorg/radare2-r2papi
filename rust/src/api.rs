@@ -101,10 +101,34 @@ impl R2Api for R2 {
         }
     }
 
+    fn imports(&mut self) -> Result<Vec<LImportInfo>, Error> {
+        self.send("iij");
+        from_str(&self.recv())
+    }
+
+    fn exports(&mut self) -> Result<Vec<LExportInfo>, Error> {
+        self.send("iej");
+        from_str(&self.recv())
+    }
+
     fn symbols(&mut self) -> Result<Vec<LSymbolInfo>, Error> {
         self.send("isj");
         from_str(&self.recv())
     }
 
+    fn relocs(&mut self) -> Result<Vec<LRelocInfo>, Error> {
+        self.send("irj");
+        from_str(&self.recv())
+    }
+
+    fn entrypoint(&mut self) -> Result<Vec<LEntryInfo>, Error> {
+        self.send("iej");
+        from_str(&self.recv())
+    }
+
+    fn libraries(&mut self) -> Result<Vec<String>, Error> {
+        self.send("ilj");
+        from_str(&self.recv())
+    }
 }
 
