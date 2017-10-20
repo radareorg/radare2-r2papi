@@ -16,6 +16,7 @@ pub struct LFunctionInfo {
     pub addr: Option<u64>,
     pub name: Option<String>,
     pub ops: Option<Vec<LOpInfo>>,
+    pub size: Option<u64>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

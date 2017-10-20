@@ -25,6 +25,16 @@ impl R2Api for R2 {
         from_str(&raw_json)
     }
 
+    fn disassemble_n_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error> {
+        self.send(&format!("pD {} @ {}", n, offset.map(|x| x.to_string()).unwrap_or("".to_owned())));
+        from_str(&self.recv())
+    }
+
+    fn disassemble_n_insts(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error> {
+        self.send(&format!("pd {} @ {}", n, offset.map(|x| x.to_string()).unwrap_or("".to_owned())));
+        from_str(&self.recv())
+    }
+
     // get 'n' (or 16) instructions at 'offset' (or current position if offset in
     // `None`)
     fn insts<T: AsRef<str>>(&mut self, n: Option<u64>, offset: Option<T>) -> Result<Vec<LOpInfo>, Error> {

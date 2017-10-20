@@ -10,6 +10,7 @@ fn main() {
     let mut r2 = R2::new(Some(path)).expect("Failed to spawn r2");
     r2.init();
     println!("{:#?}", r2.cc_info().expect("Failed to get function list."));
+    println!("{:#?}", r2.fn_list());
     println!("{:#?}", r2.symbols());
     println!("{:#?}", r2.imports());
     println!("{:#?}", r2.exports());
