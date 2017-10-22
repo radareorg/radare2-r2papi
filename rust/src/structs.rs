@@ -38,6 +38,8 @@ pub struct LRegProfile {
     pub offset: usize,
     pub size: usize,
     pub type_str: String,
+    #[serde(rename="type")]
+    pub regtype: usize,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
