@@ -61,7 +61,7 @@ pub struct LCoreInfo {
     pub size: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 #[serde(rename="endian")]
 pub enum Endian {
     #[serde(rename="big")]
