@@ -38,6 +38,8 @@ pub struct LRegProfile {
     pub offset: usize,
     pub size: usize,
     pub type_str: String,
+    #[serde(rename="type")]
+    pub regtype: usize,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -59,7 +61,7 @@ pub struct LCoreInfo {
     pub size: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 #[serde(rename="endian")]
 pub enum Endian {
     #[serde(rename="big")]
