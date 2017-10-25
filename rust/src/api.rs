@@ -26,12 +26,13 @@ impl R2Api for R2 {
     }
 
     fn disassemble_n_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error> {
-        self.send(&format!("pD {} @ {}", n, offset.map(|x| x.to_string()).unwrap_or("".to_owned())));
-        from_str(&self.recv())
+        self.send(&format!("pDj {} @ {}", n, offset.map(|x| x.to_string()).unwrap_or("".to_owned())));
+        let s = &self.recv();
+        from_str(s)
     }
 
     fn disassemble_n_insts(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error> {
-        self.send(&format!("pd {} @ {}", n, offset.map(|x| x.to_string()).unwrap_or("".to_owned())));
+        self.send(&format!("pdj {} @ {}", n, offset.map(|x| x.to_string()).unwrap_or("".to_owned())));
         from_str(&self.recv())
     }
 
