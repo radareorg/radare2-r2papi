@@ -141,5 +141,58 @@ impl R2Api for R2 {
         self.send("ilj");
         from_str(&self.recv())
     }
-}
 
+    /// All Analysis
+    fn analyze_all(&mut self) {
+        self.send("aa");
+        self.recv();
+    }
+
+    /// Analyze and auto-name functions
+    fn analyze_and_autoname(&mut self) {
+        self.send("aaa");
+        self.recv();
+    }
+
+    /// Analyze function calls
+    fn analyze_function_calls(&mut self) {
+        self.send("aac");
+        self.recv();
+    }
+
+    /// Analyze data references
+    fn analyze_data_references(&mut self) {
+        self.send("aad");
+        self.recv();
+    }
+
+    /// Analyze references esil
+    fn analyze_references_esil(&mut self) {
+        self.send("aae");
+        self.recv();
+    }
+
+    /// Find and analyze function preludes
+    fn analyze_function_preludes(&mut self) {
+        self.send("aap");
+        self.recv();
+    }
+
+    /// Analyze instruction references
+    fn analyze_function_references(&mut self) {
+        self.send("aar");
+        self.recv();
+    }
+
+    /// Analyze symbols
+    fn analyze_symbols(&mut self) {
+        self.send("aas");
+        self.recv();
+    }
+
+    /// Analyze consecutive functions in section
+    fn analyze_consecutive_functions(&mut self) {
+        self.send("aat");
+        self.recv();
+    }
+}

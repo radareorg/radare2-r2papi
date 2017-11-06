@@ -39,6 +39,30 @@ pub trait R2Api {
     /// Shared libraries
     fn libraries(&mut self) -> Result<Vec<String>, Error>;
 
+    ///////////////////////////////////////////////////////////////////
+    //// Analysis functions to initialize/perform specific analysis
+    //////////////////////////////////////////////////////////////////
+    // TODO: Have options to set timeouts, also make it non-blocking if possible to hide latency of
+    // these analysis. Then, these can be called early on the chain, perform other non-related
+    // operations while analysis happens and finally, wait on the results.
+    /// All Analysis
+    fn analyze_all(&mut self);
+    /// Analyze and auto-name functions
+    fn analyze_and_autoname(&mut self);
+    /// Analyze function calls
+    fn analyze_function_calls(&mut self);
+    /// Analyze data references
+    fn analyze_data_references(&mut self);
+    /// Analyze references esil
+    fn analyze_references_esil(&mut self);
+    /// Find and analyze function preludes
+    fn analyze_function_preludes(&mut self);
+    /// Analyze instruction references
+    fn analyze_function_references(&mut self);
+    /// Analyze symbols
+    fn analyze_symbols(&mut self);
+    /// Analyze consecutive functions in section
+    fn analyze_consecutive_functions(&mut self);
 
     ///////////////////////////////////////////////
     //// Analysis Information
