@@ -142,6 +142,13 @@ impl R2Api for R2 {
         from_str(&self.recv())
     }
 
+
+    // Send a raw command and recv output
+    fn raw(&mut self, cmd: String) -> String {
+        self.send(&cmd);
+        self.recv()
+    }
+
     /// All Analysis
     fn analyze_all(&mut self) {
         self.send("aa");

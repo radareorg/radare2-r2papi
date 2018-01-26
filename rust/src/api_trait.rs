@@ -7,6 +7,10 @@ pub trait R2Api {
     /// Initialize r2 instance with some basic configurations
     fn init(&mut self);
 
+
+    // Recv raw output
+    fn raw(&mut self, cmd: String) -> String;
+
     /// Run r2-based analysis on the file to extract information
     fn analyze(&mut self);
 
