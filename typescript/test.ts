@@ -27,19 +27,19 @@ class R2 {
 		await this.r2.quit();
 	}
 
-	public async memoryWriteBytes(addr:string | number, arg: [number]) {
+	public async ioWriteBytes(addr:string | number, arg: [number]) {
 		return await this.cmd("w " + arg + " @ " + addr);
 	}
 
-	public async memoryWriteString(addr:string | number, arg: string) {
+	public async ioWriteString(addr:string | number, arg: string) {
 		return await this.cmd("w " + arg + " @ " + addr);
 	}
 
-	public async memoryWriteAssembly(addr:string | number, arg: string) {
+	public async ioWriteAssembly(addr:string | number, arg: string) {
 		return await this.cmd("wa " + arg + " @ " + addr);
 	}
 
-	public async memoryRead(addr:string | number, len: number) {
+	public async ioRead(addr:string | number, len: number) {
 		return await this.cmdj("p8j " + len + " @ " + addr);
 	}
 
@@ -58,11 +58,12 @@ async function main() {
   var r2 = new R2("/bin/ls");
   await r2.connect();
   await r2.cmd("e io.cache=true");
-  var bytes = await r2.memoryRead('entry0', 32);
+  var bytes = await r2.ioRead('entry0', 32);
 
-  await r2.memoryWriteString('entry0', "Hello World");
+  await r2.ioWriteString('entry0', "Hello World");
+  await r2.ioWriteBytes([1,2,3,4])
 
-  await r2.memoryWriteAssembly("entry0", "mov x0, 0,,ret")
+  await r2.ioWriteAssembly("entry0", "mov x0, 0,,ret")
   const asmArch = await r2.configGet("asm.arch");
   await r2.configSet("asm.arch", "arm");
   await r2.configSet("asm.bits", 32);
