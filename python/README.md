@@ -4,24 +4,30 @@ We need to have a common API definition for all languages across r2pipe.
 
 ```python
 import r2pipe
-from query import R2Query
+from r2api import R2Api
 
-r2q = R2Query(r2pipe.open("/bin/ls"))
-if r2q.info().stripped:
+r = R2Ap (r2pipe.open("/bin/ls"))
+if r.info().stripped:
 	print "This binary is stripped"
 
-r2q.searchIn('io.sections.exec')
-r2q.analyzeCalls()
-print r2q.at('entry0').hexdump(16)
-print r2q.at('sym.imp.setenv').hexdump(16)
+r.searchIn('io.sections.exec')
+r.analyzeCalls()
+print r.at('entry0').hexdump(16)
+print r.at('sym.imp.setenv').hexdump(16)
 
-print r2q.at('entry0').disassemble(10)
+print r.at('entry0').disasm(10)
 
-print r2q.seek('entry0');
-print r2q.analyzeFunction()
-print r2q.disassembleFunction()
-#for fcn in r2q.functions():
-#	print fcn.name
+r.seek('entry0');
+r.analyzeFunction()
+print r.disasmFunction()
+for fcn in r.functions():
+	print fcn.name
 
-r2q.quit()
+r[0:10]
+# '\x7fELF\x02\x01\x01\x00\x00\x00'
+
+r[1]
+# 'E'
+
+r.quit()
 ```

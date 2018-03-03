@@ -6,81 +6,90 @@ def ResultArray(o):
 
 class Result:
 	def __init__(self, o):
+		self._dict = {}
 		try:
 			for a in o['bin']:
-				if type(a) is dict:
-					self[a] = {}
-				else:
-					setattr(self, a, o['bin'][a])
+				setattr(self, a, o['bin'][a])
+				self._dict[a] = o['bin'][a]
 		except:
 			for a in o:
-				if type(a) is dict:
-					setattr(self, a, {})
-				else:
-					setattr(self, a, o[a])
+				setattr(self, a, o[a])
+				self._dict[a] = o[a]
 
-def r2_info(r2, cmd):
-	return Result(r2.cmdj(cmd))
+	def pprint(self):
+		ret_str = ''
+		for k, v in self._dict.iteritems():
+			ret_str += '{:<10}{}\n'.format(k, v)
+		# Don't return last newline
+		return ret_str[:-1]
 
-def session(r2):
-	obj = {}
-	obj.r2 = r2
-	obj.info = r2_info
-	return obj
+	def __str__(self):
+		return self.pprint()
 
 class R2Api:
 	def __init__(self, r2):
+		try:
+			r2.cmd('px 1')
+		except IOError:
+			raise ValueError('Invalid r2pipe object')
+
 		self.r2 = r2
-		# todo autogenerate methods here
-		#self.info = lambda: self.r2.cmdj('ij')
 		self._tmp_off = ''
-		self.info = lambda: r2_info(self.r2, 'ij')
-		self.searchIn = lambda x: self.r2.cmd('e search.in=%s'%(x))
-		self.analyzeCalls = lambda: self.r2.cmd('aac')
-		self.functions = lambda: ResultArray(self.r2.cmdj('aflj'))
-		self.basicBlocks = lambda: ResultArray(self.r2.cmdj('afbj'))
-		self.xrefsAt = lambda: ResultArray(self.r2.cmdj('axtj'))
-		self.refsTo = lambda: ResultArray(self.r2.cmdj('axfj'))
-		self.opInfo = lambda: ResultArray(self.r2.cmdj('aoj'))[0]
-		self.seek = lambda x: self.r2.cmd('s %s'%(x))
+
+		self.info = lambda: Result(self._exec('ij', json=True))
+		self.searchIn = lambda x: self._exec('e search.in=%s'%(x))
+		self.analyzeAll = lambda: self._exec('aaa')
+		self.analyzeCalls = lambda: self._exec('aac')
+		self.functions = lambda: ResultArray(self._exec('aflj', json=True))
+		self.basicBlocks = lambda: ResultArray(self._exec('afbj', json=True))
+		self.xrefsAt = lambda: ResultArray(self._exec('axtj', json=True))
+		self.refsTo = lambda: ResultArray(self._exec('axfj', json=True))
+		self.opInfo = lambda: ResultArray(self._exec('aoj', json=True))[0]
+		self.seek = lambda x: self._exec('s %s'%(x))
+
+	def _exec(self, cmd, json=False):
+		if json:
+			return self.r2.cmdj(cmd)
+		else:
+			return self.r2.cmd(cmd)
 
 	def read(self, len):
-		res = self.r2.cmd('p8 %s%s|'%(len, self._tmp_off))
+		res = self._exec('p8 %s%s|'%(len, self._tmp_off))
 		self._tmp_off = ''
 		return res.decode("hex")
 
 	def write(self, buf):
-		res = self.r2.cmd('wx %s%s|'%(buf.encode("hex")), self._tmp_off)
+		res = self._exec('wx %s%s|'%(buf.encode("hex")), self._tmp_off)
 		self._tmp_off = ''
 		return res
 
 	def analyzeFunction(self):
-		res = self.r2.cmd('af %s|'%(self._tmp_off))
+		res = self._exec('af %s|'%(self._tmp_off))
 		self._tmp_off = ''
 		return res
 
 	def disasmFunction(self):
-		res = self.r2.cmd('pdr %s|'%(self._tmp_off))
+		res = self._exec('pdr %s|'%(self._tmp_off))
 		self._tmp_off = ''
 		return res
 
 	def disasm(self, x):
-		res = self.r2.cmd('pd %s%s|'%(x, self._tmp_off))
+		res = self._exec('pd %s%s|'%(x, self._tmp_off))
 		self._tmp_off = ''
 		return res
 
 	def disasmBytes(self, x):
-		res = self.r2.cmd('pD %s%s|'%(x, self._tmp_off))
+		res = self._exec('pD %s%s|'%(x, self._tmp_off))
 		self._tmp_off = ''
 		return res
 
 	def bytes(self, x):
-		res = self.r2.cmd('p8 %s%s|'%(x,self._tmp_off))
+		res = self._exec('p8 %s%s|'%(x,self._tmp_off))
 		self._tmp_off = ''
 		return res
 
 	def hexdump(self, x):
-		res = self.r2.cmd('px %s%s|'%(x,self._tmp_off))
+		res = self._exec('px %s%s|'%(x,self._tmp_off))
 		self._tmp_off = ''
 		return res
 
@@ -91,3 +100,15 @@ class R2Api:
 	def quit(self):
 		self.r2.quit()
 		self.r2 = None
+
+	def __getitem__(self, k):
+		if type(k) ==  slice:
+			read_len = k.stop - k.start
+			at_addr = k.start
+		else:
+			read_len = 1
+			at_addr = k
+		return self.at(at_addr).read(read_len)
+
+	def __setitem__(self, k, v):
+		return self.at(k).write(v)
