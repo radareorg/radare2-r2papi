@@ -2,8 +2,9 @@ from . import utils as r2_utils
 
 def ResultArray(o):
 	self = []
-	for a in o:
-		self.append(Result(a))
+	if o:
+		for a in o:
+			self.append(Result(a))
 	return self
 
 class Result:

@@ -10,9 +10,9 @@ class Binary(R2Base):
 		self.analyzeCalls = lambda: self._exec('aac')
 		self.functions = lambda: ResultArray(self._exec('aflj', json=True))
 		self.basicBlocks = lambda: ResultArray(self._exec('afbj', json=True))
-		self.xrefsAt = lambda: ResultArray(self._exec('axtj', json=True))
+		self.xrefsAt = lambda: ResultArray(self._exec('axtj %s' % self._tmp_off, json=True))
 		self.refsTo = lambda: ResultArray(self._exec('axfj', json=True))
-		self.opInfo = lambda: ResultArray(self._exec('aoj', json=True))[0]
+		self.opInfo = lambda: ResultArray(self._exec('aoj %s' % self._tmp_off, json=True))[0]
 		self.seek = lambda x: self._exec('s %s'%(x))
 
 
@@ -35,6 +35,12 @@ class Binary(R2Base):
 		res = self._exec('pD %s%s|'%(x, self._tmp_off))
 		self._tmp_off = ''
 		return res
+
+	def functionByName(self, name):
+		for f in self.functions():
+			if f.name == name:
+				return f
+		return None
 
 	def bytes(self, x):
 		res = self._exec('p8 %s%s|'%(x,self._tmp_off))
