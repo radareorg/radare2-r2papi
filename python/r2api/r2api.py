@@ -59,11 +59,7 @@ class R2Api(R2Base):
 	@property
 	def files(self):
 		files = self._exec('oj', json=True)
-		files_lst = []
-		for f in files:
-			files_lst.append(File(self.r2, f['fd']))
-
-		return files_lst
+		return [File(self.r2, f['fd']) for f in files]
 
 	def functionAt(self, at):
 		res = self._exec('afo %s' % at)
@@ -121,7 +117,7 @@ class R2Api(R2Base):
 		return res.decode("hex")
 
 	def write(self, buf):
-		res = self._exec('wx %s%s|'%(buf.encode("hex")), self._tmp_off)
+		res = self._exec('wx %s%s|' % (buf.encode("hex"), self._tmp_off))
 		self._tmp_off = ''
 		return res
 
