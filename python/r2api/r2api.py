@@ -69,24 +69,18 @@ class R2Api(R2Base):
 		res = self._exec('afo %s' % at)
 		if res == '':
 			return None
-		else:
-			return int(res, 16)
+		return int(res, 16)
 
 	def currentFunction(self):
 		at = '$$'
 		if self._tmp_off != '':
 			at = self._tmp_off.split()[1]
-
 		self._tmp_off = ''
 		return self.functionAt(at)
 
 	def functions(self):
 		res = self._exec('aflj', json=True)
-		ret = []
-		if res:
-			for f in res:
-				ret.append(Function(self.r2, f['offset']))
-		return ret
+		return [Function(self.r2, f['offset']) for f in res] if res else []
 
 	def analyzeFunction(self):
 		res = self._exec('af %s|'%(self._tmp_off))
@@ -109,10 +103,7 @@ class R2Api(R2Base):
 		return res
 
 	def functionByName(self, name):
-		for f in self.functions():
-			if f.name == name:
-				return f
-		return None
+		return filter(lambda x: x.name == name, self.functions())
 
 	def bytes(self, x):
 		res = self._exec('p8 %s%s|'%(x,self._tmp_off))
