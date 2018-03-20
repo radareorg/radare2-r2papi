@@ -26,6 +26,8 @@ class IOMap(R2Base):
 
 	def __getattr__(self, attr):
 		obj = self._mapObj()
+		# Using IOMap.form will cause a syntax error, se we use IOMap.offset
+		attr = 'from' if attr == 'offset' else attr
 		if attr in self._mapObj().keys():
 			return obj[attr] if obj else None
 
