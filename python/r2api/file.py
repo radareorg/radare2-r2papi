@@ -69,3 +69,4 @@ class File(R2Base):
 
 	def close(self):
 		self._exec('o-%s' % self.fd)
+		self.fd = None
