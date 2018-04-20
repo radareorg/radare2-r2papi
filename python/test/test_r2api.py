@@ -1,4 +1,6 @@
+# -*- coding:utf-8 -*-
 import pytest
+import sys
 from r2api.r2api import R2Api, Function
 from r2api.file import File
 
@@ -48,17 +50,24 @@ def test_read():
 	r.analyzeAll()
 	offset = r.functionByName('entry0')[0].offset
 	# Assume x86
-	assert r[offset] == '\x55'
-	assert r.at(offset).read(1) =='\x55'
+	assert r[offset] == b'\x55'
+	assert r.at(offset).read(1) == b'\x55'
 	r.quit()
 
 def test_write():
 	r = get_r2api()
+	print('z')
 	r._exec('e io.cache = true')
 	r.analyzeAll()
 	offset = r.functionByName('entry0')[0].offset
-	r[offset] = '\xff'
-	assert r[offset] == '\xff'
-	r.at(offset).write('\xee')
-	assert r[offset] == '\xee'
+	print('a')
+	r[offset] = b'\xff'
+	assert r[offset] == b'\xff'
+	r.at(offset).write(b'\xee')
+	assert r[offset] == b'\xee'
+	print('b')
+	if sys.version_info[0] == 3:
+		# UTF-8 write
+		r.at(offset).write('ñ')
+		assert r[offset:offset+2] == b'\xc3\xb1'
 	r.quit()

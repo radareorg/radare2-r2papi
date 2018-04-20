@@ -1,13 +1,21 @@
+from __future__ import print_function
+import binascii
+import codecs
+import sys
+
 from .base import R2Base, Result, ResultArray
 from .debugger import Debugger
 from .file import File
+from .print import Print
 
 try:
 	import r2pipe
 except ImportError:
-	print 'r2pipe not found'
-	print 'You can install it with pip: pip install r2pipe'
+	print('r2pipe not found')
+	print('You can install it with pip: pip install r2pipe')
 	raise ImportError('r2pipe not found')
+
+PYTHON_VERSION = sys.version_info[0]
 
 class Function(R2Base):
 	def __init__(self, r2, addr):
@@ -41,6 +49,12 @@ class R2Api(R2Base):
 		super(R2Api, self).__init__(r2)
 
 		self.debugger = Debugger(r2)
+
+		# Using 'print' in python2 raises a syntax error
+		if PYTHON_VERSION == 3:
+			self.print = Print(r2)
+		else:
+			self._print = Print(r2)
 
 		self.info = lambda: Result(self._exec('ij', json=True))
 		self.searchIn = lambda x: self._exec('e search.in=%s'%(x))
@@ -99,7 +113,8 @@ class R2Api(R2Base):
 		return res
 
 	def functionByName(self, name):
-		return filter(lambda x: x.name == name, self.functions())
+		# Use list for python3 compatibility
+		return list(filter(lambda x: x.name == name, self.functions()))
 
 	def bytes(self, x):
 		res = self._exec('p8 %s%s|'%(x,self._tmp_off))
@@ -114,10 +129,32 @@ class R2Api(R2Base):
 	def read(self, len):
 		res = self._exec('p8 %s%s|'%(len, self._tmp_off))
 		self._tmp_off = ''
-		return res.decode("hex")
+		if PYTHON_VERSION == 3:
+			return bytes.fromhex(res)
+		else:
+			return res.decode("hex")
 
 	def write(self, buf):
-		res = self._exec('wx %s%s|' % (buf.encode("hex"), self._tmp_off))
+		if PYTHON_VERSION == 3:
+			# Fuck python3 strings
+			if type(buf) == str:
+				# Just use this if you want to write utf-8 data, if not, write
+				# binary strings
+				res = self._exec('wx %s%s|' % (binascii.hexlify(
+													buf.encode('utf-8')
+													)
+													.decode('ascii'),
+											   self._tmp_off))
+			elif type(buf) == bytes:
+				res = self._exec('wx %s%s|' % (codecs.encode(buf, 'hex_codec')
+													 .decode('ascii'),
+											   self._tmp_off))
+			else:
+				raise TypeError('You must write an string or bytes')
+
+		else:
+			# Python 2 strings best strings
+			res = self._exec('wx %s%s|' % (buf.encode('hex'), self._tmp_off))
 		self._tmp_off = ''
 		return res
 
