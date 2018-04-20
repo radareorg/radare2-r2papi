@@ -1,4 +1,6 @@
+# -*- coding:utf-8 -*-
 import pytest
+import sys
 
 from r2api.iomap import IOMap
 import r2pipe
@@ -10,7 +12,10 @@ def get_iomap():
 def test_name():
 	m = get_iomap()
 	m.name = 'foo'
-	assert type(m.name) == unicode
+	if sys.version_info[0] == 2:
+		assert type(m.name) == unicode
+	else:
+		assert type(m.name) == str
 	assert m.name == u'foo'
 
 def test_flags():

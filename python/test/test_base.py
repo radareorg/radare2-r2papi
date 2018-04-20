@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import pytest
 import r2pipe
 from r2api.base import R2Base
