@@ -23,8 +23,12 @@ def test_bytes():
 def test_disassemble():
 	p = get_print()
 	assert len(p.at('entry0').disassemble(5)) == 5
-	assert p.at('entry0').disassemble(5)[0]['esil'] == 'rbp,8,rsp,-=,rsp,=[8]'
+	assert p.at('entry0').disassemble(5)[0].esil == 'rbp,8,rsp,-=,rsp,=[8]'
 	p.r2.quit()
+
+def test_hexdump():
+	p = get_print()
+	assert p.at('entry0').hexdump(2) == '5548'
 
 def test_hash():
 	p = get_print()

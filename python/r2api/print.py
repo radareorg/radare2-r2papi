@@ -1,4 +1,4 @@
-from .base import R2Base
+from .base import R2Base, ResultArray
 
 class Print(R2Base):
 	def __init__(self, r2):
@@ -8,14 +8,27 @@ class Print(R2Base):
 	def byte(self):
 		return self.bytes(1)[0]
 
-	def bytes(self, size):
+	def bytes(self, size=0):
+		size = '' if size == 0 else size
 		ret = self._exec('p8j %s%s' % (size, self._tmp_off), json=True)
 		self._tmp_off = ''
 		return ret
 
+	def bits(self, size=0):
+		size = '' if size == 0 else size
+		ret = self._exec('pb %s%s' % (size, self._tmp_off))
+		self._tmp_off = ''
+		return ret
+
 	def disassemble(self, size=0):
-		ret = self._exec('pdj %s%s' % ('' if size == 0 else size,
-									   self._tmp_off), json=True)
+		size = '' if size == 0 else size
+		ret = self._exec('pdj %s%s' % (size, self._tmp_off), json=True)
+		self._tmp_off = ''
+		return ResultArray(ret)
+
+	def hexdump(self, size=0):
+		size = '' if size == 0 else size
+		ret = self._exec('p8 %s%s' % (size, self._tmp_off))
 		self._tmp_off = ''
 		return ret
 

@@ -102,11 +102,6 @@ class R2Api(R2Base):
 		self._tmp_off = ''
 		return res
 
-	def disasm(self, x):
-		res = self._exec('pd %s%s|'%(x, self._tmp_off))
-		self._tmp_off = ''
-		return res
-
 	def disasmBytes(self, x):
 		res = self._exec('pD %s%s|'%(x, self._tmp_off))
 		self._tmp_off = ''
@@ -115,16 +110,6 @@ class R2Api(R2Base):
 	def functionByName(self, name):
 		# Use list for python3 compatibility
 		return list(filter(lambda x: x.name == name, self.functions()))
-
-	def bytes(self, x):
-		res = self._exec('p8 %s%s|'%(x,self._tmp_off))
-		self._tmp_off = ''
-		return res
-
-	def hexdump(self, x):
-		res = self._exec('px %s%s|'%(x,self._tmp_off))
-		self._tmp_off = ''
-		return res
 
 	def read(self, len):
 		res = self._exec('p8 %s%s|'%(len, self._tmp_off))
