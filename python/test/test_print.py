@@ -26,6 +26,12 @@ def test_disassemble():
 	assert p.at('entry0').disassemble(5)[0].esil == 'rbp,8,rsp,-=,rsp,=[8]'
 	p.r2.quit()
 
+def test_disasmBytes():
+	p = get_print()
+	assert len(p.at('entry0').disasmBytes(2)) == 2
+	assert p.at('entry0').disasmBytes(1)[0].type == 'upush'
+	assert p.at('entry0').disasmBytes(2)[1].type == 'invalid'
+
 def test_hexdump():
 	p = get_print()
 	assert p.at('entry0').hexdump(2) == '5548'

@@ -26,6 +26,12 @@ class Print(R2Base):
 		self._tmp_off = ''
 		return ResultArray(ret)
 
+	def disasmBytes(self, size=0):
+		size = '' if size == 0 else size
+		ret = self._exec('pDj %s%s' % (size, self._tmp_off), json=True)
+		self._tmp_off = ''
+		return ResultArray(ret)
+
 	def hexdump(self, size=0):
 		size = '' if size == 0 else size
 		ret = self._exec('p8 %s%s' % (size, self._tmp_off))
