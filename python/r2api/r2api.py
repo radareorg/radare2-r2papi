@@ -5,6 +5,7 @@ import sys
 
 from .base import R2Base, Result, ResultArray
 from .debugger import Debugger
+from .config import Config
 from .file import File
 from .print import Print
 
@@ -55,6 +56,8 @@ class R2Api(R2Base):
 			self.print = Print(r2)
 		else:
 			self._print = Print(r2)
+
+		self.config = Config(r2)
 
 		self.info = lambda: Result(self._exec('ij', json=True))
 		self.searchIn = lambda x: self._exec('e search.in=%s'%(x))
