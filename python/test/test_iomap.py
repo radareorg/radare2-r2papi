@@ -21,7 +21,7 @@ def test_name():
 def test_flags():
 	m = get_iomap()
 	m.flags = 'rwx'
-	assert m.flags == u'-rwx'
+	assert m.flags == u'rwx'
 
 def test_relocate():
 	m = get_iomap()
