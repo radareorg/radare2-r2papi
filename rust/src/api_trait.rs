@@ -21,8 +21,6 @@ pub trait R2Api {
     fn reg_info(&mut self) -> Result<LRegInfo, Error>;
     /// Get binary information
     fn bin_info(&mut self) -> Result<LBinInfo, Error>;
-    /// Get calling convention information for registers
-    fn cc_info(&mut self) -> Result<LCCInfo, Error>;
 
 
     //////////////////////////////////////////////
@@ -79,6 +77,8 @@ pub trait R2Api {
     fn strings(&mut self, bool) -> Result<Vec<LStringInfo>, Error>;
     /// Get list of local variables in function defined at a particular address
     fn locals_of(&mut self, u64) -> Result<Vec<LVarInfo>, Error>;
+    /// Get calling convention information for a function defined at a particular address
+    fn cc_info_of(&mut self, location: u64) -> Result<LCCInfo, Error>;
     /// Detect a function at a particular address in the binary
     fn function<T: AsRef<str>>(&mut self, T) -> Result<LFunctionInfo, Error>;
 

@@ -67,8 +67,8 @@ impl R2Api for R2 {
         from_str(&raw_json)
     }
 
-    fn cc_info(&mut self) -> Result<LCCInfo, Error> {
-        self.send("afcrj");
+    fn cc_info_of(&mut self, location: u64) -> Result<LCCInfo, Error> {
+        self.send(&format!("afcrj @ {}", location));
         let raw_json = self.recv();
         from_str(&raw_json)
     }
