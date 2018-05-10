@@ -15,7 +15,14 @@ class ConfigType(R2Base):
 
 	def __getattr__(self, attr):
 		if attr in self.valid_vars:
-			return self._exec('e %s.%s' % (self.var_type, attr))
+			ret = self._exec('e %s.%s' % (self.var_type, attr))
+			if ret.isdigit():
+				ret = int(ret)
+			elif ret == 'true':
+				ret = True
+			elif ret == 'false':
+				ret = False
+			return ret
 		else:
 			raise AttributeError()
 

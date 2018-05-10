@@ -11,7 +11,18 @@ def get_config():
 
 def test_set_variable():
 	c = get_config()
-	assert c.asm.bits == '64'
+	assert c.asm.bits == 64
 	c.asm.bits = 32
-	assert c.asm.bits == '32'
+	assert c.asm.bits == 32
+	c.r2.quit()
+
+def test_get_variable_str():
+	c = get_config()
+	assert c.asm.arch == 'x86'
+	c.r2.quit()
+
+def test_get_variable_bool():
+	c = get_config()
+    # TODO: This may fail depending on .r2rc ?
+	assert c.graph.format == 'dot'
 	c.r2.quit()
