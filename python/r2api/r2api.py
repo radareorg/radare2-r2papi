@@ -8,6 +8,7 @@ from .debugger import Debugger
 from .config import Config
 from .file import File
 from .print import Print
+from .write import Write
 
 try:
 	import r2pipe
@@ -56,6 +57,8 @@ class R2Api(R2Base):
 			self.print = Print(r2)
 		else:
 			self._print = Print(r2)
+
+		self.write = Write(r2)
 
 		self.config = Config(r2)
 
