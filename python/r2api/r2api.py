@@ -120,7 +120,7 @@ class R2Api(R2Base):
 		else:
 			return res.decode("hex")
 
-	def write(self, buf):
+	def writeBytes(self, buf):
 		if PYTHON_VERSION == 3:
 			# Fuck python3 strings
 			if type(buf) == str:
@@ -162,7 +162,7 @@ class R2Api(R2Base):
 		return self.at(at_addr).read(read_len)
 
 	def __setitem__(self, k, v):
-		return self.at(k).write(v)
+		return self.at(k).writeBytes(v)
 
 	def quit(self):
 		self.r2.quit()

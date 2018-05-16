@@ -54,7 +54,7 @@ def test_read():
 	assert r.at(offset).read(1) == b'\x55'
 	r.quit()
 
-def test_write():
+def test_writeBytes():
 	r = get_r2api()
 	print('z')
 	r._exec('e io.cache = true')
@@ -63,11 +63,11 @@ def test_write():
 	print('a')
 	r[offset] = b'\xff'
 	assert r[offset] == b'\xff'
-	r.at(offset).write(b'\xee')
+	r.at(offset).writeBytes(b'\xee')
 	assert r[offset] == b'\xee'
 	print('b')
 	if sys.version_info[0] == 3:
 		# UTF-8 write
-		r.at(offset).write('ñ')
+		r.at(offset).writeBytes('ñ')
 		assert r[offset:offset+2] == b'\xc3\xb1'
 	r.quit()

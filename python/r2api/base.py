@@ -1,4 +1,7 @@
 from . import utils as r2_utils
+import sys
+
+PYTHON_VERSION = sys.version_info[0]
 
 def ResultArray(o):
 	self = []
@@ -21,7 +24,12 @@ class Result:
 
 	def pprint(self):
 		ret_str = ''
-		for k, v in self._dict.iteritems():
+		if PYTHON_VERSION == 3:
+			items = self._dict.items()
+		else:
+			items = self._dict.iteritems()
+
+		for k, v in items:
 			ret_str += '{:<10}{}\n'.format(k, v)
 		# Don't return last newline
 		return ret_str[:-1]
