@@ -29,3 +29,7 @@ def test_result():
     o = {'foo': 'bar'}
     r = Result(o)
     assert len(str(r).split('\n')) == 1
+
+def test_sym_to_addr():
+    r = get_r2base()
+    assert r.sym_to_addr('entry0') == 0x100000f20

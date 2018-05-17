@@ -53,7 +53,7 @@ class R2Base(object):
 
 	def curr_seek_addr(self):
 		try:
-			res = int(self._exec('? $$ %s' % self._tmp_off).split()[0])
+			res = int(self._exec('?vi $$ %s' % self._tmp_off))
 			return res
 		except:
 			err_str = 'Invalid address %s' % self._tmp_off
