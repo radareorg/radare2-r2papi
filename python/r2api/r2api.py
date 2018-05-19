@@ -9,6 +9,7 @@ from .config import Config
 from .file import File
 from .print import Print
 from .write import Write
+from .flags import Flags
 
 try:
 	import r2pipe
@@ -59,8 +60,8 @@ class R2Api(R2Base):
 			self._print = Print(r2)
 
 		self.write = Write(r2)
-
 		self.config = Config(r2)
+		self.flags = Flags(r2)
 
 		self.info = lambda: Result(self._exec('ij', json=True))
 		self.searchIn = lambda x: self._exec('e search.in=%s'%(x))
