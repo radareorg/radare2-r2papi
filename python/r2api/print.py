@@ -14,6 +14,16 @@ class Print(R2Base):
 		self._tmp_off = ''
 		return ret
 
+	def string(self, offset=None):
+		if offset is None:
+			if self._tmp_off != '':
+				offset = self._tmp_off
+		else:
+			offset = '@ %s' % offset
+		res = self._exec('psj %s' % offset, json=True)['string']
+		self._tmp_off = ''
+		return res
+
 	def bits(self, size=0):
 		size = '' if size == 0 else size
 		ret = self._exec('pb %s%s' % (size, self._tmp_off))

@@ -9,7 +9,9 @@ class Write(R2Base):
 		self._tmp_off = ''
 		return ret
 
-	def string(self, string):
+	def string(self, string, final_nullbyte=False):
+		if final_nullbyte:
+			string = string + '\\x00'
 		ret = self._exec('"w %s" %s' % (string, self._tmp_off))
 		self._tmp_off = ''
 		return ret
