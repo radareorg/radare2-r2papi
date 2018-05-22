@@ -80,6 +80,7 @@ class EsilVM(R2Base):
 		self._exec('aeso')
 
 	def stepBack(self):
+        # XXX: Not working ?
 		self._exec('aesb')
 
 	def emulateInstr(self, num=1, offset=None):
@@ -99,21 +100,10 @@ class Esil(R2Base):
 		self.vm = EsilVM(r2)
 
 	def eval(self, esil_str):
-		return self._exec('"ae %s"', esil_str)
+		return int(self._exec('"ae %s"' % esil_str), 16)
 
 	def regsUsed(self, num_instructions=1):
 		res = self._exec('aeaj %d %s' % (num_instructions, self._tmp_off),
 						 json=True)
 		self._tmp_off = ''
 		return Result(res)
-
-
-	def delete(self, name='', offset=None):
-		if offset is None:
-			offset = self._tmp_off
-		self._exec('f-%s%s' % (name, offset))
-		self._tmp_off = ''
-
-	def rename(self, old, new=''):
-		self._exec('fr %s %s %s' % (old, new, self._tmp_off))
-		self._tmp_off = ''
