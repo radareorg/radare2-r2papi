@@ -29,7 +29,7 @@ serde_json = "*"
 serde_derive = "*"
 
 [dependencies.r2pipe]
-git = "https://github.com/radare/r2pipe.rs"
+git = "https://github.com/radareorg/r2pipe.rs"
 
 [[bin]]
 name = "api_example"
