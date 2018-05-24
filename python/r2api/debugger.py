@@ -1,4 +1,7 @@
+import sys
 from .base import R2Base, Result, ResultArray
+
+PYTHON_VERSION = sys.version_info[0]
 
 class CPU(R2Base):
 	def __init__(self, r2):
@@ -19,6 +22,18 @@ class CPU(R2Base):
 	def registers(self):
 		return self._exec('drj', json=True).keys()
 
+	def __str__(self):
+		regs = self._exec('drj', json=True)
+		if PYTHON_VERSION == 3:
+			items = regs.items()
+		else:
+			items = regs.iteritems()
+
+		ret_str = ''
+		for r, v in items:
+			ret_str += '{:<10}{:#016x}\n'.format(r, v)
+		return ret_str
+
 	def __getattr__(self, attr):
 		if attr in self.registers():
 			return self.readRegister(attr)
@@ -37,7 +52,7 @@ class Debugger(R2Base):
 	def __init__(self, r2):
 		super(Debugger, self).__init__(r2)
 
-		self.CPU = CPU(r2)
+		self.cpu = CPU(r2)
 
 		self._untilCall = False
 		self._untilUnknownCall = False
