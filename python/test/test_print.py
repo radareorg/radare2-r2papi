@@ -20,6 +20,20 @@ def test_bytes():
 	assert p.at('entry0').bytes(5) == [85,72,137,229,72]
 	p.r2.quit()
 
+def test_string():
+	p = get_print()
+	p._exec('e io.cache=1')
+	p._exec('wx 4141410000 @ 0x100')
+	assert p.at(0x100).string() == 'AAA'
+	p.r2.quit()
+
+def test_bits():
+	p = get_print()
+	p._exec('e io.cache=1')
+	p._exec('wx 4141410000 @ 0x100')
+	assert p.at(0x100).bits(8) == '01000001'
+	p.r2.quit()
+
 def test_disassemble():
 	p = get_print()
 	assert len(p.at('entry0').disassemble(5)) == 5

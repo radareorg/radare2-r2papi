@@ -14,6 +14,18 @@ def test_eval():
 
 # TODO: regsUsed
 
+def test_vm_init():
+	e = get_esil()
+	e._exec('s 0x100')
+	e.vm.init()
+	assert e.vm.cpu.rip == 0x100
+	assert e.vm.cpu.rsp == 0x178000
+	assert e.vm.cpu.rbp == 0x178000
+	assert e.vm.stack_from == 0x100000
+	assert e.vm.stack_size == 0xf0000
+	assert e.vm.stack_name == ''
+	e.r2.quit()
+
 def test_vm_utilAddr():
 	e = get_esil()
 	e._exec('s sym._func1')

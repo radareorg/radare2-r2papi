@@ -14,18 +14,20 @@ def get_write():
 def test_hex():
 	w = get_write()
 	w.at('entry0').hex('aa')
-	assert w._exec('p8 1') == 'aa'
+	assert w._exec('p8 1 @ entry0') == 'aa'
 	w.r2.quit()
 
 def test_string():
 	w = get_write()
 	w.at('entry0').string('gtfo')
-	assert w._exec('ps 4') == 'gtfo'
+	assert w._exec('ps 4 @ entry0') == 'gtfo'
+	w.at('0x100').string('AAA', final_nullbyte=True)
+	assert w._exec('p8 4 @ 0x100') == '41414100'
 	w.r2.quit()
 
 #TODO: Base64
 
-def test_disassemble():
+def test_assemble():
 	w = get_write()
 	w.at('entry0').assembly('nop')
 	assert w._exec('p8 1 @ entry0') == '90'

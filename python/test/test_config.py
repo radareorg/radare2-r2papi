@@ -23,6 +23,6 @@ def test_get_variable_str():
 
 def test_get_variable_bool():
 	c = get_config()
-    # TODO: This may fail depending on .r2rc ?
-	assert c.graph.format == 'dot'
+	c._exec('e io.cache = true')
+	assert c.io.cache
 	c.r2.quit()

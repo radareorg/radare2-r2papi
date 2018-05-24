@@ -20,7 +20,7 @@ class Print(R2Base):
 				offset = self._tmp_off
 		else:
 			offset = '@ %s' % offset
-		res = self._exec('psj %s' % offset, json=True)['string']
+		res = self._exec('psz %s' % offset)
 		self._tmp_off = ''
 		return res
 
