@@ -1,4 +1,7 @@
+import sys
 from .base import R2Base, ResultArray
+
+PYTHON_VERSION=sys.version_info[0]
 
 class Print(R2Base):
 	def __init__(self, r2):
@@ -6,11 +9,18 @@ class Print(R2Base):
 		self.hash_types = self._exec('ph').split()
 
 	def byte(self):
-		return self.bytes(1)[0]
+		return self.bytes(1, asList=True)[0]
 
-	def bytes(self, size=0):
+	def bytes(self, size=0, asList=False):
 		size = '' if size == 0 else size
-		ret = self._exec('p8j %s%s' % (size, self._tmp_off), json=True)
+		if asList:
+			ret = self._exec('p8j %s%s' % (size, self._tmp_off), json=True)
+		else:
+			ret = self._exec('p8 %s%s' % (size, self._tmp_off))
+			if PYTHON_VERSION == 3:
+				ret = bytes.fromhex(ret)
+			else:
+				ret = ret.decode("hex")
 		self._tmp_off = ''
 		return ret
 

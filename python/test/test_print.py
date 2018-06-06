@@ -1,10 +1,13 @@
 # -*- coding:utf-8 -*-
 from __future__ import print_function
+import sys
 import pytest
 
 from r2api.print import Print
 
 import r2pipe
+
+PYTHON_VERSION=sys.version_info[0]
 
 def get_print():
 	r = r2pipe.open('test_bin')
@@ -17,7 +20,11 @@ def test_byte():
 
 def test_bytes():
 	p = get_print()
-	assert p.at('entry0').bytes(5) == [85,72,137,229,72]
+	assert p.at('entry0').bytes(5, asList=True) == [85,72,137,229,72]
+	if PYTHON_VERSION == 3:
+		assert p.at('entry0').bytes(5) == b'UH\x89\xe5H'
+	else:
+		assert p.at('entry0').bytes(5) == 'UH\x89\xe5H'
 	p.r2.quit()
 
 def test_string():
