@@ -24,6 +24,7 @@ def test_vm_init():
 	assert e.vm.stack_from == 0x100000
 	assert e.vm.stack_size == 0xf0000
 	assert e.vm.stack_name == ''
+	assert len(e._exec('oj', json=True)) == 2
 	e.r2.quit()
 
 def test_vm_utilAddr():
