@@ -1,6 +1,4 @@
 from __future__ import print_function
-import binascii
-import codecs
 import sys
 
 from .base import R2Base, Result, ResultArray
@@ -54,11 +52,11 @@ class R2Api(R2Base):
 
 		self.debugger = Debugger(r2)
 
-		# Using 'print' in python2 raises a syntax error
-		if PYTHON_VERSION == 3:
-			self.print = Print(r2)
-		else:
+		# Using 'print' in python2 raises a syntax error if print function
+        # is not imported, _print can be used as an alternative.
+		if PYTHON_VERSION == 2:
 			self._print = Print(r2)
+		self.print = Print(r2)
 
 		self.write = Write(r2)
 		self.config = Config(r2)
@@ -123,30 +121,6 @@ class R2Api(R2Base):
 		else:
 			return res.decode("hex")
 
-	def writeBytes(self, buf):
-		if PYTHON_VERSION == 3:
-			# Fuck python3 strings
-			if type(buf) == str:
-				# Just use this if you want to write utf-8 data, if not, write
-				# binary strings
-				res = self._exec('wx %s%s|' % (binascii.hexlify(
-													buf.encode('utf-8')
-													)
-													.decode('ascii'),
-											   self._tmp_off))
-			elif type(buf) == bytes:
-				res = self._exec('wx %s%s|' % (codecs.encode(buf, 'hex_codec')
-													 .decode('ascii'),
-											   self._tmp_off))
-			else:
-				raise TypeError('You must write an string or bytes')
-
-		else:
-			# Python 2 strings best strings
-			res = self._exec('wx %s%s|' % (buf.encode('hex'), self._tmp_off))
-		self._tmp_off = ''
-		return res
-
 	def __getitem__(self, k):
 		if type(k) ==  slice:
 			_from = k.start
@@ -162,10 +136,10 @@ class R2Api(R2Base):
 		else:
 			read_len = 1
 			at_addr = k
-		return self.at(at_addr).read(read_len)
+		return self.print.at(at_addr).bytes(read_len)
 
 	def __setitem__(self, k, v):
-		return self.at(k).writeBytes(v)
+		return self.write.at(k).bytes(v)
 
 	def quit(self):
 		self.r2.quit()
