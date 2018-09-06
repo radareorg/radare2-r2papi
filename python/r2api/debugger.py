@@ -22,10 +22,10 @@ class CPU(R2Base):
             raise ValueError("Ivalid register %s" % reg_name)
 
     def registers(self):
-        return self._exec("drj", json=True).keys()
+        return self._exec("drj", json=True)
 
     def __str__(self):
-        regs = self._exec("drj", json=True)
+        regs = self.registers()
         if PYTHON_VERSION == 3:
             items = regs.items()
         else:
@@ -37,7 +37,7 @@ class CPU(R2Base):
         return ret_str
 
     def __getattr__(self, attr):
-        if attr in self.registers():
+        if attr in self.registers().keys():
             return self.readRegister(attr)
 
     def __setattr__(self, attr, value):
@@ -45,7 +45,7 @@ class CPU(R2Base):
             # Hack to avoid infite recursion, maybe there's a better solution
             self.__dict__[attr] = value
         else:
-            if attr in self.registers():
+            if attr in self.registers().keys():
                 self.writeRegister(attr, value)
             else:
                 self.__dict__[attr] = value

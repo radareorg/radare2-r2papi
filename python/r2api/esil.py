@@ -1,4 +1,7 @@
 from .base import R2Base, Result
+import sys
+
+PYTHON_VERSION = sys.version_info[0]
 
 
 class EsilCPU(R2Base):
@@ -7,7 +10,7 @@ class EsilCPU(R2Base):
         super(CPU, self).__init__(r2)
 
     def registers(self):
-        return self._exec("aerj", json=True).keys()
+        return self._exec("aerj", json=True)
 
     def readRegister(self, register):
         return int(self._exec("aer %s" % register), 16)
@@ -18,15 +21,27 @@ class EsilCPU(R2Base):
     def changePC(self, new_pc):
         self._exec("aepc %s" % new_pc)
 
+    def __str__(self):
+        regs = self.registers()
+        if PYTHON_VERSION == 3:
+            items = regs.items()
+        else:
+            items = regs.iteritems()
+
+        ret_str = ""
+        for r, v in items:
+            ret_str += "{:<10}{:#016x}\n".format(r, v)
+        return ret_str
+
     def __getattr__(self, attr):
-        if attr in self.registers():
+        if attr in self.registers().keys():
             return self.readRegister(attr)
 
     def __setattr__(self, attr, val):
         if attr == "r2":
             # Hack to avoid infite recursion, maybe there's a better solution
             self.__dict__[attr] = val
-        elif attr in self.registers():
+        elif attr in self.registers().keys():
             self.writeRegister(attr, val)
 
 

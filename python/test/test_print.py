@@ -50,7 +50,7 @@ def test_bits():
 def test_disassemble():
     p = get_print()
     assert len(p.at("entry0").disassemble(5)) == 5
-    assert p.at("entry0").disassemble(5)[0].esil == "rbp,8,rsp,-=,rsp,=[8]"
+    assert p.at("entry0").disassemble(5)[0].esil == "rbp,8,rsp,-,=[8],8,rsp,-="
     p.r2.quit()
 
 
