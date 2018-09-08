@@ -1,6 +1,8 @@
 radare2-r2pipe-api
 ==================
 
+[![Build Status](https://travis-ci.org/PabloCastellano/radare2-r2pipe-api.svg?branch=travis)](https://travis-ci.org/PabloCastellano/radare2-r2pipe-api)
+
 This repository contains a high-level API on top of r2pipe, abstracting
 the r2 commands with a human-friendly taste.
 
