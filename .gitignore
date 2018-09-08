@@ -1,3 +1,9 @@
 .*.swp
 *.pyc
 venv/
+
+.coverage
+*.egg-info
+.pytest_cache
+dist/
+htmlcov/
