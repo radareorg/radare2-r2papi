@@ -6,6 +6,7 @@ python:
   - "3.6"
 
 install:
+  - ./scripts/install_radare2.sh
   - pip install -r python/requirements_ci.txt
   - cd python && ./setup.py install
 
