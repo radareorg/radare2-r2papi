@@ -7,7 +7,8 @@ python:
 
 install:
   - pip install -r python/requirements_ci.txt
-  - ./python/setup.py -q develop
+  - ./python/setup.py develop
+  - ./python/setup.py install
 
 script:
   - cd python/test && make tests
