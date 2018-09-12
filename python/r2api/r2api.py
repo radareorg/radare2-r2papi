@@ -83,6 +83,12 @@ class R2Api(R2Base):
         ]
         self.seek = lambda x: self._exec("s %s" % (x))
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, e_type, e_val, tb):
+        self.quit()
+
     def open(self, filename, at="", perms=""):
         # See o?
         self._exec("o %s %s %s" % (filename, at, perms))
