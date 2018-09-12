@@ -15,6 +15,11 @@ def test_quit():
     with pytest.raises(AttributeError):
         r._exec("px 1")
 
+def test_context():
+    with R2Api("test_bin") as r:
+        pass
+    with pytest.raises(AttributeError):
+        r._exec("px 1")
 
 def test_info():
     r = get_r2api()
