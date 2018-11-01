@@ -13,6 +13,12 @@ def ResultArray(o):
 
 
 class Result:
+    """Class to encapsulate the results of a json response.
+
+    .. todo::
+
+        Document this, implement this in a more elegant way?
+    """
 
     def __init__(self, o):
         self._dict = {}
@@ -42,8 +48,17 @@ class Result:
 
 
 class R2Base(object):
+    """Base class that have the essential functionality required by almost all
+    subclasses of r2pipe-api. It accepts a r2pipe object and checks if it's
+    valid, if not it raises a ValueError.
+    """
 
     def __init__(self, r2):
+        """
+        Args:
+            r2 (r2pipe.OpenBase):
+                r2pipe object, this is what ``r2pipe.open`` returns.
+        """
         if not r2_utils.r2_is_valid(r2):
             raise ValueError("Invalid r2pipe object")
 
@@ -51,6 +66,20 @@ class R2Base(object):
         self._tmp_off = ""
 
     def _exec(self, cmd, json=False):
+        """Execute a radare2 command.
+
+        Args:
+            cmd (str):
+                Command to be executed
+            json (bool, optional):
+                If True, it interprets the output as json, and returns a Python
+                native object.
+
+        Returns:
+            object:
+                The result of the r2 command as a string, or as a python native
+                object if the json parameter was True.
+        """
         if json:
             return self.r2.cmdj(cmd)
         else:
@@ -71,6 +100,24 @@ class R2Base(object):
             raise TypeError("Symbol type must be string")
         return self.at(sym).curr_seek_addr()
 
-    def at(self, x):
-        self._tmp_off = "@ %s" % (x)
+    def at(self, seek):
+        """Temporal seek, it'll execute the next command at the specified
+        seek, and then return to the current seek. It have the same effect as
+        the ``@`` radare command.
+
+        .. code-block:: python
+
+            # current offset = 0x100
+            R2Base.at('0x200')._exec('p8 1') # Prints 1 bytes at 0x200
+            # current offset = 0x100
+
+        Args:
+            seek (str):
+                Anything that radare accepts as an offset, function names, hex
+                offset string, integers, flags...
+
+        Returns:
+            R2Base: Returns self, to be able to use other methods easily.
+        """
+        self._tmp_off = "@ %s" % (seek)
         return self
