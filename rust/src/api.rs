@@ -97,7 +97,7 @@ impl R2Api for R2 {
     }
 
     fn sections(&mut self) -> Result<Vec<LSectionInfo>, Error> {
-        self.send("Sj");
+        self.send("iSj");
         from_str(&self.recv())
     }
 
