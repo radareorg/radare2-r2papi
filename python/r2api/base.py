@@ -83,7 +83,7 @@ class R2Base(object):
         if json:
             return self.r2.cmdj(cmd)
         else:
-            return self.r2.cmd(cmd)
+            return self.r2.cmd(cmd).rstrip()
 
     def curr_seek_addr(self):
         try:

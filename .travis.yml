@@ -2,8 +2,13 @@ language: python
 
 python:
   - "2.7"
-  - "3.4"
   - "3.6"
+# Hack until 3.7 will be in the main image
+matrix:
+    include:
+        - python: 3.7
+          dist: xenial
+          sudo: true
 
 install:
   - ./scripts/install_radare2.sh
