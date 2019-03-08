@@ -156,7 +156,7 @@ pub struct LCCInfo {
 // Taken from ELF Spec
 pub enum LSymbolType {
     Notype,
-    Object,
+    Obj,
     Func,
     Section,
     File,
