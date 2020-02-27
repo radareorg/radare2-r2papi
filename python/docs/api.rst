@@ -15,7 +15,13 @@ r2api.r2api.Function
 .. autoclass:: r2api.r2api.Function
    :members:
    :show-inheritance:
-   :inherited-members:
+
+r2api.print.Print
+....................
+
+.. autoclass:: r2api.print.Print
+   :members:
+   :show-inheritance:
 
 r2api.base
 ..........
