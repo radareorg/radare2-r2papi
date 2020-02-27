@@ -57,7 +57,7 @@ def test_disassemble():
 def test_disasmBytes():
     p = get_print()
     assert len(p.at("entry0").disasmBytes(2)) == 2
-    assert p.at("entry0").disasmBytes(1)[0].type == "upush"
+    assert p.at("entry0").disasmBytes(1)[0].type == "rpush"
     assert p.at("entry0").disasmBytes(2)[1].type == "invalid"
 
 

@@ -30,6 +30,8 @@ class IOMap(R2Base):
         obj = self._mapObj()
         # Using IOMap.form will cause a syntax error, se we use IOMap.offset
         attr = "from" if attr == "offset" else attr
+        # Flags are now called "perm"
+        attr = "perm" if attr == "flags" else attr
         if attr in self._mapObj().keys():
             return obj[attr] if obj else None
 

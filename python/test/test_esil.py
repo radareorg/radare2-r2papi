@@ -48,7 +48,7 @@ def test_vm_utilExpr():
     e = get_esil()
     e._exec("s sym._func1")
     e.vm.init()
-    e.vm.untilExpr("rax,1,==").cont()
+    e.vm.untilExpr("1,rax,=").cont()
     assert e.vm.cpu.rax == 1
     e.r2.quit()
 

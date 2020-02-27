@@ -61,6 +61,7 @@ class EsilVM(R2Base):
 
     def init(self, stack_form=0x100000, stack_size=0xf0000, name=""):
         self._exec("aei")
+        self._exec("aeip")
         self._exec("aeim %s %s %s" % (stack_form, stack_size, name))
         self.stack_from = stack_form
         self.stack_size = stack_size
