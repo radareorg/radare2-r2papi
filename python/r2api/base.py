@@ -65,7 +65,7 @@ class R2Base(object):
         self.r2 = r2
         self._tmp_off = ""
 
-    def _exec(self, cmd, json=False):
+    def _exec(self, cmd, json=False, rstrip=True):
         """Execute a radare2 command.
 
         Args:
@@ -74,6 +74,9 @@ class R2Base(object):
             json (bool, optional):
                 If True, it interprets the output as json, and returns a Python
                 native object.
+            rstrip (bool, optional):
+                If True (default), it calls python rstrip function before
+                returning the output. Not used in json mode.
 
         Returns:
             object:
@@ -83,7 +86,8 @@ class R2Base(object):
         if json:
             return self.r2.cmdj(cmd)
         else:
-            return self.r2.cmd(cmd)
+            res = self.r2.cmd(cmd)
+            return res if not rstrip else res.rstrip()
 
     def curr_seek_addr(self):
         try:
