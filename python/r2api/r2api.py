@@ -54,6 +54,26 @@ class Function(R2Base):
         """
         self._exec("afn %s %s" % (name, self.offset))
 
+    def graphImg(self, path=""):
+        """
+        .. todo::
+
+            Return Graph object (does not exist yet), that should have a image
+            method as there are more stuff that can be done with graphs?
+
+        Save the function graph as a GIF image. By default, it's saved in
+        ``{functionname}-graph.gif``
+
+        Args:
+            path (str, optional):
+                Path to store the image (including filename).
+        """
+        path = '%s-graph.gif' % self.name if path=="" else path
+        self._exec("e asm.comments=0")
+        self._exec("e asm.var=0")
+        self._exec("e asm.flags=0")
+        self._exec("agfw %s @ %s" % (path, self.offset))
+
     @property
     def name(self):
         """
@@ -211,18 +231,20 @@ class R2Api(R2Base):
 
     def functionByName(self, name):
         """
-        .. todo::
-
-            Instead of returning a list return a value or None
-
         Args:
             name (str): Name of the target function.
         Returns:
-            list: List with the :class:`r2api.r2api.Function` object, or empty
-            list if the function was not foud.
+            :class:`r2api.r2api.Function`: Function or None.
         """
         # Use list for python3 compatibility
-        return list(filter(lambda x: x.name == name, self.functions()))
+        res = list(filter(lambda x: x.name == name, self.functions()))
+        if len(res) == 0:
+            return None
+        elif len(res) == 1:
+            return res[0]
+        else:
+            # TODO: Is this possible?
+            raise ValueError("One name returned more than one function")
 
     def read(self, n):
         """Get ``n`` bytes as a binary string from the current offset.
