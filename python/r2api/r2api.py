@@ -71,6 +71,14 @@ class R2Api(R2Base):
     """Main class in ``r2pipe-api``, it contains all the methods and objects
     used.
 
+    A ``with`` statement can be used to make sure that the radare2 process is
+    closed.
+
+    .. code-block:: python
+
+        with R2Api('/bin/ls') as r:
+            r.print.hexdump()
+
     Attributes:
         print (:class:`r2pipe.print.Print`): Used only in Python3.
             All kind of things related with the print command in ``radare2``,
