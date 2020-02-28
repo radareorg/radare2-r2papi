@@ -88,9 +88,13 @@ class Print(R2Base):
 
     def disasmBytes(self, size=0):
         """
-        .. todo::
-
-            Docs
+        Args:
+            size (int, optional):
+                Number of bytes to be decoded into instructions. If it's 0, the
+                default block size will be used.
+        Returns:
+            list: List of :class:`r2api.base.Result` containing the
+            instructions.
         """
         size = "" if size == 0 else size
         ret = self._exec("pDj %s%s" % (size, self._tmp_off), json=True)
@@ -99,9 +103,11 @@ class Print(R2Base):
 
     def hexdump(self, size=0):
         """
-        .. todo::
-
-            Docs
+        Args:
+            size (int, optional):
+                Number of bytes to be decoded as hexdump.
+        Returns:
+            str: Hexdump of ``size`` bytes as string.
         """
         size = "" if size == 0 else size
         ret = self._exec("p8 %s%s" % (size, self._tmp_off))
@@ -124,8 +130,7 @@ class Print(R2Base):
     @property
     def pwd(self):
         """
-        .. todo::
-
-            Docs
+        Returns:
+            str: Path working directory
         """
         return self._exec("pwd")
