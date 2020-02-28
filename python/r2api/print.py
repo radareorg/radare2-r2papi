@@ -127,6 +127,19 @@ class Print(R2Base):
         self._tmp_off = ""
         return ret
 
+    def debruijn(self, size=0):
+        """
+        Args:
+            size (int, optional):
+                Number of bytes from de Bruijn sequence to return.
+        Returns:
+            str: de Bruijn sequence as hexdump.
+        """
+        size = "" if size==0 else size
+        ret = self._exec("ppd %s" % size)
+        self._tmp_off = ""
+        return ret
+
     @property
     def pwd(self):
         """
