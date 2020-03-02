@@ -57,6 +57,7 @@ def test_functionByName():
     assert f.name == "sym._func1"
     r.quit()
 
+
 def test_functionRename():
     r = get_r2api()
     r.analyzeAll()
@@ -66,6 +67,23 @@ def test_functionRename():
     f.name = "foo"
     assert f.name == "fcn.foo"
     r.quit()
+
+
+def test_function():
+    r = get_r2api()
+    r.analyzeAll()
+    r._exec("s sym._func1")
+    r._exec("s +1")
+    f = r.function()
+    assert type(f) == Function
+    assert f.name == "sym._func1"
+
+    f = r.at(f.offset + 1).function()
+    assert type(f) == Function
+    assert f.name == "sym._func1"
+
+    r.quit()
+
 
 def test_functionGraphImg():
     r = get_r2api()

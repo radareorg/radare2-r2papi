@@ -177,34 +177,31 @@ class R2Api(R2Base):
         files = self._exec("oj", json=True)
         return [File(self.r2, f["fd"]) for f in files]
 
-    def functionAt(self, at):
-        """Get the offset of a function name.
+    def function(self):
+        """Get the function at the current or temporary seek, if it exists.
 
-        Args:
-            at (str): Function name.
-        Returns:
-            int: offset of the function.
-        """
-        res = self._exec("afo %s" % at)
-        if res == "":
-            return None
-        return int(res, 16)
+        Example:
 
-    def currentFunction(self):
-        """Get the offset of the function containing the current seek.
+        .. code-block:: python
+
+            with R2Api('bin') as r:
+                r.analyzeAll()
+                func = r.at(0x100).function()
+                print(func.name)
+                func = r.at('flag').function()
+                print(func.offset)
 
         .. todo::
 
-            Check if this is really accurate.
+            Raise exception instead of returning None when the function does not
+            exist?
 
         Returns:
-            int: Offset of the function at the current seek.
+            :class:`r2api.r2api.Function`: Function found or None.
         """
-        at = "$$"
-        if self._tmp_off != "":
-            at = self._tmp_off.split()[1]
+        function_name = self._exec("afn. %s" % self._tmp_off)
         self._tmp_off = ""
-        return self.functionAt(at)
+        return self.functionByName(function_name)
 
     def functions(self):
         """
@@ -218,16 +215,6 @@ class R2Api(R2Base):
         """
         res = self._exec("aflj", json=True)
         return [Function(self.r2, f["offset"]) for f in res] if res else []
-
-    def analyzeFunction(self):
-        res = self._exec("af %s|" % (self._tmp_off))
-        self._tmp_off = ""
-        return res
-
-    def disasmFunction(self):
-        res = self._exec("pdr %s|" % (self._tmp_off))
-        self._tmp_off = ""
-        return res
 
     def functionByName(self, name):
         """
