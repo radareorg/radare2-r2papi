@@ -104,7 +104,7 @@ class R2Api(R2Base):
             All kind of things related with the print command in ``radare2``,
             this includes from getting an hexdump to get the dissasembly of a
             function.
-        _print (:class:`r2pipe.print.Print`): Used only in Python2 because
+        print2 (:class:`r2pipe.print.Print`): Used only in Python2 because
             ``print`` is a reserved keyword. see the previous attribute for
             further description.
         write (:class:`r2pipe.write.Write`): Write related operations, write
@@ -133,10 +133,13 @@ class R2Api(R2Base):
         self.debugger = Debugger(r2)
 
         # Using 'print' in python2 raises a syntax error if print function
-        # is not imported, _print can be used as an alternative.
+        # is not imported, print2 can be used as an alternative.
         if PYTHON_VERSION == 2:
-            self._print = Print(r2)
-        self.print = Print(r2)
+            self.print2 = Print(r2)
+        else:
+            self.print = Print(r2)
+            # Make code compatible
+            self.print2 = self.print
 
         self.write = Write(r2)
         self.config = Config(r2)
@@ -264,6 +267,8 @@ class R2Api(R2Base):
         else:
             read_len = 1
             at_addr = k
+        if PYTHON_VERSION == 2:
+            return self.print2.at(at_addr).bytes(read_len)
         return self.print.at(at_addr).bytes(read_len)
 
     def __setitem__(self, k, v):
