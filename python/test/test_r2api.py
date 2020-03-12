@@ -65,7 +65,7 @@ def test_functionRename():
     assert type(f) == Function
     assert f.name == "sym._func1"
     f.name = "foo"
-    assert f.name == "fcn.foo"
+    assert f.name == "foo"
     r.quit()
 
 
