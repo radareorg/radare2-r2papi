@@ -1,0 +1,46 @@
+{
+  "name": "r2papi",
+  "version": "0.0.1",
+  "description": "r2api on top of r2pipe for typescript and js",
+  "__dependencies": {
+    "r2pipe": "^2.6.0",
+    "r2pipe-promise": "^1.2.1"
+  },
+  "author": {
+    "name": "pancake",
+    "email": "pancake@nopcode.org"
+  },
+  "homepage": "http://www.radare.org",
+  "bugs": {
+    "url": "https://github.com/radareorg/radare2-r2pipe/issues"
+  },
+  "devDependencies": {
+    "eslint": "*"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/radareorg/radare2-r2papi"
+  },
+  "keywords": [
+    "radare",
+    "radare2",
+    "r2",
+    "reversing",
+    "disassembler",
+    "hexadecimal",
+    "editor",
+    "exploit",
+    "exploiting"
+  ],
+  "files": [
+    "README.md",
+    "r2papi.js",
+    "r2papi.ts",
+    "r2papi.d.ts"
+  ],
+  "author": "",
+  "license": "MIT"
+}
