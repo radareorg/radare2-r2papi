@@ -1,5 +1,5 @@
 all:
-	tsc --declaration r2papi.ts
+	tsc --declaration index.ts
 
 node_modules/jsfmt:
 	mkdir -p node_modules
