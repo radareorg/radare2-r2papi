@@ -12,6 +12,7 @@ export interface Flag {
 	size: number;
 	offset: number;
 };
+
 export interface CallRef {
 	addr: number;
 	type: string;
@@ -235,3 +236,4 @@ export class NativePointer {
 }
 
 export declare var r2: R2Pipe;
+export declare var R: R2Api;
