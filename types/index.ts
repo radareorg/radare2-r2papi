@@ -109,7 +109,7 @@ export interface R2Pipe {
 	log(msg: string): string;
 }
 
-export class R2Api {
+export class R2Papi {
 	public r2: R2Pipe;
 
 	constructor(r2: R2Pipe) {
@@ -135,11 +135,11 @@ export class R2Api {
 	hex(s: number | string): string {
 		return this.r2.cmd("?v " + s).trim();
 	}
-	step(): R2Api {
+	step(): R2Papi {
 		this.r2.cmd("ds");
 		return this;
 	}
-	stepOver(): R2Api {
+	stepOver(): R2Papi {
 		this.r2.cmd("dso");
 		return this;
 	}
@@ -188,8 +188,8 @@ export class R2Api {
 
 export class NativePointer {
 	addr: string;
-	api: R2Api;
-	constructor(api: R2Api, s: string | number) {
+	api: R2Papi;
+	constructor(api: R2Papi, s: string | number) {
 		this.api = api;
 		// this.api.r2.log("NP " + s);
 		this.addr = "" + s;
@@ -236,4 +236,4 @@ export class NativePointer {
 }
 
 export declare var r2: R2Pipe;
-export declare var R: R2Api;
+export declare var R: R2Papi;
