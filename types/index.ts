@@ -235,10 +235,19 @@ export class NativePointer {
 	}
 }
 
+export class Base64 {
+	static encode(x: string) : string {
+		return b64(x);
+	}
+	static decode(x: string) : string {
+		return b64(x, true);
+	}
+}
+
 
 export declare var r2: R2Pipe;
 export declare var R: R2Papi;
 interface base64Interface{
-    (message: string, decode: boolean):string;
+    (message: string, decode?: boolean):string;
 }
 export declare var b64: base64Interface;
