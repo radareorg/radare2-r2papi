@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "r2papi": "^0.0.4",
+    "r2pipe": "^2.8.0"
+  }
+}

@@ -1,0 +1,99 @@
+=================================================================
+==66232==ERROR: AddressSanitizer: heap-use-after-free on address 0x000108a90fd8 at pc 0x00010201cb44 bp 0x00016f78d990 sp 0x00016f78d988
+READ of size 8 at 0x000108a90fd8 thread T0
+    #0 0x10201cb40 in r_rbnode_next new_rbtree.c:417
+    #1 0x100e91f48 in r_io_bank_read_at io_bank.c:796
+    #2 0x100e50c74 in r_io_vread_at io.c:213
+    #3 0x100e51620 in internal_r_io_read_at io.c:234
+    #4 0x100e514b4 in r_io_read_at io.c:269
+    #5 0x1046b0cf0 in cmd_w cmd_write.c:1438
+    #6 0x10441c18c in cmd_write cmd_write.c:2255
+    #7 0x104935838 in r_cmd_call cmd_api.c:519
+    #8 0x104466808 in r_core_cmd_subst_i cmd.c:4797
+    #9 0x10444d098 in r_core_cmd_subst cmd.c:3631
+    #10 0x1042ea404 in run_cmd_depth cmd.c:5696
+    #11 0x1042caf28 in r_core_cmd cmd.c:5780
+    #12 0x104239268 in r_core_prompt_exec core.c:3573
+    #13 0x104238748 in r_core_prompt_loop core.c:3391
+    #14 0x101a5f2c0 in r_main_radare2 radare2.c:1682
+    #15 0x10066734c in main radare2.c:104
+    #16 0x186907e4c  (<unknown module>)
+
+0x000108a90fd8 is located 8 bytes inside of 40-byte region [0x000108a90fd0,0x000108a90ff8)
+freed by thread T0 here:
+    #0 0x1059e2de4 in wrap_free+0x98 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x3ede4)
+    #1 0x1020175c4 in r_crbtree_take new_rbtree.c:362
+    #2 0x10201bea8 in r_crbtree_delete new_rbtree.c:382
+    #3 0x100e8acd0 in _delete_submaps_from_bank_tree io_bank.c:407
+    #4 0x100e8cb0c in r_io_bank_update_map_boundaries io_bank.c:572
+    #5 0x100e6a3e8 in r_io_map_resize io_map.c:476
+    #6 0x10461c590 in cmd_open_map cmd_open.c:959
+    #7 0x1043ae3dc in cmd_open cmd_open.c:2199
+    #8 0x104935838 in r_cmd_call cmd_api.c:519
+    #9 0x104466808 in r_core_cmd_subst_i cmd.c:4797
+    #10 0x10444d098 in r_core_cmd_subst cmd.c:3631
+    #11 0x1042ea404 in run_cmd_depth cmd.c:5696
+    #12 0x1042caf28 in r_core_cmd cmd.c:5780
+    #13 0x10425f560 in r_core_cmdf cmd.c:5930
+    #14 0x100e314f8 in __read io_socket.c:51
+    #15 0x100e5c6d0 in r_io_plugin_read io_plugin.c:154
+    #16 0x100e6ec4c in r_io_desc_read io_desc.c:204
+    #17 0x100e726cc in r_io_desc_read_at io_desc.c:334
+    #18 0x100ea7278 in r_io_fd_read_at io_fd.c:67
+    #19 0x100e91edc in r_io_bank_read_at io_bank.c:793
+    #20 0x100e50c74 in r_io_vread_at io.c:213
+    #21 0x100e51620 in internal_r_io_read_at io.c:234
+    #22 0x100e514b4 in r_io_read_at io.c:269
+    #23 0x1046b0cf0 in cmd_w cmd_write.c:1438
+    #24 0x10441c18c in cmd_write cmd_write.c:2255
+    #25 0x104935838 in r_cmd_call cmd_api.c:519
+    #26 0x104466808 in r_core_cmd_subst_i cmd.c:4797
+    #27 0x10444d098 in r_core_cmd_subst cmd.c:3631
+    #28 0x1042ea404 in run_cmd_depth cmd.c:5696
+    #29 0x1042caf28 in r_core_cmd cmd.c:5780
+
+previously allocated by thread T0 here:
+    #0 0x1059e3074 in wrap_calloc+0x9c (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x3f074)
+    #1 0x102013488 in _node_new new_rbtree.c:104
+    #2 0x102011604 in r_crbtree_insert new_rbtree.c:142
+    #3 0x100e847a8 in r_io_bank_map_add_top io_bank.c:181
+    #4 0x100e609dc in r_io_map_add io_map.c:172
+    #5 0x1046ebf34 in r_core_bin_load cfile.c:679
+    #6 0x101a65b18 in binload radare2.c:467
+    #7 0x101a58de8 in r_main_radare2 radare2.c:1371
+    #8 0x10066734c in main radare2.c:104
+    #9 0x186907e4c  (<unknown module>)
+
+SUMMARY: AddressSanitizer: heap-use-after-free new_rbtree.c:417 in r_rbnode_next
+Shadow bytes around the buggy address:
+  0x0070211721a0: fa fa fd fd fd fd fd fa fa fa 00 00 00 00 01 fa
+  0x0070211721b0: fa fa fd fd fd fd fd fd fa fa fd fd fd fd fd fd
+  0x0070211721c0: fa fa fd fd fd fd fd fd fa fa fd fd fd fd fd fd
+  0x0070211721d0: fa fa fd fd fd fd fd fd fa fa fd fd fd fd fd fd
+  0x0070211721e0: fa fa fd fd fd fd fd fd fa fa fd fd fd fd fd fd
+=>0x0070211721f0: fa fa fd fd fd fd fd fa fa fa fd[fd]fd fd fd fa
+  0x007021172200: fa fa fd fd fd fd fd fd fa fa 00 00 00 00 00 fa
+  0x007021172210: fa fa 00 00 00 00 00 fa fa fa 00 00 00 00 00 fa
+  0x007021172220: fa fa fd fd fd fd fd fd fa fa fd fd fd fd fd fd
+  0x007021172230: fa fa fd fd fd fd fd fd fa fa 00 00 00 00 00 fa
+  0x007021172240: fa fa fd fd fd fd fd fd fa fa fd fd fd fd fd fd
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==66232==ABORTING
