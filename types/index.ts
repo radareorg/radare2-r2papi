@@ -235,5 +235,10 @@ export class NativePointer {
 	}
 }
 
+
 export declare var r2: R2Pipe;
 export declare var R: R2Papi;
+interface base64Interface{
+    (message: string, decode: boolean):string;
+}
+export declare var b64: base64Interface;
