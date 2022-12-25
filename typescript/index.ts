@@ -2,6 +2,9 @@
 
 import { R2PapiShell } from "./shell.js";
 
+export declare var r2: R2Pipe;
+export declare var R: R2Papi;
+
 export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call";
 export type InstructionFamily = "cpu" | "fpu" | "priv";
 
@@ -352,10 +355,6 @@ export class Base64 {
 		return b64(x, true);
 	}
 }
-
-
-export declare var r2: R2Pipe;
-export declare var R: R2Papi;
 
 interface base64Interface{
     (message: string, decode?: boolean):string;

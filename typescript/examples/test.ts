@@ -1,4 +1,4 @@
-import { R, R2Papi, NativePointer } from "../index";
+import { R, R2Papi, NativePointer } from "r2papi"; // ../index";
 
 namespace Main {
     const searchResults = R.searchString("lib");
