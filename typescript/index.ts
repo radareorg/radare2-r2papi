@@ -1,8 +1,12 @@
+// r2papi main file
+
+import { R2PapiShell } from "./shell.js";
+
 export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call";
 export type InstructionFamily = "cpu" | "fpu" | "priv";
 
 export interface SearchResult {
-	offset: number;
+	offset: number; // TODO: rename to addr
 	type: string;
 	data: string;
 };
@@ -12,6 +16,14 @@ export interface Flag {
 	size: number;
 	offset: number;
 };
+
+// XXX not working? export type ThreadState = "waiting" | "running" | "dead" ;
+export interface ThreadContext {
+	context: any;
+	id: number;
+	state: string;
+	selected: boolean;
+}
 
 export interface CallRef {
 	addr: number;
@@ -105,6 +117,7 @@ export interface Instruction {
 
 export interface R2Pipe {
 	cmd(cmd: string): string;
+	call(cmd: string): string;
 	cmdj(cmd: string): any;
 	log(msg: string): string;
 }
@@ -115,13 +128,39 @@ export class R2Papi {
 	constructor(r2: R2Pipe) {
 		this.r2 = r2;
 	}
+	getShell(): R2PapiShell {
+		return new R2PapiShell (this);
+	}
+	printAt(msg: string, x: number, y: number) : void{
+		// see pg, but pg is obrken :D
+	}
 
-	clearScreen() {
+	clearScreen() : void {
 		this.r2.cmd("!clear");
 	}
+
+	getConfig(key: string) : string {
+		return this.r2.call("e " + key);
+	}
+
+	setConfig(key: string, val: string) : void {
+		this.r2.call("e " + key + "=" + val);
+	}
+
 	getRegisters(): any {
 		// this.r2.log("winrar" + JSON.stringify(JSON.parse(this.r2.cmd("drj")),null, 2) );
 		return this.cmdj("drj");
+	}
+	enumerateThreads() : ThreadContext[] {
+		// TODO: use apt/dpt to list threads at iterate over them to get the registers
+		const regs0 = this.cmdj("drj");
+		const thread0 = {
+			context: regs0,
+			id: 0,
+			state: "waiting",
+			selected: true,
+		};
+		return [thread0];
 	}
 	setRegisters(obj: any) {
 		for (let r of Object.keys(obj)) {
@@ -150,6 +189,14 @@ export class R2Papi {
 		const res: SearchResult[] = this.cmdj("/j " + s);
 		return res;
 	}
+	searchBytes(data: number[]): SearchResult[] {
+		function num2hex(data: number) : string {
+			return (data & 0xff).toString(16);
+		}
+		const s = data.map(num2hex).join('');
+		const res: SearchResult[] = this.cmdj("/xj " + s);
+		return res;
+	}
 	binInfo(): BinFile {
 		try {
 			return this.cmdj("ij~{bin}");
@@ -162,6 +209,9 @@ export class R2Papi {
 	}
 	ptr(s: string | number): NativePointer {
 		return new NativePointer(this, s);
+	}
+	call(s: string): string {
+		return this.r2.call(s);
 	}
 	cmd(s: string): string {
 		return this.r2.cmd(s);
@@ -194,8 +244,17 @@ export class NativePointer {
 		// this.api.r2.log("NP " + s);
 		this.addr = "" + s;
 	}
-	readByteArray(len: number) {
+
+	readByteArray(len: number) : number[] {
 		return JSON.parse(this.api.cmd(`p8j ${len}@${this.addr}`));
+	}
+	and(a: number): NativePointer {
+		this.addr = this.api.call(`?v ${this.addr} & ${a}`);
+		return this;
+	}
+	or(a: number): NativePointer {
+		this.addr = this.api.call(`?v ${this.addr} | ${a}`);
+		return this;
 	}
 	add(a: number): NativePointer {
 		this.addr = this.api.cmd(`?v ${this.addr} + ${a}`);
@@ -205,9 +264,55 @@ export class NativePointer {
 		this.addr = this.api.cmd(`?v ${this.addr} - ${a}`);
 		return this;
 	}
+	writeByteArray(data: number[]): NativePointer {
+		this.api.cmd("wx " + data.join(""))
+		return this;
+	}
+	writeAssembly(instruction: string) : NativePointer {
+		this.api.cmd(`\"wa ${instruction} @ ${this.addr}`);
+		return this;
+	}
 	writeCString(s: string): NativePointer {
 		this.api.cmd("\"w " + s + "\"");
 		return this;
+	}
+	isNull(): boolean {
+		return this.readInt() === 0;
+	}
+	readU8(): number {
+		return +this.api.cmd(`pvi1@"${this.addr}`);
+	}
+	readU16(): number {
+		return +this.api.cmd(`pvi2@"${this.addr}`);
+	}
+	readU32(): number {
+		return +this.api.cmd(`pvi4@"${this.addr}`);
+	}
+	readU64(): number {
+		// XXX: use bignum or 
+		return +this.api.cmd(`pvi8@"${this.addr}`);
+	}
+	writeInt(n:number): number {
+		return +this.api.cmd(`wv4 ${n}@${this.addr}`);
+	}
+	writeU8(n: number) : boolean {
+		this.api.cmd(`wv1 ${n}@${this.addr}`);
+		return true;
+	}
+	writeU16(n: number) : boolean {
+		this.api.cmd(`wv2 ${n}@${this.addr}`);
+		return true;
+	}
+	writeU32(n: number) : boolean {
+		this.api.cmd(`wv4 ${n}@${this.addr}`);
+		return true;
+	}
+	writeU64(n: number) : boolean {
+		this.api.cmd(`wv8 ${n}@${this.addr}`);
+		return true;
+	}
+	readInt(): number {
+		return +this.api.cmd(`pvi4@"${this.addr}`);
 	}
 	readCString(): string {
 		return JSON.parse(this.api.cmd(`psj@${this.addr}`)).string;

@@ -1,4 +1,4 @@
-export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call";
+export type InstructionType = "mov" | "jmp" | "cmp" | "add" | "sub" | "swi" | "nop" | "call";
 export type InstructionFamily = "cpu" | "fpu" | "priv";
 export interface SearchResult {
     offset: number;
@@ -95,6 +95,7 @@ export interface Instruction {
 }
 export interface R2Pipe {
     cmd(cmd: string): string;
+    call(cmd: string): string;
     log(msg: string): string;
 }
 export declare class R2Api {
@@ -113,6 +114,7 @@ export declare class R2Api {
     skip(): void;
     ptr(s: string | number): NativePointer;
     cmd(s: string): string;
+    call(s: string): string;
     cmdj(s: string): any;
     log(s: string): string;
     clippy(msg: string): void;

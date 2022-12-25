@@ -7,6 +7,10 @@ node_modules/jsfmt:
 
 MODVER=$(shell node -e 'console.log(JSON.parse(require("fs").readFileSync("package.json"))["version"])')
 
+doc:
+	node_modules/.bin/typedoc index.ts
+	r2 -qc "open docs/index.html" --
+
 npm publish pub:
 	${MAKE}
 	npm publish
