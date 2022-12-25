@@ -208,7 +208,7 @@ export class R2Papi {
 		this.r2.cmd("dss");
 	}
 	ptr(s: string | number): NativePointer {
-		return new NativePointer(this, s);
+		return new NativePointer(s, this);
 	}
 	call(s: string): string {
 		return this.r2.call(s);
@@ -239,8 +239,12 @@ export class R2Papi {
 export class NativePointer {
 	addr: string;
 	api: R2Papi;
-	constructor(api: R2Papi, s: string | number) {
-		this.api = api;
+	constructor(s: string | number, api?: R2Papi) {
+		if (api === undefined) {
+			this.api = R;
+		} else {
+			this.api = api;
+		}
 		// this.api.r2.log("NP " + s);
 		this.addr = "" + s;
 	}
@@ -352,6 +356,7 @@ export class Base64 {
 
 export declare var r2: R2Pipe;
 export declare var R: R2Papi;
+
 interface base64Interface{
     (message: string, decode?: boolean):string;
 }

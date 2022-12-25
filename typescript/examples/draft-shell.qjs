@@ -1,0 +1,35 @@
+
+
+
+
+
+
+
+
+
+
+
+
+const SH = new R2PapiShell (R);
+
+SH.system("git --help");
+
+const output = S.run("git --help");
+
+const files = SH.ls();
+console.log(`CWD: ${SH.cwd()}:`);
+console.log(files.join('\n'));
+
+if (SH.fileExists('Makefile')) {
+	if (SH.system("make") != 0) {
+		console.log("FAILED");
+	} else {
+		const src = `foo.${SH.LIBEXT}`;
+		const dst = `${SH.R2_USER_PLUGINS}/${src}`;
+		SH.copy (src, dst);
+	}
+} else {
+	console.error("Unknown build system");
+}
+
+

@@ -18,8 +18,10 @@ export class R2PapiShell {
 		// TODO
 		return false;
 	}
-	/// Opens an URL or application
-	/// calls `xdg-open` on linux, `start` on windows, `open` on Mac
+	/**
+	* Opens an URL or application
+	* calls `xdg-open` on linux, `start` on windows, `open` on Mac
+ 	*/
 	open(arg: string): void {
 		this.rp.call (`open ${arg}`);
 	}

@@ -11,6 +11,7 @@
     "outDir": "./dist"
   },
   "include": [
-    "index.ts"
+    "index.ts",
+    "shell.ts"
   ]
 }
