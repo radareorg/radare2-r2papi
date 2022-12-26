@@ -9,9 +9,26 @@ export class R2PapiShell {
 		this.rp = papi;
 	}
 
+	mkdir(file: string, recursive?:boolean): boolean {
+		if (recursive === true) {
+			this.rp.call (`mkdir -p ${file}`);
+		} else {
+			this.rp.call (`mkdir ${file}`);
+		}
+		return true;
+	}
 	unlink(file: string): boolean {
 		this.rp.call (`rm ${file}`);
 		return true;
+	}
+
+	chdir(path:string) : boolean {
+		this.rp.call (`cd ${path}`);
+		return true;
+	}
+
+	ls(): string[] {
+		return this.rp.call(`ls -q`).trim().split('\n')
 	}
 
 	fileExists(path: string) : boolean {

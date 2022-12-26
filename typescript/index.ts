@@ -2,9 +2,6 @@
 
 import { R2PapiShell } from "./shell.js";
 
-export declare var r2: R2Pipe;
-export declare var R: R2Papi;
-
 export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call";
 export type InstructionFamily = "cpu" | "fpu" | "priv";
 
@@ -143,7 +140,7 @@ export class R2Papi {
 	}
 
 	getConfig(key: string) : string {
-		return this.r2.call("e " + key);
+		return this.r2.call("e " + key).trim();
 	}
 
 	setConfig(key: string, val: string) : void {
@@ -284,20 +281,44 @@ export class NativePointer {
 		return this;
 	}
 	isNull(): boolean {
-		return this.readInt() === 0;
+		return +this.addr === 0;
+	}
+	compare(a : string|number|NativePointer) {
+		if (typeof a === "string" || typeof a === "number") {
+			a = new NativePointer(a);
+		}
+		return a.addr === this.addr;
+	}
+	pointsToNull(): boolean {
+		return this.readPointer().compare(0);
+	}
+	toString() :string {
+		return this.addr;
+	}
+	writePointer(p: NativePointer) : void {
+		const cmd = (+this.api.getConfig("asm.bits") === 64)? "wv8": "wv4";
+		this.api.cmd(`${cmd} ${p}@${this}`);
+		// 5.8.2 this.call("wvp " + p.addr);
+	}
+	readPointer() : NativePointer {
+		if (+this.api.getConfig("asm.bits") === 64) {
+			return new NativePointer(this.api.call("pv8@" + this.addr));
+		} else {
+			return new NativePointer(this.api.call("pv4@" + this.addr));
+		}
 	}
 	readU8(): number {
-		return +this.api.cmd(`pvi1@"${this.addr}`);
+		return +this.api.cmd(`pv1@"${this.addr}`);
 	}
 	readU16(): number {
-		return +this.api.cmd(`pvi2@"${this.addr}`);
+		return +this.api.cmd(`pv2@"${this.addr}`);
 	}
 	readU32(): number {
-		return +this.api.cmd(`pvi4@"${this.addr}`);
+		return +this.api.cmd(`pv4@"${this.addr}`);
 	}
 	readU64(): number {
 		// XXX: use bignum or 
-		return +this.api.cmd(`pvi8@"${this.addr}`);
+		return +this.api.cmd(`pv8@"${this.addr}`);
 	}
 	writeInt(n:number): number {
 		return +this.api.cmd(`wv4 ${n}@${this.addr}`);
@@ -319,7 +340,7 @@ export class NativePointer {
 		return true;
 	}
 	readInt(): number {
-		return +this.api.cmd(`pvi4@"${this.addr}`);
+		return +this.api.cmd(`pv4@"${this.addr}`);
 	}
 	readCString(): string {
 		return JSON.parse(this.api.cmd(`psj@${this.addr}`)).string;
@@ -360,3 +381,6 @@ interface base64Interface{
     (message: string, decode?: boolean):string;
 }
 export declare var b64: base64Interface;
+export declare var r2: R2Pipe;
+export declare var R: R2Papi;
+

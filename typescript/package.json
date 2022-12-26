@@ -1,6 +1,6 @@
 {
   "name": "r2papi",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "r2api on top of r2pipe for typescript and js",
   "__dependencies": {
     "r2pipe": "^2.6.0",
@@ -46,6 +46,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "r2papi": "^0.0.5"
+    "r2papi": "^0.0.6"
   }
 }
