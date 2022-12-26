@@ -3,19 +3,14 @@
 
 
 
-
-
-
-
-
-
-
 const SH = new R2PapiShell (R);
 
 SH.system("git --help");
 
 const output = S.run("git --help");
 
+import {ls,cwd,system,fileExists,copy } from "./shell";
+/// 
 const files = SH.ls();
 console.log(`CWD: ${SH.cwd()}:`);
 console.log(files.join('\n'));

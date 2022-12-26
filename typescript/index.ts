@@ -117,8 +117,9 @@ export interface Instruction {
 
 export interface R2Pipe {
 	cmd(cmd: string): string;
-	call(cmd: string): string;
 	cmdj(cmd: string): any;
+	call(cmd: string): string;
+	callj(cmd: string): string;
 	log(msg: string): string;
 }
 
@@ -212,6 +213,9 @@ export class R2Papi {
 	}
 	call(s: string): string {
 		return this.r2.call(s);
+	}
+	callj(s: string): string {
+		return JSON.parse(this.call(s));
 	}
 	cmd(s: string): string {
 		return this.r2.cmd(s);
