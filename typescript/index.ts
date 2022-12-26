@@ -250,26 +250,26 @@ export class NativePointer {
 			this.api = api;
 		}
 		// this.api.r2.log("NP " + s);
-		this.addr = "" + s;
+		this.addr = ("" + s).trim();
 	}
 
 	readByteArray(len: number) : number[] {
 		return JSON.parse(this.api.cmd(`p8j ${len}@${this.addr}`));
 	}
 	and(a: number): NativePointer {
-		this.addr = this.api.call(`?v ${this.addr} & ${a}`);
+		this.addr = this.api.call(`?v ${this.addr} & ${a}`).trim();
 		return this;
 	}
 	or(a: number): NativePointer {
-		this.addr = this.api.call(`?v ${this.addr} | ${a}`);
+		this.addr = this.api.call(`?v ${this.addr} | ${a}`).trim();
 		return this;
 	}
 	add(a: number): NativePointer {
-		this.addr = this.api.cmd(`?v ${this.addr} + ${a}`);
+		this.addr = this.api.call(`?v ${this.addr}+${a}`).trim();
 		return this;
 	}
 	sub(a: number): NativePointer {
-		this.addr = this.api.cmd(`?v ${this.addr} - ${a}`);
+		this.addr = this.api.call(`?v ${this.addr}-${a}`).trim();
 		return this;
 	}
 	writeByteArray(data: number[]): NativePointer {
@@ -297,7 +297,7 @@ export class NativePointer {
 		return this.readPointer().compare(0);
 	}
 	toString() :string {
-		return this.addr;
+		return this.addr.trim();
 	}
 	writePointer(p: NativePointer) : void {
 		const cmd = (+this.api.getConfig("asm.bits") === 64)? "wv8": "wv4";
