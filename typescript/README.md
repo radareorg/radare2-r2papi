@@ -17,4 +17,11 @@ Bear in mind that r2's javascript engine doesn't offer the same
 APIs as NodeJS, and despite there's a plan to make it more compatible
 it is relying on radare2 APIs and its own sandbox configuration.
 
+* `[-----]` esil emulation api
+* `[x----]` NativePointer from Frida
+* `[x----]` Shell
+* `[xx---]` requirejs
+* `[xxx--]` Base64
+* `[xxx--]` r2pipe
+
 --pancake

@@ -11,6 +11,13 @@ export interface SearchResult {
 	data: string;
 };
 
+export interface DebugModule {
+	base: string;
+	name: string;
+	path: string;
+	size: number;
+};
+
 export interface Flag {
 	name: string;
 	size: number;
@@ -119,7 +126,7 @@ export interface R2Pipe {
 	cmd(cmd: string): string;
 	cmdj(cmd: string): any;
 	call(cmd: string): string;
-	callj(cmd: string): string;
+	callj(cmd: string): any;
 	log(msg: string): string;
 }
 
@@ -205,6 +212,9 @@ export class R2Papi {
 			return {} as BinFile;
 		}
 	}
+	enumerateModules() : DebugModule[] {
+		return this.callj("dmmj");
+	}
 	skip() {
 		this.r2.cmd("dss");
 	}
@@ -214,7 +224,7 @@ export class R2Papi {
 	call(s: string): string {
 		return this.r2.call(s);
 	}
-	callj(s: string): string {
+	callj(s: string): any {
 		return JSON.parse(this.call(s));
 	}
 	cmd(s: string): string {
