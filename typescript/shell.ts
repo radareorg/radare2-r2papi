@@ -86,4 +86,10 @@ export class R2PapiShell {
 	enumerateMountpoints(): string[] {
 		return this.rp.cmdj ("mlj");
 	}
+	isSymlink(file:string) : boolean {
+		return false;
+	}
+	isDirectory(file:string) : boolean {
+		return false;
+	}
 }
