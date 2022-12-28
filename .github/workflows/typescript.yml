@@ -16,7 +16,7 @@ jobs:
     - name: Install radare2 5.8.0
       run: |
         wget https://github.com/radareorg/radare2/releases/download/5.8.0/radare2_5.8.0_amd64.deb
-        dpkg -i radare2_5.8.0_amd64.deb
+        sudo dpkg -i radare2_5.8.0_amd64.deb
 #- name: Install radare2 from git
 #  run: |
 #    git clone --depth=1 https://github.com/radareorg/radare2
