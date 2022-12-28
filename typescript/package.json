@@ -1,6 +1,6 @@
 {
   "name": "r2papi",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "r2api on top of r2pipe for typescript and js",
   "__dependencies": {
     "r2pipe": "^2.6.0",
@@ -16,9 +16,9 @@
     "typedoc": "^0.23.23"
   },
   "scripts": {
-    "build": "tsc --declaration index.ts",
+    "build": "tsc --target es2020 --declaration index.ts esil.ts shell.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "doc": "typedoc index.ts shell.ts"
+    "doc": "typedoc index.ts shell.ts esil.ts"
   },
   "repository": {
     "type": "git",
@@ -37,6 +37,9 @@
   ],
   "files": [
     "README.md",
+    "esil.js",
+    "esil.ts",
+    "esil.d.ts",
     "shell.js",
     "shell.ts",
     "shell.d.ts",
@@ -44,8 +47,5 @@
     "index.ts",
     "index.d.ts"
   ],
-  "license": "MIT",
-  "dependencies": {
-    "r2papi": "^0.0.6"
-  }
+  "license": "MIT"
 }
