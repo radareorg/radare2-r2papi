@@ -8,4 +8,7 @@ clean:
 	python setup.py clean
 	rm -rf build
 
-.PHONY: all test clean
+install:
+	python setup.py install
+
+.PHONY: all test clean install

@@ -17,9 +17,12 @@ jobs:
       run: |
         wget https://github.com/radareorg/radare2/releases/download/5.8.0/radare2_5.8.0_amd64.deb
         sudo dpkg -i radare2_5.8.0_amd64.deb
+        r2 -v
     - name: Install python dependencies
       run: pip3 install -r python/requirements_ci.txt
     - name: Build python module
       run: make -C python build
+    - name: Install r2papi.py
+      run: sudo make -C python install
     - name: Test the r2api
-      run: make -C python test
+      run: rarun2 timeout=10 system="make -C python test"
