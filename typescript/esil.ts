@@ -6,7 +6,7 @@ class EsilToken {
 	label: string = "";
 	comment: string = "";
 	text: string = "";
-	addr: number = 0;
+	addr: string = "0"; // for ut64 we use strings for numbers :<
 	position: number = 0;
 	  constructor(text: string, position: number) {
 		  this.text = text;
@@ -58,7 +58,7 @@ class EsilNode {
 		if (this.token.label !== "") {
 			str += this.token.label + ":\n";
 		}
-		if (this.token.addr !== 0) {
+		if (this.token.addr !== "0") {
 			// str += "//  @ " + this.token.addr + "\n";
 		}
 		if (this.token.comment !== "") {
@@ -84,7 +84,7 @@ class EsilNode {
 					}
 				}
 			}
-			str += ")\n";
+			str += "  )\n";
 		}
 		if (this.lhs !== undefined && this.rhs !== undefined) {
 			return str + `    ( ${this.lhs} ${this.token} ${this.rhs} )`;
@@ -124,31 +124,24 @@ class EsilParser {
 	}
 	private optimizeFlags(node: EsilNode) {
 		if (node.rhs !== undefined) {
-			const addr0 = +node.rhs.toString();
-			if (addr0 > 0) {
-				const fname = r2.cmd(`fd.@ ${addr0}`).trim().split("\n")[0].trim();
-				if (fname != "" && fname.indexOf("+") == -1) {
-					node.rhs.token.text = fname;
-				}
-			}
+			this.optimizeFlags(node.rhs);
+		}
+		if (node.lhs !== undefined) {
+			this.optimizeFlags(node.lhs);
 		}
 		for (let i = 0; i < node.children.length;i++) {
-			if (node.children[i].rhs === undefined) {
-				continue;
+			this.optimizeFlags(node.children[i]);
+		}
+		const addr : string = node.toString();
+		if (+addr > 4096) {
+			const fname = r2.cmd(`fd.@ ${addr}`).trim().split("\n")[0].trim();
+			if (fname != "" && fname.indexOf("+") === -1) {
+				node.token.text = fname;
 			}
-			const addr : number = +node.children[i].rhs.toString();
-			if (addr > 0) {
-				const fname = r2.cmd(`fd.@ ${addr}`).trim().split("\n")[0].trim();
-				if (fname != "" && fname.indexOf("+") == -1) {
-					node.children[i].rhs.token.text = fname;
-				}
-			}
-			this.optimizeFlags (node.children[i]);
 		}
 	}
 	optimize(options: string) : void {
 		if (options.indexOf("flag") != -1) {
-			// optimize the flags
 			this.optimizeFlags(this.root);
 		}
 	}
@@ -180,7 +173,7 @@ class EsilParser {
 		}
 		// console.log("done");
 	}
-	parse(expr: string, addr?: number) : void | never {
+	parse(expr: string, addr?: string) : void | never {
 		const tokens = expr.trim().split(',').map( (x) => x.trim() );
 		const from = this.tokens.length;
 		for (let tok of tokens) {
@@ -457,13 +450,11 @@ class EsilParser {
 	}
 }
 
+/// ========== main =========== ///
+
 const ep = new EsilParser(r2);
 
 /*
-testComplex();
-testBasic();
-testConditional();
-testLoop();
 */
 
 function testLoop() {
@@ -480,57 +471,74 @@ function testComplex() {
 	ep.parse("cf,!,zf,|,?{,x16,}{,xzr,},x16,=");
 }
 function testConditional() {
-//	ep.parse("1,?{,x0,}{,x1,},:=");
+	ep.parse("1,?{,x0,}{,x1,},:=");
 	ep.parse("zf,!,nf,vf,^,!,&,?{,4294982284,pc,:=,}");
 }
-/*
-console.log(ep.toString());
-console.log("---");
-console.log(ep.toEsil());
-*/
+
 function pdq(arg:string) {
-	let n = 0;
+	r2.cmd("e cfg.json.num=string");
 	switch (arg[0]) {
 	case " ":
-		n = +arg;
+		parseAmount (+arg);
+		break;
+	case "i":
+		parseAmount (1);
 		break;
 	case "f":
-		const func = r2.cmdj("pdrj");
-		for (let bb of func.bbs) {
+	case undefined:
+	case "":
+		const oaddr = r2.cmd("?v $$").trim();
+		// const func = r2.cmdj("pdrj"); // XXX this command changes the current seek
+		const bbs = r2.cmdj("afbj"); // XXX this command changes the current seek
+		for (let bb of bbs) {
 			console.log("bb_" + bb.addr + ":");
-			parseAmount (bb.ops.length);
+			r2.cmd(`s ${bb.addr}`);
+			parseAmount (bb.ninstr);
 		}
+		r2.cmd(`s ${oaddr}`);
 		break;
 	case "e":
 		ep.reset ();
-		ep.parse(arg.slice(1).trim(), +r2.cmd("?v $$"));
+		ep.parse(arg.slice(1).trim(), r2.cmd("?v $$"));
 		console.log(ep.toString());
-		return;
+		break;
+	case "t":
+		testComplex();
+		testBasic();
+		testConditional();
+		testLoop();
+		console.log(ep.toString());
+		console.log("---");
+		console.log(ep.toEsil());
+		break;
 	case "?":
 		console.log("Usage: pdq[ef?] [ninstr] - quick decompiler plugin");
-		console.log("pdq           - decompile 1 instruction");
+		console.log("pdq           - decompile current function");
 		console.log("pdq 100       - decompile 100 instructions");
 		console.log("pdqe 1,rax,:= - decompile given esil expressoin");
-		console.log("pdqf          - decompile the current function");
-		return;
+		console.log("pdqi          - decompile one instruction");
+		console.log("pdqt          - run tests");
+		break;
 	}
-	if (n < 1) {
-		n = 1;
-	}
-	parseAmount (n);
 }
 
 function parseAmount(n:number):void {
 	ep.reset();
 	// console.log("PDQ "+n);
-	const lines = r2.cmd("pie "+n+" @e:scr.color=0").trim().split("\n");
+	const lines = r2.cmd("pie " + n + " @e:scr.color=0").trim().split("\n");
 	for (const line of lines) {
+		if (line.length === 0) {
+			console.log("EmPTY");
+			continue;
+		}
+			// console.log("parse", r2.cmd("?v:$$"));
 		const kv = line.split(' ');
 		if (kv.length > 1) { // line != "") {
 			// console.log("// @ " + kv[0]);
 			ep.reset ();
-			ep.parse(kv[1], +kv[0]);
-			ep.optimize("flags");
+			r2.cmd(`s ${kv[0]}`);
+			ep.parse(kv[1], kv[0]);
+			ep.optimize("flags,labels");
 			console.log(ep.toString());
 		}
 	}
