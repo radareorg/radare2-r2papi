@@ -1,17 +1,17 @@
 use crate::structs::*;
+use r2pipe::Error;
 
-use serde_json::Error;
 // Maybe have r2api-rs' own error type?
 
 pub trait R2Api {
     /// Initialize r2 instance with some basic configurations
-    fn init(&mut self);
+    fn init(&mut self) -> Result<(), Error>;
 
     // Recv raw output
-    fn raw(&mut self, cmd: String) -> String;
+    fn raw(&mut self, cmd: String) -> Result<String, Error>;
 
     /// Run r2-based analysis on the file to extract information
-    fn analyze(&mut self);
+    fn analyze(&mut self) -> Result<(), Error>;
 
     //////////////////////////////////////////////
     //// Architecture/OS Information
@@ -46,23 +46,23 @@ pub trait R2Api {
     // these analysis. Then, these can be called early on the chain, perform other non-related
     // operations while analysis happens and finally, wait on the results.
     /// All Analysis
-    fn analyze_all(&mut self);
+    fn analyze_all(&mut self) -> Result<(), Error>;
     /// Analyze and auto-name functions
-    fn analyze_and_autoname(&mut self);
+    fn analyze_and_autoname(&mut self) -> Result<(), Error>;
     /// Analyze function calls
-    fn analyze_function_calls(&mut self);
+    fn analyze_function_calls(&mut self) -> Result<(), Error>;
     /// Analyze data references
-    fn analyze_data_references(&mut self);
+    fn analyze_data_references(&mut self) -> Result<(), Error>;
     /// Analyze references esil
-    fn analyze_references_esil(&mut self);
+    fn analyze_references_esil(&mut self) -> Result<(), Error>;
     /// Find and analyze function preludes
-    fn analyze_function_preludes(&mut self);
+    fn analyze_function_preludes(&mut self) -> Result<(), Error>;
     /// Analyze instruction references
-    fn analyze_function_references(&mut self);
+    fn analyze_function_references(&mut self) -> Result<(), Error>;
     /// Analyze symbols
-    fn analyze_symbols(&mut self);
+    fn analyze_symbols(&mut self) -> Result<(), Error>;
     /// Analyze consecutive functions in section
-    fn analyze_consecutive_functions(&mut self);
+    fn analyze_consecutive_functions(&mut self) -> Result<(), Error>;
 
     ///////////////////////////////////////////////
     //// Analysis Information

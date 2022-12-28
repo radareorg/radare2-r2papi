@@ -5,7 +5,7 @@ pub struct LOpInfo {
     pub esil: Option<String>,
     pub offset: Option<u64>,
     pub opcode: Option<String>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub optype: Option<String>,
     pub size: Option<u64>,
     pub bytes: Option<String>,
@@ -38,7 +38,7 @@ pub struct LRegProfile {
     pub offset: usize,
     pub size: usize,
     pub type_str: String,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub regtype: usize,
 }
 
@@ -62,11 +62,11 @@ pub struct LCoreInfo {
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-#[serde(rename="endian")]
+#[serde(rename = "endian")]
 pub enum Endian {
-    #[serde(rename="big")]
+    #[serde(rename = "big")]
     Big,
-    #[serde(rename="little")]
+    #[serde(rename = "little")]
     Little,
 }
 
@@ -88,7 +88,7 @@ pub struct FunctionInfo {
     pub offset: Option<u64>,
     pub realsz: Option<u64>,
     pub size: Option<u64>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub ftype: Option<String>,
     #[serde(skip)]
     pub locals: Option<Vec<LVarInfo>>,
@@ -96,11 +96,11 @@ pub struct FunctionInfo {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LCallInfo {
-    #[serde(rename="addr")]
+    #[serde(rename = "addr")]
     pub target: Option<u64>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub call_type: Option<String>,
-    #[serde(rename="at")]
+    #[serde(rename = "at")]
     pub source: Option<u64>,
 }
 
@@ -123,7 +123,7 @@ pub struct LStringInfo {
     pub size: Option<u64>,
     pub string: Option<String>,
     pub vaddr: Option<u64>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub stype: Option<String>,
 }
 
@@ -131,9 +131,9 @@ pub struct LStringInfo {
 pub struct LVarInfo {
     pub name: Option<String>,
     pub kind: Option<String>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub vtype: Option<String>,
-    #[serde(rename="ref")]
+    #[serde(rename = "ref")]
     pub reference: Option<LVarRef>,
 }
 
@@ -147,12 +147,12 @@ pub struct LVarRef {
 pub struct LCCInfo {
     pub ret: Option<String>,
     pub args: Option<Vec<String>>,
-    #[serde(rename="float_args")]
+    #[serde(rename = "float_args")]
     pub fargs: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all="SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 // Taken from ELF Spec
 pub enum LSymbolType {
     Notype,
@@ -165,7 +165,7 @@ pub enum LSymbolType {
     Hios,
     Loproc,
     SparcRegister,
-    HiProc
+    HiProc,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -175,13 +175,13 @@ pub struct LSymbolInfo {
     pub name: Option<String>,
     pub paddr: Option<u64>,
     pub size: Option<u64>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub stype: Option<LSymbolType>,
     pub vaddr: Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all="SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 // Taken from ELF Spec
 pub enum LBindType {
     Local,
@@ -193,14 +193,13 @@ pub enum LBindType {
     Hiproc,
 }
 
-
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LImportInfo {
     pub bind: Option<LBindType>,
     pub name: Option<String>,
     pub ordinal: Option<u64>,
     pub plt: Option<u64>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub itype: Option<LSymbolType>,
 }
 
@@ -211,18 +210,17 @@ pub struct LExportInfo {
     pub name: Option<String>,
     pub paddr: Option<u64>,
     pub size: Option<u64>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub etype: Option<LSymbolType>,
     pub vaddr: Option<u64>,
 }
-
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LRelocInfo {
     pub is_ifunc: Option<bool>,
     pub name: Option<String>,
     pub paddr: Option<u64>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     // TODO
     pub rtype: Option<String>,
     pub vaddr: Option<u64>,
