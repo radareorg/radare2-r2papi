@@ -98,7 +98,8 @@ function parseAmount(n:number):void {
 	//console.log(ep.toString());
 }
 
-r2plugin("core", function() {
+r2.unload("pdq");
+r2.plugin("core", function() {
 	function coreCall(cmd: string) {
 		if (cmd.startsWith("pdq")) {
 			try {

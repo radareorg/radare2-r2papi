@@ -4,6 +4,7 @@ import { R2PapiShell } from "./shell.js";
 
 export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call";
 export type InstructionFamily = "cpu" | "fpu" | "priv";
+export type GraphFormat = "dot" | "json" | "mermaid" | "ascii";
 
 export interface SearchResult {
 	offset: number; // TODO: rename to addr
@@ -128,6 +129,8 @@ export interface R2Pipe {
 	call(cmd: string): string;
 	callj(cmd: string): any;
 	log(msg: string): string;
+	plugin(type: string, maker: any): boolean;
+	unload(name: string): boolean;
 }
 
 export class R2Papi {
@@ -186,6 +189,18 @@ export class R2Papi {
 		this.r2.cmd("ds");
 		return this;
 	}
+	functionGraph(format: GraphFormat) : string {
+		if (format === "dot") {
+			return this.r2.cmd("agfd");
+		}
+		if (format === "json") {
+			return this.r2.cmd("agfj");
+		}
+		if (format === "mermaid") {
+			return this.r2.cmd("agfm");
+		}
+		return this.r2.cmd("agf");
+	}
 	stepOver(): R2Papi {
 		this.r2.cmd("dso");
 		return this;
@@ -215,6 +230,15 @@ export class R2Papi {
 	enumerateModules() : DebugModule[] {
 		return this.callj("dmmj");
 	}
+	enumerateSymbols() : any {
+		return this.callj("isj");
+	}
+	enumerateImports() : any {
+		return this.callj("iij");
+	}
+	enumerateLibraries() : string[] {
+		return this.callj("ilj");
+	}
 	skip() {
 		this.r2.cmd("dss");
 	}
@@ -242,10 +266,10 @@ export class R2Papi {
 	ascii(msg: string): void {
 		this.r2.log(this.r2.cmd("?ea " + msg));
 	}
-	listFunctions() : Function[] {
+	enumerateFunctions() : Function[] {
 		return this.cmdj("aflj");
 	}
-	listFlags() : Flag[] {
+	enumerateFlags() : Flag[] {
 		return this.cmdj("fj");
 	}
 }
