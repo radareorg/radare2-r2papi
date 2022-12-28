@@ -1,0 +1,39 @@
+name: TypeScript
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install radare2 5.8.0
+      run: |
+        wget https://github.com/radareorg/radare2/releases/download/5.8.0/radare2_5.8.0_amd64.deb
+        sudo dpkg -i radare2_5.8.0_amd64.deb
+#- name: Install radare2 from git
+#  run: |
+#    git clone --depth=1 https://github.com/radareorg/radare2
+#    CFLAGS=-O1 radare2/sys/install.sh
+    - name: Install TypeScript
+      run: |
+        npm i -g typescript
+        tsc --version && make -C typescript node_modules
+    - name: Build module
+      run: |
+        make -C typescript all
+        cd typescript && npm run build
+    - name: Run tests
+      run: cd typescript && r2 -qi esil.ts -c 'af;pdq' /bin/ls
+    - name: Make Documentation
+      run: make -C typescript doc
+    - uses: actions/upload-artifact@v3
+      with:
+        name: docs.zip
+        path: typescript/docs.zip

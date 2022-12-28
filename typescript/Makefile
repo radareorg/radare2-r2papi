@@ -1,5 +1,9 @@
-all:
+all: node_modules
 	tsc --declaration index.ts
+
+node_modules:
+	mkdir -p node_modules
+	npm i
 
 node_modules/jsfmt:
 	mkdir -p node_modules
@@ -9,6 +13,8 @@ MODVER=$(shell node -e 'console.log(JSON.parse(require("fs").readFileSync("packa
 
 doc:
 	npm run doc
+	rm -f docs.zip
+	zip -r docs.zip docs
 	r2 -qc "open docs/index.html" --
 
 npm publish pub:
