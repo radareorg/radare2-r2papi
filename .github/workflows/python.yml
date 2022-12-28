@@ -20,4 +20,6 @@ jobs:
     - name: Install python dependencies
       run: pip3 install -r python/requirements_ci.txt
     - name: Build python module
-      run: cd python && sudo ./setup.py install
+      run: make -C python build
+    - name: Test the r2api
+      run: make -C python test

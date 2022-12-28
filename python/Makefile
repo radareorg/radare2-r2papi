@@ -1,4 +1,4 @@
-all:
+all build:
 	python setup.py build
 
 test:
