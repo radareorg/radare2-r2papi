@@ -1,12 +1,11 @@
 //! Example to showcase use of different, fine-grained analysis in radare.
 
-extern crate r2pipe;
 extern crate r2api;
+extern crate r2pipe;
 extern crate serde_json;
 
-use r2pipe::r2::R2;
 use r2api::api_trait::R2Api;
-
+use r2pipe::r2::R2;
 
 fn main() {
     {
