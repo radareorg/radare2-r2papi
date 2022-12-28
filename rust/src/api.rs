@@ -1,5 +1,5 @@
-use api_trait::R2Api;
-use structs::*;
+use crate::api_trait::R2Api;
+use crate::structs::*;
 
 use r2pipe::r2::R2;
 use serde_json::{from_str, Error};
