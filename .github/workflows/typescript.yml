@@ -33,3 +33,7 @@ jobs:
       run: cd typescript && r2 -qi esil.ts -c 'af;pdq' /bin/ls
     - name: Make Documentation
       run: make -C typescript doc
+    - uses: actions/upload-artifact@v3
+      with:
+        name: docs.zip
+        path: typescript/docs.zip
