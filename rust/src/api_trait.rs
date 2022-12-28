@@ -7,7 +7,6 @@ pub trait R2Api {
     /// Initialize r2 instance with some basic configurations
     fn init(&mut self);
 
-
     // Recv raw output
     fn raw(&mut self, cmd: String) -> String;
 
@@ -21,7 +20,6 @@ pub trait R2Api {
     fn reg_info(&mut self) -> Result<LRegInfo, Error>;
     /// Get binary information
     fn bin_info(&mut self) -> Result<LBinInfo, Error>;
-
 
     //////////////////////////////////////////////
     //// Binary/Loader Initialized Information
@@ -74,20 +72,23 @@ pub trait R2Api {
     /// Get list of functions
     fn fn_list(&mut self) -> Result<Vec<FunctionInfo>, Error>;
     /// Get list of strings
-    fn strings(&mut self, bool) -> Result<Vec<LStringInfo>, Error>;
+    fn strings(&mut self, data_only: bool) -> Result<Vec<LStringInfo>, Error>;
     /// Get list of local variables in function defined at a particular address
-    fn locals_of(&mut self, u64) -> Result<Vec<LVarInfo>, Error>;
+    fn locals_of(&mut self, location: u64) -> Result<Vec<LVarInfo>, Error>;
     /// Get calling convention information for a function defined at a particular address
     fn cc_info_of(&mut self, location: u64) -> Result<LCCInfo, Error>;
     /// Detect a function at a particular address in the binary
-    fn function<T: AsRef<str>>(&mut self, T) -> Result<LFunctionInfo, Error>;
-
+    fn function<T: AsRef<str>>(&mut self, func: T) -> Result<LFunctionInfo, Error>;
 
     /////////////////////////////////////////////////
     //// Disassembly Information
     /////////////////////////////////////////////////
     /// Get a Vec of a certain number of instruction objects at an offset in the binary
-    fn insts<T: AsRef<str>>(&mut self, Option<u64>, Option<T>) -> Result<Vec<LOpInfo>, Error>;
+    fn insts<T: AsRef<str>>(
+        &mut self,
+        n: Option<u64>,
+        offset: Option<T>,
+    ) -> Result<Vec<LOpInfo>, Error>;
     fn disassemble_n_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error>;
     fn disassemble_n_insts(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error>;
 }

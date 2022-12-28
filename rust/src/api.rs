@@ -1,8 +1,8 @@
-use structs::*;
 use api_trait::R2Api;
+use structs::*;
 
 use r2pipe::r2::R2;
-use serde_json::{Error, from_str};
+use serde_json::{from_str, Error};
 
 impl R2Api for R2 {
     fn analyze(&mut self) {
@@ -26,19 +26,31 @@ impl R2Api for R2 {
     }
 
     fn disassemble_n_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error> {
-        self.send(&format!("pDj {} @ {}", n, offset.map(|x| x.to_string()).unwrap_or("".to_owned())));
+        self.send(&format!(
+            "pDj {} @ {}",
+            n,
+            offset.map(|x| x.to_string()).unwrap_or("".to_owned())
+        ));
         let s = &self.recv();
         from_str(s)
     }
 
     fn disassemble_n_insts(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error> {
-        self.send(&format!("pdj {} @ {}", n, offset.map(|x| x.to_string()).unwrap_or("".to_owned())));
+        self.send(&format!(
+            "pdj {} @ {}",
+            n,
+            offset.map(|x| x.to_string()).unwrap_or("".to_owned())
+        ));
         from_str(&self.recv())
     }
 
     // get 'n' (or 16) instructions at 'offset' (or current position if offset in
     // `None`)
-    fn insts<T: AsRef<str>>(&mut self, n: Option<u64>, offset: Option<T>) -> Result<Vec<LOpInfo>, Error> {
+    fn insts<T: AsRef<str>>(
+        &mut self,
+        n: Option<u64>,
+        offset: Option<T>,
+    ) -> Result<Vec<LOpInfo>, Error> {
         let n = n.unwrap_or(16);
         let mut cmd = format!("pdj{}", n);
         if let Some(o) = offset {
@@ -141,7 +153,6 @@ impl R2Api for R2 {
         self.send("ilj");
         from_str(&self.recv())
     }
-
 
     // Send a raw command and recv output
     fn raw(&mut self, cmd: String) -> String {
