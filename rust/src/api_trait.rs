@@ -1,4 +1,4 @@
-use structs::*;
+use crate::structs::*;
 
 use serde_json::Error;
 // Maybe have r2api-rs' own error type?
