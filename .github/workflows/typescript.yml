@@ -1,0 +1,26 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        git clone --depth=1 https://github.com/radareorg/radare2
+	CFLAGS=-O1 radare2/sys/install.sh
+        tsc --version && make -C typescript node_modules
+    - name: Build
+      run: make -C typescript all
+    - name: Run tests
+      run: cd typescript r2 -qi esil.ts -c 'af;pdq' /bin/ls
+    - name: Make Documentation
+      run: make -C typescript doc

@@ -1,5 +1,9 @@
-all:
+all: node_modules
 	tsc --declaration index.ts
+
+node_modules:
+	mkdir -p node_modules
+	npm i
 
 node_modules/jsfmt:
 	mkdir -p node_modules
