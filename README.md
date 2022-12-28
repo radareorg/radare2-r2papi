@@ -4,7 +4,7 @@ radare2-r2papi
 Formerly known as r2pipe-api, but `papi` sounds better.
 
 [![Rust](https://github.com/radareorg/radare2-r2papi/actions/workflows/rust.yml/badge.svg?branch=master)](https://github.com/radareorg/radare2-r2papi/actions/workflows/rust.yml)
-[![Python](https://travis-ci.org/radare/radare2-r2pipe-api.svg?branch=master)](https://travis-ci.org/radare/radare2-r2pipe-api)
+[![Python](https://github.com/radareorg/radare2-r2papi/actions/workflows/python.yml/badge.svg?branch=master)](https://github.com/radareorg/radare2-r2papi/actions/workflows/python.yml)
 [![Typescript](https://github.com/radareorg/radare2-r2papi/actions/workflows/typescript.yml/badge.svg?branch=master)](https://github.com/radareorg/radare2-r2papi/actions/workflows/typescript.yml)
 
 This repository contains a high-level API on top of r2pipe, abstracting
