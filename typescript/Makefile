@@ -1,5 +1,6 @@
 all: node_modules
 	tsc --declaration index.ts
+	tsc --target es2020 shell.ts
 	tsc --target es2020 esil.ts
 	tsc --target es2020 pdq.ts
 

@@ -1,6 +1,6 @@
 {
   "name": "r2papi",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "r2api on top of r2pipe for typescript and js",
   "__dependencies": {
     "r2pipe": "^2.6.0",
@@ -16,7 +16,7 @@
     "typedoc": "^0.23.23"
   },
   "scripts": {
-    "build": "tsc --target es2020 --declaration index.ts esil.ts shell.ts",
+    "build": "tsc --target es2017 --declaration index.ts esil.ts shell.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "doc": "typedoc index.ts shell.ts esil.ts"
   },
