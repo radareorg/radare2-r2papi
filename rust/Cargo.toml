@@ -1,6 +1,7 @@
 [package]
 name = "r2api"
 version = "0.0.1"
+edition = "2021"
 authors = [ "pancake <pancake@nopcode.org>",
 "sushant94 <sushant.dinesh94@gmail.com>",
 "chinmaydd <chinmay1dd@gmail.com>"]
