@@ -20,4 +20,4 @@ jobs:
     - name: Install python dependencies
       run: pip3 install -r python/requirements_ci.txt
     - name: Build python module
-      run: cd python && ./setup.py install
+      run: cd python && sudo ./setup.py install
