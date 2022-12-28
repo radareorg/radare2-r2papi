@@ -13,6 +13,8 @@ MODVER=$(shell node -e 'console.log(JSON.parse(require("fs").readFileSync("packa
 
 doc:
 	npm run doc
+	rm -f docs.zip
+	zip -r docs.zip docs
 	r2 -qc "open docs/index.html" --
 
 npm publish pub:
