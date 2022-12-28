@@ -22,3 +22,5 @@ jobs:
       run: cd rust && cargo test --verbose
     - name: clippy
       run: cd rust && cargo clippy -- -D warnings
+    - name: fmt
+      run: cd rust && cargo fmt --all -- --check
