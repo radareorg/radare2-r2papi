@@ -94,7 +94,7 @@ export class EsilNode {
 	}
 }
 
-export default class EsilParser {
+export class EsilParser {
 	r2: R2Pipe;
 	stack: EsilNode[]; // must be a stack or a list.. to parse sub expressions we must reset
 	nodes: EsilNode[];

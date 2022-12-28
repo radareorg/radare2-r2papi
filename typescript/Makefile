@@ -1,8 +1,9 @@
 all: node_modules
 	tsc --declaration index.ts
-	tsc --target es2020 shell.ts
-	tsc --target es2020 esil.ts
-	tsc --target es2020 pdq.ts
+	tsc -m node16 --target es2020 shell.ts
+	tsc -m node16 --target es2020 esil.ts
+	tsc -m node16 --target es2020 pdq.ts
+	tsc -m node16 --target es2020 index.ts
 
 node_modules:
 	mkdir -p node_modules

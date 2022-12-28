@@ -1,5 +1,5 @@
 import { R2Pipe } from "./index";
-import EsilParser from "./esil";
+import { EsilParser } from "./esil";
 
 declare var r2: R2Pipe;
 declare var r2plugin: any;
