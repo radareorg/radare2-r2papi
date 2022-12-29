@@ -161,7 +161,7 @@ export class R2Papi {
 		this.cmd(`om ${fd} ${vaddr} ${size} ${paddr} ${perm} ${name}`);
 	}
 
-	newPointer(a: string) : NativePointer {
+	at(a: string) : NativePointer {
 		return new NativePointer(a);
 	}
 	getShell(): R2PapiShell {
@@ -262,18 +262,6 @@ export class R2Papi {
 	}
 	hex(s: number | string): string {
 		return this.r2.cmd("?v " + s).trim();
-	}
-	functionGraph(format: GraphFormat) : string {
-		if (format === "dot") {
-			return this.r2.cmd("agfd");
-		}
-		if (format === "json") {
-			return this.r2.cmd("agfj");
-		}
-		if (format === "mermaid") {
-			return this.r2.cmd("agfm");
-		}
-		return this.r2.cmd("agf");
 	}
 	step(): R2Papi {
 		this.r2.cmd("ds");
@@ -418,6 +406,22 @@ export class NativePointer {
 		this.addr = ("" + s).trim();
 	}
 
+	hexdump (length?: number) : string{
+		let len = (length === undefined)? "": ""+length;
+		return this.api.cmd(`x${len}@${this.addr}`);
+	}
+	functionGraph(format?: GraphFormat) : string {
+		if (format === "dot") {
+			return this.api.cmd(`agfd@ ${this.addr}`);
+		}
+		if (format === "json") {
+			return this.api.cmd(`agfj@${this.addr}`);
+		}
+		if (format === "mermaid") {
+			return this.api.cmd(`agfm@${this.addr}`);
+		}
+		return this.api.cmd(`agf@${this.addr}`);
+	}
 	readByteArray(len: number) : number[] {
 		return JSON.parse(this.api.cmd(`p8j ${len}@${this.addr}`));
 	}
@@ -517,6 +521,10 @@ export class NativePointer {
 	instruction(): Instruction {
 		const op: any = this.api.cmdj(`aoj@${this.addr}`)[0];
 		return op;
+	}
+	disassemble(length?: number) : string {
+		let len = (length === undefined)? "": ""+length;
+		return this.api.cmd(`pd ${len}@${this.addr}`);
 	}
 	analyzeFunction() : NativePointer {
 		this.api.cmd("af@" + this.addr);
