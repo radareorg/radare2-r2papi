@@ -5,6 +5,7 @@ import { R2PapiShell } from "./shell.js";
 export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call";
 export type InstructionFamily = "cpu" | "fpu" | "priv";
 export type GraphFormat = "dot" | "json" | "mermaid" | "ascii";
+export type Permission = "---" | "r--" | "rw-" | "rwx" | "r-x" | "-wx" | "--x";
 
 export interface SearchResult {
 	offset: number; // TODO: rename to addr
@@ -24,6 +25,8 @@ export interface Flag {
 	size: number;
 	offset: number;
 };
+
+type PluginFamily = "core" | "io" | "arch" | "lang" | "bin" | "debug" | "anal" | "crypto";
 
 // XXX not working? export type ThreadState = "waiting" | "running" | "dead" ;
 export interface ThreadContext {
@@ -139,6 +142,28 @@ export class R2Papi {
 	constructor(r2: R2Pipe) {
 		this.r2 = r2;
 	}
+	jsonToTypescript(name: string, a: any) : string {
+		let str = `interface ${name} {\n`;
+		if (a.length && a.length > 0) {
+			a = a[0];
+		}
+		for (let k of Object.keys(a)) {
+			const typ = typeof (a[k]);
+			const nam = k;
+			str += `    ${nam}: ${typ};\n`;
+		}
+		return `${str}}\n`;
+	}
+	/**
+	 * should return the id for the new map using the given file descriptor
+	 */
+	newMap(fd: number, vaddr: NativePointer|number, size: number, paddr: NativePointer | number, perm: Permission, name: string = "") : void {
+		this.cmd(`om ${fd} ${vaddr} ${size} ${paddr} ${perm} ${name}`);
+	}
+
+	newPointer(a: string) : NativePointer {
+		return new NativePointer(a);
+	}
 	getShell(): R2PapiShell {
 		return new R2PapiShell (this);
 	}
@@ -151,31 +176,66 @@ export class R2Papi {
 		return this.r2.cmd("uname");
 	}
 	arch(): string {
-		return this.r2.cmd("-a");
+		return this.r2.cmd("uname -a");
 	}
-	id(): string {
-		return this.r2.cmd("?vi:$p");
+	bits(): string {
+		return this.r2.cmd("uname -b");
+	}
+	id(): number {
+		// getpid();
+		return +this.r2.cmd("?vi:$p");
 	}
 	// Other stuff
-	printAt(msg: string, x: number, y: number) : void{
+	printAt(msg: string, x: number, y: number) : void {
 		// see pg, but pg is obrken :D
 	}
 
-	clearScreen() : void {
+	clearScreen() : R2Papi {
 		this.r2.cmd("!clear");
+		return this;
 	}
 
 	getConfig(key: string) : string {
 		return this.r2.call("e " + key).trim();
 	}
 
-	setConfig(key: string, val: string) : void {
+	setConfig(key: string, val: string) : R2Papi {
 		this.r2.call("e " + key + "=" + val);
+		return this;
 	}
 
 	getRegisters(): any {
 		// this.r2.log("winrar" + JSON.stringify(JSON.parse(this.r2.cmd("drj")),null, 2) );
 		return this.cmdj("drj");
+	}
+	resizeFile(newSize: number) : R2Papi {
+		this.cmd(`r ${newSize}`);
+		return this;
+	}
+	insertNullBytes(newSize: number, at?: NativePointer|number|string) : R2Papi {
+		if (at === undefined) {
+			at = "$$";
+		}
+		this.cmd(`r+${newSize}@${at}`);
+		return this;
+	}
+	removeBytes(newSize: number, at?: NativePointer | number | string) : R2Papi {
+		if (at === undefined) {
+			at = "$$";
+		}
+		this.cmd(`r-${newSize}@${at}`);
+		return this;
+	}
+	seek(addr: number) : R2Papi {
+		this.cmd(`s ${addr}`);
+		return this;
+	}
+	getBlockSize() : number {
+		return +this.cmd("b");
+	}
+	setBlockSize(a: number) : R2Papi {
+		this.cmd(`b ${a}`);
+		return this;
 	}
 	enumerateThreads() : ThreadContext[] {
 		// TODO: use apt/dpt to list threads at iterate over them to get the registers
@@ -187,6 +247,12 @@ export class R2Papi {
 			selected: true,
 		};
 		return [thread0];
+	}
+	currentThreadId(): number {
+		if (+this.cmd("e cfg.debug")) {
+			return +this.cmd("dpt.");
+		}
+		return this.id();
 	}
 	setRegisters(obj: any) {
 		for (let r of Object.keys(obj)) {
@@ -227,6 +293,9 @@ export class R2Papi {
 		const res: SearchResult[] = this.cmdj("/j " + s);
 		return res;
 	}
+	stepUntil(dst: NativePointer | string | number): void {
+		this.cmd(`dsu ${dst}`);
+	}
 	searchBytes(data: number[]): SearchResult[] {
 		function num2hex(data: number) : string {
 			return (data & 0xff).toString(16);
@@ -242,17 +311,69 @@ export class R2Papi {
 			return {} as BinFile;
 		}
 	}
+	// TODO: take a BinFile as argument instead of number
+	selectBinary(id: number) : void {
+		this.call(`ob ${id}`);
+	}
+	openFile(name: string): void {
+		this.call(`o ${name}`);
+	}
+	enumeratePlugins(type: PluginFamily) : any {
+		switch (type) {
+		case "bin":
+			return this.callj("Lij");
+		case "io":
+			return this.callj("Loj");
+		case "core":
+			return this.callj("Lcj");
+		case "anal":
+			return this.callj("Laj");
+		case "lang":
+			return this.callj("Llj");
+		}
+		return []
+	}
 	enumerateModules() : DebugModule[] {
 		return this.callj("dmmj");
 	}
+	enumerateFiles(): any {
+		return this.callj("oj");
+	}
+	enumerateBinaries(): any {
+		return this.callj("obj");
+	}
+	enumerateMaps(): any {
+		return this.callj("omj");
+	}
 	enumerateSymbols() : any {
 		return this.callj("isj");
+	}
+	enumerateExports() : any {
+		return this.callj("iEj");
 	}
 	enumerateImports() : any {
 		return this.callj("iij");
 	}
 	enumerateLibraries() : string[] {
 		return this.callj("ilj");
+	}
+	enumerateSections() : any {
+		return this.callj("iSj");
+	}
+	enumerateSegments() : any {
+		return this.callj("iSSj");
+	}
+	enumerateEntrypoints() : any {
+		return this.callj("iej");
+	}
+	enumerateRelocations() : any {
+		return this.callj("irj");
+	}
+	enumerateFunctions() : Function[] {
+		return this.cmdj("aflj");
+	}
+	enumerateFlags() : Flag[] {
+		return this.cmdj("fj");
 	}
 	skip() {
 		this.r2.cmd("dss");
@@ -280,12 +401,6 @@ export class R2Papi {
 	}
 	ascii(msg: string): void {
 		this.r2.log(this.r2.cmd("?ea " + msg));
-	}
-	enumerateFunctions() : Function[] {
-		return this.cmdj("aflj");
-	}
-	enumerateFlags() : Flag[] {
-		return this.cmdj("fj");
 	}
 }
 
@@ -430,7 +545,8 @@ export class Base64 {
 	}
 }
 
-interface base64Interface{
+
+interface base64Interface {
     (message: string, decode?: boolean):string;
 }
 export declare var b64: base64Interface;
