@@ -1,9 +1,16 @@
 all: node_modules
 	tsc --declaration index.ts
-	tsc -m node16 --target es2020 shell.ts
-	tsc -m node16 --target es2020 esil.ts
-	tsc -m node16 --target es2020 pdq.ts
-	tsc -m node16 --target es2020 index.ts
+	tsc -m node16 --target es2020 shell.ts && mv shell.js shell.qjs
+	tsc -m node16 --target es2020 esil.ts && mv esil.js esil.qjs
+	tsc -m node16 --target es2020 index.ts && mv index.js index.qjs
+	tsc -m node16 --target es2020 pdq.ts && mv pdq.js pdq.qjs
+
+one:
+	cat shell.qjs esil.qjs index.qjs pdq.qjs |grep -v require > one.qjs
+	R2_DEBUG_NOPAPI=1 r2 -i one.qjs /bin/ls
+
+test:
+	R2_DEBUG_NOPAPI=1 r2 -qi index.ts /bin/ls
 
 node_modules:
 	mkdir -p node_modules

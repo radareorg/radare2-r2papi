@@ -142,6 +142,21 @@ export class R2Papi {
 	getShell(): R2PapiShell {
 		return new R2PapiShell (this);
 	}
+	// Radare/Frida
+	version(): string {
+		return this.r2.cmd("?Vq");
+	}
+	// Process
+	platform(): string {
+		return this.r2.cmd("uname");
+	}
+	arch(): string {
+		return this.r2.cmd("-a");
+	}
+	id(): string {
+		return this.r2.cmd("?vi:$p");
+	}
+	// Other stuff
 	printAt(msg: string, x: number, y: number) : void{
 		// see pg, but pg is obrken :D
 	}
