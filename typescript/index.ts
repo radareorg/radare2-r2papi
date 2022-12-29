@@ -169,17 +169,17 @@ export class R2Papi {
 	}
 	// Radare/Frida
 	version(): string {
-		return this.r2.cmd("?Vq");
+		return this.r2.cmd("?Vq").trim();
 	}
 	// Process
 	platform(): string {
-		return this.r2.cmd("uname");
+		return this.r2.cmd("uname").trim();
 	}
 	arch(): string {
-		return this.r2.cmd("uname -a");
+		return this.r2.cmd("uname -a").trim();
 	}
 	bits(): string {
-		return this.r2.cmd("uname -b");
+		return this.r2.cmd("uname -b").trim();
 	}
 	id(): number {
 		// getpid();
@@ -260,15 +260,8 @@ export class R2Papi {
 			this.r2.cmd("dr " + r + "=" + v);
 		}
 	}
-	analyzeProgram(): void {
-		this.r2.cmd("aa");
-	}
 	hex(s: number | string): string {
 		return this.r2.cmd("?v " + s).trim();
-	}
-	step(): R2Papi {
-		this.r2.cmd("ds");
-		return this;
 	}
 	functionGraph(format: GraphFormat) : string {
 		if (format === "dot") {
@@ -282,6 +275,10 @@ export class R2Papi {
 		}
 		return this.r2.cmd("agf");
 	}
+	step(): R2Papi {
+		this.r2.cmd("ds");
+		return this;
+	}
 	stepOver(): R2Papi {
 		this.r2.cmd("dso");
 		return this;
@@ -289,12 +286,16 @@ export class R2Papi {
 	math(expr: number | string): number {
 		return +this.r2.cmd("?v " + expr);
 	}
+	stepUntil(dst: NativePointer | string | number): void {
+		this.cmd(`dsu ${dst}`);
+	}
+	searchDisasm(s: string): SearchResult[] {
+		const res: SearchResult[] = this.callj("/ad " + s);
+		return res;
+	}
 	searchString(s: string): SearchResult[] {
 		const res: SearchResult[] = this.cmdj("/j " + s);
 		return res;
-	}
-	stepUntil(dst: NativePointer | string | number): void {
-		this.cmd(`dsu ${dst}`);
 	}
 	searchBytes(data: number[]): SearchResult[] {
 		function num2hex(data: number) : string {
@@ -445,7 +446,7 @@ export class NativePointer {
 		return this;
 	}
 	writeCString(s: string): NativePointer {
-		this.api.cmd("\"w " + s + "\"");
+		this.api.call("w " + s);
 		return this;
 	}
 	isNull(): boolean {
@@ -517,8 +518,26 @@ export class NativePointer {
 		const op: any = this.api.cmdj(`aoj@${this.addr}`)[0];
 		return op;
 	}
-	analyzeFunction() {
+	analyzeFunction() : NativePointer {
 		this.api.cmd("af@" + this.addr);
+		return this;
+	}
+	analyzeFunctionRecursively() : NativePointer {
+		this.api.cmd("afr@" + this.addr);
+		return this;
+	}
+	// define a type
+	analyzeProgram(depth?: number): NativePointer {
+		if (depth === undefined) {
+			depth = 0;
+		}
+		switch (depth) {
+		case 0: this.api.cmd("aa"); break;
+		case 1: this.api.cmd("aaa"); break;
+		case 2: this.api.cmd("aaaa"); break;
+		case 3: this.api.cmd("aaaaa"); break;
+		}
+		return this;
 	}
 	name(): string {
 		return this.api.cmd("fd " + this.addr).trim();
@@ -545,10 +564,10 @@ export class Base64 {
 	}
 }
 
-
 interface base64Interface {
     (message: string, decode?: boolean):string;
 }
+
 export declare var b64: base64Interface;
 export declare var r2: R2Pipe;
 export declare var R: R2Papi;
