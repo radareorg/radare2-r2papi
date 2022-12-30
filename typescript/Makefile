@@ -1,9 +1,22 @@
+TSC=node_modules/.bin/tsc
+
 all: node_modules
-	tsc --declaration index.ts
-	tsc -m node16 --target es2020 shell.ts && mv shell.js shell.qjs
-	tsc -m node16 --target es2020 esil.ts && mv esil.js esil.qjs
-	tsc -m node16 --target es2020 index.ts && mv index.js index.qjs
-	tsc -m node16 --target es2020 pdq.ts && mv pdq.js pdq.qjs
+	$(TSC) --declaration index.ts
+	$(TSC) -m node16 --target es2020 shell.ts && mv shell.js shell.qjs
+	$(TSC) -m node16 --target es2020 esil.ts && mv esil.js esil.qjs
+	$(TSC) -m node16 --target es2020 index.ts && mv index.js index.qjs
+
+pdq:
+	$(TSC) -m node16 --target es2020 pdq.ts
+	cat pdq.js | sed -e 's,require.*$$,global;,' > pdq.qjs
+
+PLUGDIR=$(shell r2 -H R2_USER_PLUGINS)
+
+install user-install:
+	mkdir -p $(PLUGDIR)
+	cp pdq.qjs $(PLUGDIR)
+
+user-uninstall:
 
 one:
 	cat shell.qjs esil.qjs index.qjs pdq.qjs |grep -v require > one.qjs
@@ -41,3 +54,6 @@ r2wip.d.ts:
 	sh tsi.sh pdj >> r2wip.d.ts
 	sh tsi.sh afij >> r2wip.d.ts
 	sh tsi.sh abj >> r2wip.d.ts
+
+clean:
+	rm *.qjs

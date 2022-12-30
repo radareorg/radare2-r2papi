@@ -50,6 +50,7 @@
   "license": "MIT",
   "devDependencies": {
     "r2pipe": "^2.8.0",
-    "typedoc": "^0.23.23"
+    "typedoc": "^0.23.23",
+    "typescript": "*"
   }
 }
