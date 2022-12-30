@@ -12,6 +12,7 @@
   },
   "include": [
     "index.ts",
+    "esil.ts",
     "shell.ts"
   ]
 }

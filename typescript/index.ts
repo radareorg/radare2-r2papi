@@ -26,7 +26,7 @@ export interface Flag {
 	offset: number;
 };
 
-type PluginFamily = "core" | "io" | "arch" | "lang" | "bin" | "debug" | "anal" | "crypto";
+export type PluginFamily = "core" | "io" | "arch" | "lang" | "bin" | "debug" | "anal" | "crypto";
 
 // XXX not working? export type ThreadState = "waiting" | "running" | "dead" ;
 export interface ThreadContext {

@@ -1,5 +1,6 @@
 import { R2Pipe } from "./index";
 
+declare var console: any;
 declare var r2: R2Pipe;
 
 export class EsilToken {
@@ -8,26 +9,25 @@ export class EsilToken {
 	text: string = "";
 	addr: string = "0"; // for ut64 we use strings for numbers :<
 	position: number = 0;
-	  constructor(text: string, position: number) {
-		  this.text = text;
-		  this.position = position;
-	  }
-	  toString() : string {
-		  return this.text;
-	  }
+	constructor(text: string = "", position: number = 0) {
+		this.text = text;
+		this.position = position;
+	}
+	toString() : string {
+		return this.text;
+	}
 }
 
 export type EsilNodeType = "number" | "flag" | "register" | "operation" | "none" | "block" | "goto" | "label";
 
 export class EsilNode {
-	lhs: EsilNode; // left side
-	rhs: EsilNode; // right side
+	lhs: EsilNode = new EsilNode(); // left side
+	rhs: EsilNode = new EsilNode(); // right side
 	children: EsilNode[];
 	token: EsilToken;
-	type: EsilNodeType;
-	constructor (token: EsilToken, type: EsilNodeType) {
+	type: EsilNodeType = "none";
+	constructor (token: EsilToken = new EsilToken(), type: EsilNodeType = "none") {
 		this.token = token;
-		this.type = type;
 		this.children = [];
 	}
 	setSides(lhs: EsilNode, rhs: EsilNode): void {
@@ -219,12 +219,12 @@ export class EsilParser {
 	}
 	private isInternal(expr: EsilToken) : boolean {
 		const text = expr.toString();
-		return text && text.startsWith("$") && text.length > 1;
+		return text.startsWith("$") && text.length > 1;
 	}
 	private parseUntil(start: number) : EsilNode | null {
 		const from = start + 1;
 		let pos = from;
-		const origStack = [];
+		const origStack : any[] = [];
 		const this_nodes_length = this.nodes.length;
 		this.stack.forEach((x) => origStack.push(x));
 		while (pos < this.tokens.length) {
@@ -311,7 +311,7 @@ export class EsilParser {
 					if (this.stack.length < 1) {
 						throw new Error("goto cant pop");
 					}
-					const destNode = this.stack.pop();
+					const destNode = this.stack.pop()!;
 					this.stack.push(destNode);
 					this.stack.push(destNode);
 				}
@@ -324,12 +324,12 @@ export class EsilParser {
 					if (this.stack.length < 1) {
 						throw new Error("goto cant pop");
 					}
-					const destNode = this.stack.pop();
+					const destNode = this.stack.pop()!;
 					if (destNode !== null) {
 						const value : number = 0 | +destNode.toString();
 						if (value > 0) {
 							const destToken = this.peek(value);
-							if (destToken !== null) {
+							if (destToken !== undefined) {
 								destToken.label = "label_" + value;
 								destToken.comment = "hehe";
 								const nn = new EsilNode(expr, "goto");
