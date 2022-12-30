@@ -16,7 +16,8 @@ install user-install:
 	mkdir -p $(PLUGDIR)
 	cp pdq.qjs $(PLUGDIR)
 
-user-uninstall:
+uninstall user-uninstall:
+	rm -f $(PLUGDIR)/pdq.qjs
 
 one:
 	cat shell.qjs esil.qjs index.qjs pdq.qjs |grep -v require > one.qjs
