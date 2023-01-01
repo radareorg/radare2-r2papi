@@ -21,8 +21,8 @@ export class EsilToken {
 export type EsilNodeType = "number" | "flag" | "register" | "operation" | "none" | "block" | "goto" | "label";
 
 export class EsilNode {
-	lhs: EsilNode = new EsilNode(); // left side
-	rhs: EsilNode = new EsilNode(); // right side
+	lhs: EsilNode | undefined;
+	rhs: EsilNode | undefined;
 	children: EsilNode[];
 	token: EsilToken;
 	type: EsilNodeType = "none";
