@@ -2,9 +2,9 @@ TSC=node_modules/.bin/tsc
 
 all: node_modules
 	$(TSC) --declaration index.ts
-	$(TSC) -m node16 --target es2020 shell.ts && mv shell.js shell.qjs
-	$(TSC) -m node16 --target es2020 esil.ts && mv esil.js esil.qjs
-	$(TSC) -m node16 --target es2020 index.ts && mv index.js index.qjs
+	$(TSC) -m node16 --target es2020 shell.ts && cp -f shell.js shell.qjs
+	$(TSC) -m node16 --target es2020 esil.ts && cp -f esil.js esil.qjs
+	$(TSC) -m node16 --target es2020 index.ts && cp -f index.js index.qjs
 
 pdq:
 	$(TSC) -m node16 --target es2020 pdq.ts
