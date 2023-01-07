@@ -6,7 +6,7 @@ all: node_modules
 	$(TSC) -m node16 --target es2020 esil.ts && cp -f esil.js esil.qjs
 	$(TSC) -m node16 --target es2020 index.ts && cp -f index.js index.qjs
 
-pdq:
+pdq: node_modules
 	$(TSC) -m node16 --target es2020 pdq.ts
 	cat pdq.js | sed -e 's,require.*$$,global;,' > pdq.qjs
 
@@ -14,7 +14,7 @@ PLUGDIR=$(shell r2 -H R2_USER_PLUGINS)
 
 install user-install:
 	mkdir -p $(PLUGDIR)
-	cp pdq.qjs $(PLUGDIR)
+	cp -f pdq.qjs $(PLUGDIR)
 
 uninstall user-uninstall:
 	rm -f $(PLUGDIR)/pdq.qjs
