@@ -1,6 +1,6 @@
 {
   "name": "r2papi",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "r2api on top of r2pipe for typescript and js",
   "__dependencies": {
     "r2pipe": "^2.6.0",

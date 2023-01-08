@@ -4,6 +4,7 @@ all: node_modules
 	$(TSC) --declaration index.ts
 	$(TSC) -m node16 --target es2020 shell.ts && cp -f shell.js shell.qjs
 	$(TSC) -m node16 --target es2020 esil.ts && cp -f esil.js esil.qjs
+	$(TSC) -m node16 --target es2020 opt.ts && cp -f opt.js opt.qjs
 	$(TSC) -m node16 --target es2020 index.ts && cp -f index.js index.qjs
 
 pdq: node_modules

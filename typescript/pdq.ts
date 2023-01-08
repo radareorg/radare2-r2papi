@@ -75,16 +75,15 @@ function pdq(arg:string) {
 	}
 }
 
-function parseAmount(n:number):void {
-	ep.reset();
+function parseAmount(n:number) : void {
 	// console.log("PDQ "+n);
 	const lines = r2.cmd("pie " + n + " @e:scr.color=0").trim().split("\n");
 	for (const line of lines) {
 		if (line.length === 0) {
-			console.log("EmPTY");
+			console.log("Empty");
 			continue;
 		}
-			// console.log("parse", r2.cmd("?v:$$"));
+		// console.log("parse", r2.cmd("?v:$$"));
 		const kv = line.split(' ');
 		if (kv.length > 1) { // line != "") {
 			// console.log("// @ " + kv[0]);
@@ -95,7 +94,7 @@ function parseAmount(n:number):void {
 			console.log(ep.toString());
 		}
 	}
-	//console.log(ep.toString());
+	// console.log(ep.toString());
 }
 
 r2.unload("pdq");

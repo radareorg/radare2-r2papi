@@ -49,9 +49,10 @@ export class EsilNode {
 			if (left !== "") {
 				left += ",";
 			}
-			return `${this.rhs.toEsil()},${left}${this.token}`;
+			let right = this.rhs.toEsil();
+			return `${right},${left}${this.token}`;
 		}
-		return this.token.text;
+		return ''; // this.token.text;
 	}
 	toString() : string {
 		let str = "";
@@ -172,6 +173,42 @@ export class EsilParser {
 			pos++;
 		}
 		// console.log("done");
+	}
+	parseFunction(addr?: string) : void {
+		var ep = this;
+		function parseAmount(n:number) : void {
+			// console.log("PDQ "+n);
+			const lines = r2.cmd("pie " + n + " @e:scr.color=0").trim().split("\n");
+			for (const line of lines) {
+				if (line.length === 0) {
+					console.log("Empty");
+					continue;
+				}
+				// console.log("parse", r2.cmd("?v:$$"));
+				const kv = line.split(' ');
+				if (kv.length > 1) { // line != "") {
+					// console.log("// @ " + kv[0]);
+					//ep.reset ();
+					r2.cmd(`s ${kv[0]}`);
+					ep.parse(kv[1], kv[0]);
+					ep.optimize("flags,labels");
+					//console.log(ep.toString());
+				}
+			}
+			// console.log(ep.toString());
+		}
+		const oaddr = r2.cmd("?v $$").trim();
+		// const func = r2.cmdj("pdrj"); // XXX this command changes the current seek
+		if (addr === undefined) {
+			addr = oaddr;
+		}
+		const bbs = r2.cmdj(`afbj@${addr}`); // XXX this command changes the current seek
+		for (let bb of bbs) {
+			// console.log("bb_" + bb.addr + ":");
+			r2.cmd(`s ${bb.addr}`);
+			parseAmount (bb.ninstr);
+		}
+		r2.cmd(`s ${oaddr}`);
 	}
 	parse(expr: string, addr?: string) : void | never {
 		const tokens = expr.trim().split(',').map( (x) => x.trim() );
