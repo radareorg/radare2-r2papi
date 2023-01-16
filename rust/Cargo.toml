@@ -1,6 +1,6 @@
 [package]
 name = "r2api"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 authors = [ "pancake <pancake@nopcode.org>",
 "sushant94 <sushant.dinesh94@gmail.com>",
@@ -9,7 +9,7 @@ authors = [ "pancake <pancake@nopcode.org>",
 description = "Library containing structures and functions used to abstract over the underlying communication interface(r2pipe.rs) and r2-specific commands for better scripting and usage."
 
 # Repository
-repository = "https://github.com/radare/radare2-r2pipe-api"
+repository = "https://github.com/radare/radare2-r2papi"
 
 keywords = ["r2", "debugger", "hex" , "editor", "radare"]
 
