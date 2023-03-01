@@ -1,6 +1,6 @@
 program Hello;
 
-Function r2cmd(C: string) : string; external name 'r2cmd';
+function r2cmd(C: string) : string; external name 'r2cmd';
 
 var
   s: string;

@@ -12,6 +12,10 @@ all: $(PAS2JS)
 	$(PAS2JS) -O2 -B -Jc -Tnodejs hello.pas
 	r2 -j hello.js
 
+json:
+	$(PAS2JS) -O2 -B -Jc -Tnodejs json.pas
+	r2 -j json.js
+
 $(PAS2JS):
 	wget -c https://downloads.freepascal.org/fpc/contrib/pas2js/$(PASVER)/pas2js-$(OS)-$(PASVER).zip
 	unzip pas2js-$(OS)-$(PASVER)
