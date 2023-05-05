@@ -1,9 +1,9 @@
 use crate::structs::*;
 use r2pipe::Error;
 
-// Maybe have r2api-rs' own error type?
+// Maybe have r2papi-rs' own error type?
 
-pub trait R2Api {
+pub trait R2PApi {
     /// Initialize r2 instance with some basic configurations
     fn init(&mut self) -> Result<(), Error>;
 

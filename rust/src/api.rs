@@ -1,11 +1,11 @@
-use crate::api_trait::R2Api;
+use crate::api_trait::R2PApi;
 use crate::structs::*;
 
 use r2pipe::r2::R2;
 use r2pipe::Error;
 use serde_json::from_str;
 
-impl R2Api for R2 {
+impl R2PApi for R2 {
     fn analyze(&mut self) -> Result<(), Error> {
         self.send("aaa")?;
         self.flush();
@@ -227,3 +227,4 @@ impl R2Api for R2 {
         Ok(())
     }
 }
+

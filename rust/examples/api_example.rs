@@ -1,8 +1,8 @@
-extern crate r2api;
+extern crate r2papi;
 extern crate r2pipe;
 extern crate serde_json;
 
-use r2api::api_trait::R2Api;
+use r2papi::api_trait::R2PApi;
 use r2pipe::r2::R2;
 
 fn main() {
