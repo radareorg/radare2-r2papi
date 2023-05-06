@@ -22,9 +22,7 @@ mod tests {
 
     #[test]
     fn lib_tests() {
-        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-        let ls_path = format!("{}/test_bin/ls", manifest_dir);
-        let mut r2 = api::R2::new(Some(ls_path)).unwrap();
+        let mut r2 = api::R2::new(Some("/bin/ls")).unwrap();
         r2.init().unwrap();
         r2.analyze().unwrap();
         assert!(r2.arch().unwrap().bins[0].bits == Some(64));

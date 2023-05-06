@@ -20,7 +20,8 @@ pub trait R2PApi {
     fn reg_info(&mut self) -> Result<LRegInfo, Error>;
     /// Get binary information
     fn bin_info(&mut self) -> Result<LBinInfo, Error>;
-    fn arch(&mut self) -> Result<LArchs, Error>;
+    /// Get architecture information
+    fn arch(&mut self) -> Result<LArch, Error>;
 
     //////////////////////////////////////////////
     //// Binary/Loader Initialized Information
@@ -94,4 +95,5 @@ pub trait R2PApi {
     ) -> Result<Vec<LOpInfo>, Error>;
     fn disassemble_n_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error>;
     fn disassemble_n_insts(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error>;
+    fn seek(&mut self, addr: Option<u64>) -> Result<Vec<Seek>, Error>;
 }

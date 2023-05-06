@@ -253,15 +253,22 @@ pub struct LEntryInfo {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct LArchs {
-    pub bins: Vec<LArch>,
+pub struct LArch {
+    pub bins: Vec<Arch>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct LArch {
+pub struct Arch {
     pub arch: Option<String>,
     pub bits: Option<u8>,
     pub offset: Option<u64>,
     pub size: Option<usize>,
     pub machine: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Seek {
+    pub offset: Option<u64>,
+    pub name: Option<String>,
+    pub current: Option<bool>,
 }

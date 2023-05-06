@@ -1,6 +1,6 @@
 [package]
 name = "r2papi"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 authors = [ "pancake <pancake@nopcode.org>",
 "sushant94 <sushant.dinesh94@gmail.com>",

@@ -114,7 +114,7 @@ impl R2PApi for R2 {
         finfo
     }
 
-    fn arch(&mut self) -> Result<LArchs, Error> {
+    fn arch(&mut self) -> Result<LArch, Error> {
         self.send("iAj")?;
         from_str(&self.recv()).map_err(Error::SerdeError)
     }
@@ -236,5 +236,20 @@ impl R2PApi for R2 {
         self.send("aat")?;
         self.recv();
         Ok(())
+    }
+
+    fn seek(&mut self, addr: Option<u64>) -> Result<Vec<Seek>, Error> {
+        let seek_obj: Vec<Seek> = match addr {
+            Some(addr) => {
+                self.send(&format!("sj {}", addr)).unwrap();
+                from_str(&self.recv()).map_err(Error::SerdeError).unwrap()
+            }
+            None => {
+                self.send("sj").unwrap();
+                from_str(&self.recv()).map_err(Error::SerdeError).unwrap()
+            }
+        };
+
+        Ok(seek_obj)
     }
 }
