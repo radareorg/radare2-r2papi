@@ -20,6 +20,7 @@ pub trait R2PApi {
     fn reg_info(&mut self) -> Result<LRegInfo, Error>;
     /// Get binary information
     fn bin_info(&mut self) -> Result<LBinInfo, Error>;
+    fn arch(&mut self) -> Result<LArchs, Error>;
 
     //////////////////////////////////////////////
     //// Binary/Loader Initialized Information

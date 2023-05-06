@@ -1,7 +1,7 @@
 use crate::api_trait::R2PApi;
 use crate::structs::*;
 
-use r2pipe::r2::R2;
+pub use r2pipe::r2::R2;
 use r2pipe::Error;
 use serde_json::from_str;
 
@@ -15,6 +15,7 @@ impl R2PApi for R2 {
     fn init(&mut self) -> Result<(), Error> {
         self.send("e asm.esil = true")?;
         self.send("e scr.color = false")?;
+        self.send("e bin.cache = true")?;
         Ok(())
     }
 
@@ -111,6 +112,11 @@ impl R2PApi for R2 {
             }
         }
         finfo
+    }
+
+    fn arch(&mut self) -> Result<LArchs, Error> {
+        self.send("iAj")?;
+        from_str(&self.recv()).map_err(Error::SerdeError)
     }
 
     fn sections(&mut self) -> Result<Vec<LSectionInfo>, Error> {

@@ -4,6 +4,8 @@ all:
 ex example:
 	cargo run --release
 
-
 test:
 	cargo test --release
+
+fmt:
+	 cargo fmt --all -- --check

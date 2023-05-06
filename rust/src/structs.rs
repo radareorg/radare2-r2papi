@@ -222,7 +222,7 @@ pub struct LExportInfo {
     pub flagname: Option<String>,
     pub realname: Option<String>,
     pub odinal: Option<u64>,
-    pub bind: Option<LSymbolType>,
+    pub bind: Option<String>,
     pub size: Option<u64>,
     #[serde(rename = "type")]
     pub etype: Option<LSymbolType>,
@@ -250,4 +250,18 @@ pub struct LEntryInfo {
     pub laddr: Option<u64>,
     pub haddr: Option<u64>,
     pub etype: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LArchs {
+    pub bins: Vec<LArch>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LArch {
+    pub arch: Option<String>,
+    pub bits: Option<u8>,
+    pub offset: Option<u64>,
+    pub size: Option<usize>,
+    pub machine: Option<String>,
 }
