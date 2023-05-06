@@ -26,6 +26,8 @@ pub trait R2PApi {
     //////////////////////////////////////////////
     /// Get a list of all symbols defined in the binary
     fn symbols(&mut self) -> Result<Vec<LSymbolInfo>, Error>;
+    /// Get a list of all entry points
+    fn entry(&mut self) -> Result<Vec<LEntry>, Error>;
     /// Get a list of all imports for this binary
     fn imports(&mut self) -> Result<Vec<LImportInfo>, Error>;
     /// Get a list of all exports by this binary

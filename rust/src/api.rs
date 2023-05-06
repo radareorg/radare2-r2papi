@@ -15,7 +15,7 @@ impl R2PApi for R2 {
     fn init(&mut self) -> Result<(), Error> {
         self.send("e asm.esil = true")?;
         self.send("e scr.color = false")?;
-        self.analyze()
+        Ok(())
     }
 
     fn function<T: AsRef<str>>(&mut self, func: T) -> Result<LFunctionInfo, Error> {
@@ -128,13 +128,18 @@ impl R2PApi for R2 {
         }
     }
 
+    fn entry(&mut self) -> Result<Vec<LEntry>, Error> {
+        self.send("iej")?;
+        from_str(&self.recv()).map_err(Error::SerdeError)
+    }
+
     fn imports(&mut self) -> Result<Vec<LImportInfo>, Error> {
         self.send("iij")?;
         from_str(&self.recv()).map_err(Error::SerdeError)
     }
 
     fn exports(&mut self) -> Result<Vec<LExportInfo>, Error> {
-        self.send("iej")?;
+        self.send("iEj")?;
         from_str(&self.recv()).map_err(Error::SerdeError)
     }
 
@@ -227,4 +232,3 @@ impl R2PApi for R2 {
         Ok(())
     }
 }
-

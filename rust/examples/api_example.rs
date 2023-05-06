@@ -10,11 +10,14 @@ fn main() {
     let mut r2 = R2::new(Some(path)).expect("Failed to spawn r2");
     r2.init().unwrap();
     r2.analyze().unwrap();
+
+
     println!("{:#?}", r2.reg_info());
     println!("{:#?}", r2.bin_info());
     println!("{:#?}", r2.flag_info());
     println!("{:#?}", r2.fn_list());
     println!("{:#?}", r2.symbols());
+    println!("{:#?}", r2.entry());
     println!("{:#?}", r2.imports());
     println!("{:#?}", r2.exports());
     println!("{:#?}", r2.relocs());

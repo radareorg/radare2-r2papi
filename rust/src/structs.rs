@@ -186,6 +186,7 @@ pub struct LSymbolInfo {
 pub enum LBindType {
     Local,
     Global,
+    GLOBAL,
     Weak,
     Loos,
     Hios,
@@ -204,15 +205,30 @@ pub struct LImportInfo {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct LExportInfo {
-    pub demname: Option<String>,
-    pub flagname: Option<String>,
-    pub name: Option<String>,
+pub struct LEntry {
+    pub vaddr: Option<u64>,
     pub paddr: Option<u64>,
+    pub baddr: Option<u64>,
+    pub laddr: Option<u64>,
+    pub hvaddr: Option<u64>,
+    pub haddr: Option<u64>,
+    #[serde(rename = "type")]
+    pub etype: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LExportInfo {
+    pub name: Option<String>,
+    pub flagname: Option<String>, 
+    pub realname: Option<String>,
+    pub odinal: Option<u64>,
+    pub bind: Option<LSymbolType>,
     pub size: Option<u64>,
     #[serde(rename = "type")]
     pub etype: Option<LSymbolType>,
     pub vaddr: Option<u64>,
+    pub paddr: Option<u64>,
+    pub is_imported: Option<bool>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
