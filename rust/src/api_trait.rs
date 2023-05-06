@@ -38,8 +38,6 @@ pub trait R2PApi {
     fn sections(&mut self) -> Result<Vec<LSectionInfo>, Error>;
     /// Get relocations
     fn relocs(&mut self) -> Result<Vec<LRelocInfo>, Error>;
-    /// Get entry point for loaded binary
-    fn entrypoint(&mut self) -> Result<Vec<LEntryInfo>, Error>;
     /// Shared libraries
     fn libraries(&mut self) -> Result<Vec<String>, Error>;
 

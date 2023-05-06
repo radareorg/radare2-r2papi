@@ -11,16 +11,17 @@ fn main() {
     r2.init().unwrap();
     r2.analyze().unwrap();
 
-    println!("{:#?}", r2.arch());
-    println!("{:#?}", r2.reg_info());
-    println!("{:#?}", r2.bin_info());
-    println!("{:#?}", r2.flag_info());
-    println!("{:#?}", r2.fn_list());
-    println!("{:#?}", r2.symbols());
-    println!("{:#?}", r2.entry());
-    println!("{:#?}", r2.imports());
-    println!("{:#?}", r2.exports());
-    println!("{:#?}", r2.relocs());
-    println!("{:#?}", r2.entrypoint());
-    println!("{:#?}", r2.libraries());
+    println!("arch {:#?}", r2.arch());
+    println!("reg_info {:#?}", r2.reg_info());
+    println!("bin_info {:#?}", r2.bin_info());
+    println!("flag_info {:#?}", r2.flag_info());
+    println!("fn_list {:#?}", r2.fn_list());
+    println!("symbols {:#?}", r2.symbols());
+    println!("entry {:#?}", r2.entry());
+    println!("import {:#?}", r2.imports());
+    println!("exports {:#?}", r2.exports());
+    println!("relogs {:#?}", r2.relocs());
+    println!("libraries {:#?}", r2.libraries());
+    println!("seek1 {:#?}", r2.seek(None));
+    println!("seek2 {:#?}", r2.seek(Some(0x123)));
 }

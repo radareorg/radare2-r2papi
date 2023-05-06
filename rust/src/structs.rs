@@ -192,6 +192,8 @@ pub enum LBindType {
     Hios,
     Loproc,
     Hiproc,
+    None,
+    NONE,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -240,16 +242,6 @@ pub struct LRelocInfo {
     // TODO
     pub rtype: Option<String>,
     pub vaddr: Option<u64>,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct LEntryInfo {
-    pub vaddr: Option<u64>,
-    pub paddr: Option<u64>,
-    pub baddr: Option<u64>,
-    pub laddr: Option<u64>,
-    pub haddr: Option<u64>,
-    pub etype: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

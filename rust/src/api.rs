@@ -15,7 +15,7 @@ impl R2PApi for R2 {
     fn init(&mut self) -> Result<(), Error> {
         self.send("e asm.esil = true")?;
         self.send("e scr.color = false")?;
-        self.send("e bin.cache = true")?;
+        //self.send("e bin.cache = true")?;
         Ok(())
     }
 
@@ -156,11 +156,6 @@ impl R2PApi for R2 {
 
     fn relocs(&mut self) -> Result<Vec<LRelocInfo>, Error> {
         self.send("irj")?;
-        from_str(&self.recv()).map_err(Error::SerdeError)
-    }
-
-    fn entrypoint(&mut self) -> Result<Vec<LEntryInfo>, Error> {
-        self.send("iej")?;
         from_str(&self.recv()).map_err(Error::SerdeError)
     }
 
