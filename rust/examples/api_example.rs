@@ -11,7 +11,6 @@ fn main() {
     r2.init().unwrap();
     r2.analyze().unwrap();
 
-
     println!("{:#?}", r2.reg_info());
     println!("{:#?}", r2.bin_info());
     println!("{:#?}", r2.flag_info());

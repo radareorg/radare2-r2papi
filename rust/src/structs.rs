@@ -219,7 +219,7 @@ pub struct LEntry {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LExportInfo {
     pub name: Option<String>,
-    pub flagname: Option<String>, 
+    pub flagname: Option<String>,
     pub realname: Option<String>,
     pub odinal: Option<u64>,
     pub bind: Option<LSymbolType>,
