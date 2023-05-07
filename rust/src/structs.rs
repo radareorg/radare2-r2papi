@@ -270,3 +270,15 @@ pub struct Hashes {
     pub md5: Option<String>,
     pub sha1: Option<String>,
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Segment {
+    pub name: Option<String>,
+    pub size: Option<u64>,
+    pub vsize: Option<u64>,
+    pub perm: Option<String>,
+    pub paddr: Option<u64>,
+    pub vaddr: Option<u64>,
+
+}
+

@@ -40,8 +40,10 @@ pub trait R2PApi {
     fn sections(&mut self) -> Result<Vec<LSectionInfo>, Error>;
     /// Get relocations
     fn relocs(&mut self) -> Result<Vec<LRelocInfo>, Error>;
-    /// Shared libraries
+    /// Get shared libraries
     fn libraries(&mut self) -> Result<Vec<String>, Error>;
+    /// Get segments
+    fn segments(&mut self) -> Result<Vec<Segment>, Error>;
 
     ///////////////////////////////////////////////////////////////////
     //// Analysis functions to initialize/perform specific analysis

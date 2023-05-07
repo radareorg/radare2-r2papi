@@ -254,4 +254,10 @@ impl R2PApi for R2 {
         self.send("itj")?;
         from_str(&self.recv()).map_err(Error::SerdeError)
     }
+
+    /// Get the list of segment objects
+    fn segments(&mut self) -> Result<Vec<Segment>, Error> {
+        self.send("iSSj")?;
+        from_str(&self.recv()).map_err(Error::SerdeError)
+    }
 }
