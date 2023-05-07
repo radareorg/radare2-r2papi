@@ -233,10 +233,10 @@ impl R2PApi for R2 {
         Ok(())
     }
 
-    fn seek(&mut self, addr: Option<u64>) -> Result<Vec<Seek>, Error> {
+    fn seek(&mut self, addr: Option<u64>) -> Result<u64, Error> {
         let seek_obj: Vec<Seek> = match addr {
             Some(addr) => {
-                self.send(&format!("sj {}", addr)).unwrap();
+                self.send(&format!("sj 0{:x}", addr)).unwrap();
                 from_str(&self.recv()).map_err(Error::SerdeError).unwrap()
             }
             None => {
@@ -245,6 +245,6 @@ impl R2PApi for R2 {
             }
         };
 
-        Ok(seek_obj)
+        Ok(seek_obj[0].offset.unwrap())
     }
 }

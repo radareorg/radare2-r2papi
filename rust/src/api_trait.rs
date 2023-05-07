@@ -93,5 +93,5 @@ pub trait R2PApi {
     ) -> Result<Vec<LOpInfo>, Error>;
     fn disassemble_n_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error>;
     fn disassemble_n_insts(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error>;
-    fn seek(&mut self, addr: Option<u64>) -> Result<Vec<Seek>, Error>;
+    fn seek(&mut self, addr: Option<u64>) -> Result<u64, Error>;
 }
