@@ -24,4 +24,5 @@ fn main() {
     println!("libraries {:#?}", r2.libraries());
     println!("seek1 {:#?}", r2.seek(None));
     println!("seek2 {:#?}", r2.seek(Some(0x123)));
+    println!("hashes {:#?}", r2.hashes());
 }

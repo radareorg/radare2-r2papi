@@ -22,6 +22,8 @@ pub trait R2PApi {
     fn bin_info(&mut self) -> Result<LBinInfo, Error>;
     /// Get architecture information
     fn arch(&mut self) -> Result<LArch, Error>;
+    /// Get file hashes
+    fn hashes(&mut self) -> Result<Hashes, Error>;
 
     //////////////////////////////////////////////
     //// Binary/Loader Initialized Information

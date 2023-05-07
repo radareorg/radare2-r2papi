@@ -233,6 +233,7 @@ impl R2PApi for R2 {
         Ok(())
     }
 
+    /// seek(None) and seek(Some(addr))
     fn seek(&mut self, addr: Option<u64>) -> Result<u64, Error> {
         let seek_obj: Vec<Seek> = match addr {
             Some(addr) => {
@@ -246,5 +247,11 @@ impl R2PApi for R2 {
         };
 
         Ok(seek_obj[0].offset.unwrap())
+    }
+
+    /// Get different types of hashes
+    fn hashes(&mut self) -> Result<Hashes, Error> {
+        self.send("itj")?;
+        from_str(&self.recv()).map_err(Error::SerdeError)
     }
 }

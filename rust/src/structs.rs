@@ -264,3 +264,9 @@ pub struct Seek {
     pub name: Option<String>,
     pub current: Option<bool>,
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Hashes {
+    pub md5: Option<String>,
+    pub sha1: Option<String>,
+}
