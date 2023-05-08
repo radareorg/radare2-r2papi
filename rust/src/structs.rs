@@ -279,6 +279,4 @@ pub struct Segment {
     pub perm: Option<String>,
     pub paddr: Option<u64>,
     pub vaddr: Option<u64>,
-
 }
-
