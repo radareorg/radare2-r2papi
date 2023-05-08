@@ -260,4 +260,19 @@ impl R2PApi for R2 {
         self.send("iSSj")?;
         from_str(&self.recv()).map_err(Error::SerdeError)
     }
+
+    /// Guess the binary size
+    fn size(&mut self) -> Result<u64, Error> {
+        self.send("iZj")?;
+        from_str(&self.recv()).map_err(Error::SerdeError)
+    }
+
+    /// Read n amout of bytes from a specified offset, or None for current position.
+    fn read_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<u8>, Error> {
+        match offset {
+            Some(off) => self.send(&format!("pxj {} @{}", n, off))?,
+            None => self.send(&format!("pxj {}", n))?,
+        }
+        from_str(&self.recv()).map_err(Error::SerdeError)
+    }
 }

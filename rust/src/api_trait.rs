@@ -6,10 +6,8 @@ use r2pipe::Error;
 pub trait R2PApi {
     /// Initialize r2 instance with some basic configurations
     fn init(&mut self) -> Result<(), Error>;
-
-    // Recv raw output
+    /// Recv raw output
     fn raw(&mut self, cmd: String) -> Result<String, Error>;
-
     /// Run r2-based analysis on the file to extract information
     fn analyze(&mut self) -> Result<(), Error>;
 
@@ -24,6 +22,8 @@ pub trait R2PApi {
     fn arch(&mut self) -> Result<LArch, Error>;
     /// Get file hashes
     fn hashes(&mut self) -> Result<Hashes, Error>;
+    /// Guess binary size
+    fn size(&mut self) -> Result<u64, Error>;
 
     //////////////////////////////////////////////
     //// Binary/Loader Initialized Information
@@ -98,4 +98,10 @@ pub trait R2PApi {
     fn disassemble_n_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error>;
     fn disassemble_n_insts(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error>;
     fn seek(&mut self, addr: Option<u64>) -> Result<u64, Error>;
+
+    /////////////////////////////////////////////////
+    //// Read Data
+    /////////////////////////////////////////////////
+    /// Read n amout of bytes from a specified offset, or None for current position.
+    fn read_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<u8>, Error>;
 }

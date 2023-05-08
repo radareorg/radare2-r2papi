@@ -26,4 +26,6 @@ fn main() {
     println!("seek2 {:#?}", r2.seek(Some(0x123)));
     println!("hashes {:#?}", r2.hashes());
     println!("segments {:#?}", r2.segments());
+    println!("size {:#?}", r2.size());
+    println!("read_bytes {:#?}", r2.read_bytes(4, None));
 }
