@@ -1,0 +1,20 @@
+{
+	"name": "r2test",
+	"version": "0.0.1",
+	"description": "hello world using r2papi",
+	"dependencies": {
+		"r2papi": "*"
+	},
+	"devDependencies": {
+		"eslint": "*",
+		"r2pipe": "^2.8.4",
+		"typescript": "*"
+	},
+	"scripts": {
+		"qjs": "r2frida-compile -o index.r2.js index.ts && r2 -qi index.r2.js -",
+		"node": "tsc && r2 -qi dist/index.js -",
+		"build": "tsc -m node16 --target es2020 --declaration index.ts",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"doc": "typedoc index.ts shell.ts esil.ts"
+	}
+}

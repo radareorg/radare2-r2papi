@@ -12,8 +12,9 @@
     "url": "https://github.com/radareorg/radare2-r2pipe/issues"
   },
   "devDependencies": {
-    "eslint": "*",
-    "typedoc": "^0.23.23"
+    "r2pipe": "^2.8.0",
+    "typedoc": "^0.23.23",
+    "typescript": "*"
   },
   "scripts": {
     "build": "tsc -m node16 --target es2020 --declaration index.ts esil.ts shell.ts",
@@ -47,10 +48,5 @@
     "index.ts",
     "index.d.ts"
   ],
-  "license": "MIT",
-  "devDependencies": {
-    "r2pipe": "^2.8.0",
-    "typedoc": "^0.23.23",
-    "typescript": "*"
-  }
+  "license": "MIT"
 }
