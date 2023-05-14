@@ -1,5 +1,6 @@
 {
 	"name": "r2test",
+	"type": "module",
 	"version": "0.0.1",
 	"description": "hello world using r2papi",
 	"dependencies": {

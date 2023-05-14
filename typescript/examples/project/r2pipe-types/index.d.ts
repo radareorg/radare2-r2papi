@@ -4,5 +4,5 @@ declare module "r2pipe" {
 		cmdj(string): any;
 		quit();
 	}
-	export function open(string): R2Pipe;
+	export function open(string?): R2Pipe;
 }
