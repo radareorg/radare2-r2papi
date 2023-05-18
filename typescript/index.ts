@@ -168,7 +168,7 @@ export class Assembler {
 	}
 	asm(s:string) {
 		let hex = this.r2.cmd('""pa ' + s).trim();
-		if (hex.length > 0) {
+		if (hex.length < 16) {
 			// ok
 		} else {
 			hex = "____";

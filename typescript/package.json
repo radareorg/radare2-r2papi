@@ -1,20 +1,16 @@
 {
   "name": "r2papi",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "r2api on top of r2pipe for typescript and js",
-  "__dependencies": {
-    "r2pipe": "^2.6.0",
-    "r2pipe-promise": "^1.2.1"
-  },
   "author": "",
   "homepage": "http://www.radare.org",
   "bugs": {
     "url": "https://github.com/radareorg/radare2-r2pipe/issues"
   },
   "devDependencies": {
-    "r2pipe": "^2.8.0",
-    "typedoc": "^0.23.23",
-    "typescript": "*"
+    "r2pipe": "^2.8.4",
+    "typedoc": "^0.24.7",
+    "typescript": "5.0.4"
   },
   "scripts": {
     "build": "tsc -m node16 --target es2020 --declaration index.ts esil.ts shell.ts",
