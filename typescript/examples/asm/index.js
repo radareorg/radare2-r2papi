@@ -1,5 +1,3 @@
-"use strict";
-
 //{{ifr2}}
 import { main } from "./main.js";
 import * as Instruction from "./rvcodecjs/core/Instruction.js";

@@ -136,6 +136,48 @@ export interface R2Pipe {
 	unload(name: string): boolean;
 }
 
+export class Assembler {
+	program : string = "";
+	labels : any = {};
+	endian : boolean = false;
+	pc : number = 0;
+	r2 : any = null;
+	constructor(r2: R2Pipe) {
+		this.r2 = r2;
+		this.program = '';
+		this.labels = {};
+	}
+	setProgramCounter(pc: number) {
+		this.pc = pc;
+	}
+	setEndian(big:boolean) {
+		this.endian = big;
+	}
+	toString() {
+		return this.program;
+	}
+	append(x:string) {
+		this.pc += x.length / 2;
+		this.program += x;
+	}
+	// api
+	label(s:string) : number {
+		const pos = this.pc; // this.#program.length / 4;
+		this.labels[s] = this.pc;
+		return pos;
+	}
+	asm(s:string) {
+		let hex = this.r2.cmd('""pa ' + s).trim();
+		if (hex.length > 0) {
+			// ok
+		} else {
+			hex = "____";
+			console.error("Invalid instruction: " + s);
+		}
+		this.append(hex);
+	}
+}
+
 export class R2Papi {
 	public r2: R2Pipe;
 
