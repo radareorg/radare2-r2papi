@@ -142,8 +142,8 @@ export class Assembler {
 	endian : boolean = false;
 	pc : number = 0;
 	r2 : any = null;
-	constructor(r2: R2Pipe) {
-		this.r2 = r2;
+	constructor(myr2: R2Pipe | undefined) {
+		this.r2 = (typeof myr2 === 'undefined')? r2: myr2;
 		this.program = '';
 		this.labels = {};
 	}
