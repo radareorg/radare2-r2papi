@@ -275,4 +275,15 @@ impl R2PApi for R2 {
         }
         from_str(&self.recv()).map_err(Error::SerdeError)
     }
+
+    /// Write bytes to a specified offset, or None for current position
+    fn write_bytes(&mut self, offset: Option<u64>, bytes: &[u8]) -> Result<(), Error> {
+        let hex: String = bytes.iter().map(|b| format!("{:02X}", b)).collect();
+
+        match offset {
+            Some(off) => self.send(&format!("wx {} @{}", hex, off))?,
+            None => self.send(&format!("wx {}", hex))?,
+        }
+        Ok(())
+    }
 }

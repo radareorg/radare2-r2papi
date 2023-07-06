@@ -28,4 +28,5 @@ fn main() {
     println!("segments {:#?}", r2.segments());
     println!("size {:#?}", r2.size());
     println!("read_bytes {:#?}", r2.read_bytes(4, None));
+    //println!("read_bits {:#?}", r2.read_bits(4, None));
 }

@@ -100,8 +100,12 @@ pub trait R2PApi {
     fn seek(&mut self, addr: Option<u64>) -> Result<u64, Error>;
 
     /////////////////////////////////////////////////
-    //// Read Data
+    //// Read and Write Data
     /////////////////////////////////////////////////
     /// Read n amout of bytes from a specified offset, or None for current position.
     fn read_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<u8>, Error>;
+    /// Read n amount of bits from a specified offset, or None for current position.
+    //fn read_bits(&mut self, n: u64, offset: Option<u64>) -> Result<String, Error>;
+    /// Write bytes to a specified offset, or None for current position
+    fn write_bytes(&mut self, offset: Option<u64>, bytes: &[u8]) -> Result<(), Error>;
 }
