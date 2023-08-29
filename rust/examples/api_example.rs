@@ -29,4 +29,10 @@ fn main() {
     println!("size {:#?}", r2.size());
     println!("read_bytes {:#?}", r2.read_bytes(4, None));
     //println!("read_bits {:#?}", r2.read_bits(4, None));
+
+    //r2.write_bytes(None, &[0x41,0x41,0x41,0x41]).unwrap();
+    //r2.write_bytes(Some(0x11223344), &[0x41,0x41,0x41,0x41]).unwrap();
+
+    r2.set_arch("arm").unwrap();
+    r2.set_bits(64).unwrap();
 }

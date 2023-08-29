@@ -119,6 +119,16 @@ impl R2PApi for R2 {
         from_str(&self.recv()).map_err(Error::SerdeError)
     }
 
+    fn set_arch(&mut self, arch: &str) -> Result<(), Error> {
+        self.send(&format!("e anal.arch={}", arch))?;
+        Ok(())
+    }
+
+    fn set_bits(&mut self, bits: u8) -> Result<(), Error> {
+        self.send(&format!("e arch.bits={}", bits))?;
+        Ok(())
+    }
+
     fn sections(&mut self) -> Result<Vec<LSectionInfo>, Error> {
         self.send("iSj")?;
         from_str(&self.recv()).map_err(Error::SerdeError)

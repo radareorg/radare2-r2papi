@@ -24,6 +24,10 @@ pub trait R2PApi {
     fn hashes(&mut self) -> Result<Hashes, Error>;
     /// Guess binary size
     fn size(&mut self) -> Result<u64, Error>;
+    /// Change the architecture bits
+    fn set_bits(&mut self, bits: u8) -> Result<(), Error>;
+    /// Change the architecture type
+    fn set_arch(&mut self, arch: &str) -> Result<(), Error>;
 
     //////////////////////////////////////////////
     //// Binary/Loader Initialized Information
