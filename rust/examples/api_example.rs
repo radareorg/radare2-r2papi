@@ -33,6 +33,11 @@ fn main() {
     //r2.write_bytes(None, &[0x41,0x41,0x41,0x41]).unwrap();
     //r2.write_bytes(Some(0x11223344), &[0x41,0x41,0x41,0x41]).unwrap();
 
+    r2.esil_init().expect("cannot initialize esil");
+    let esil_regs = r2.esil_regs().unwrap();
+    println!("esil regs: {:#?}", esil_regs);
+    //r2.esil_set_reg("pc", pc).unwrap();
+
     r2.set_arch("arm").unwrap();
     r2.set_bits(64).unwrap();
 }

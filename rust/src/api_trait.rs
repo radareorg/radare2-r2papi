@@ -112,4 +112,14 @@ pub trait R2PApi {
     //fn read_bits(&mut self, n: u64, offset: Option<u64>) -> Result<String, Error>;
     /// Write bytes to a specified offset, or None for current position
     fn write_bytes(&mut self, offset: Option<u64>, bytes: &[u8]) -> Result<(), Error>;
+
+    /////////////////////////////////////////////////
+    //// Esil emulation
+    /////////////////////////////////////////////////
+    /// initialize esil memory
+    fn esil_init(&mut self) -> Result<(), Error>;
+    /// get all the registers information
+    fn esil_regs(&mut self) -> Result<LRegInfo, Error>;
+    /// set specific register value
+    fn esil_set_reg(&mut self, reg: &str, value: u64) -> Result<(), Error>;
 }

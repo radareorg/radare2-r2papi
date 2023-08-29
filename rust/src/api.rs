@@ -296,4 +296,25 @@ impl R2PApi for R2 {
         }
         Ok(())
     }
+
+    /// Init esil emulator
+    fn esil_init(&mut self) -> Result<(), Error> {
+        self.send("aei")?;
+        self.send("aeim")?;
+        self.send("aeip")?;
+        Ok(())
+    }
+
+    /// Get esil registers
+    fn esil_regs(&mut self) -> Result<LRegInfo, Error> {
+        self.send("aerpj")?;
+        let raw_json = self.recv();
+        from_str(&raw_json).map_err(Error::SerdeError)
+    }
+
+    /// Set esil register value
+    fn esil_set_reg(&mut self, reg: &str, value: u64) -> Result<(), Error> {
+        self.send(&format!("aer {}={}", reg, value))?;
+        Ok(())
+    }
 }
