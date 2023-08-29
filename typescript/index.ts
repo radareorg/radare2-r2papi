@@ -279,6 +279,24 @@ export class R2Papi {
 		this.cmd(`b ${a}`);
 		return this;
 	}
+	countFlags() : number {
+		return Number(this.cmd("f~?"));
+	}
+	countFunctions() : number {
+		return Number(this.cmd("aflc"));
+	}
+	analyzeProgram(depth?: number) {
+		if (depth === undefined) {
+			depth = 0;
+		}
+		switch (depth) {
+		case 0: this.cmd("aa"); break;
+		case 1: this.cmd("aaa"); break;
+		case 2: this.cmd("aaaa"); break;
+		case 3: this.cmd("aaaaa"); break;
+		}
+		return this;
+	}
 	enumerateThreads() : ThreadContext[] {
 		// TODO: use apt/dpt to list threads at iterate over them to get the registers
 		const regs0 = this.cmdj("drj");
@@ -318,6 +336,23 @@ export class R2Papi {
 	}
 	stepUntil(dst: NativePointer | string | number): void {
 		this.cmd(`dsu ${dst}`);
+	}
+	enumerateXrefsTo(s: string) : string[] {
+		return this.call("axtq " + s).trim().split(/\n/);
+	}
+	// TODO: rename to searchXrefsTo ?
+	findXrefsTo(s: string, use_esil: boolean) {
+		if (use_esil) {
+			this.call("/r " + s);
+		} else {
+			this.call("/re " + s);
+		}
+	}
+	findFunctionsFromCalls() {
+		this.call("aac")
+	}
+	findFunctionsWithPreludes() {
+		this.call("aap")
 	}
 	searchDisasm(s: string): SearchResult[] {
 		const res: SearchResult[] = this.callj("/ad " + s);
@@ -576,19 +611,6 @@ export class NativePointer {
 		this.api.cmd("afr@" + this.addr);
 		return this;
 	}
-	// define a type
-	analyzeProgram(depth?: number): NativePointer {
-		if (depth === undefined) {
-			depth = 0;
-		}
-		switch (depth) {
-		case 0: this.api.cmd("aa"); break;
-		case 1: this.api.cmd("aaa"); break;
-		case 2: this.api.cmd("aaaa"); break;
-		case 3: this.api.cmd("aaaaa"); break;
-		}
-		return this;
-	}
 	name(): string {
 		return this.api.cmd("fd " + this.addr).trim();
 	}
@@ -616,6 +638,10 @@ export class Base64 {
 
 interface base64Interface {
     (message: string, decode?: boolean):string;
+}
+
+function ptr(x: string|number) {
+	return new NativePointer(x);
 }
 
 export declare var b64: base64Interface;
