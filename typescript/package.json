@@ -1,6 +1,6 @@
 {
   "name": "r2papi",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "r2api on top of r2pipe for typescript and js",
   "author": "",
   "homepage": "http://www.radare.org",

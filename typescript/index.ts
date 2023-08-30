@@ -583,17 +583,17 @@ export class NativePointer {
 		return new NativePointer(this.api.call("pvp@" + this.addr));
 	}
 	readU8(): number {
-		return parseInt(this.api.cmd(`pv1d@"${this.addr}`));
+		return parseInt(this.api.cmd(`pv1d@${this.addr}`));
 	}
 	readU16(): number {
-		return parseInt(this.api.cmd(`pv2d@"${this.addr}`));
+		return parseInt(this.api.cmd(`pv2d@${this.addr}`));
 	}
 	readU32(): number {
-		return parseInt(this.api.cmd(`pv4d@"${this.addr}`)); // requires 5.8.9
+		return parseInt(this.api.cmd(`pv4d@${this.addr}`)); // requires 5.8.9
 	}
 	readU64(): number {
 		// XXX: use bignum or string here
-		return parseInt(this.api.cmd(`pv8d@"${this.addr}`));
+		return parseInt(this.api.cmd(`pv8d@${this.addr}`));
 	}
 	writeInt(n:number): number {
 		return +this.api.cmd(`wv4 ${n}@${this.addr}`);
@@ -615,7 +615,7 @@ export class NativePointer {
 		return true;
 	}
 	readInt(): number {
-		return +this.api.cmd(`pv4@"${this.addr}`);
+		return this.readU32();
 	}
 	readCString(): string {
 		return JSON.parse(this.api.cmd(`psj@${this.addr}`)).string;
