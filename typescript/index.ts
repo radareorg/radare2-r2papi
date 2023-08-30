@@ -26,7 +26,7 @@ export interface Flag {
 	offset: number;
 };
 
-export type PluginFamily = "core" | "io" | "arch" | "lang" | "bin" | "debug" | "anal" | "crypto";
+export type PluginFamily = "core" | "io" | "arch" | "esil" | "lang" | "bin" | "debug" | "anal" | "crypto";
 
 // XXX not working? export type ThreadState = "waiting" | "running" | "dead" ;
 export interface ThreadContext {
@@ -258,6 +258,9 @@ export class R2Papi {
 		return this;
 	}
 	getConfig(key: string) : string {
+		if (key === '') {
+			throw new Error('Invalid key');
+		}
 		return this.r2.call("e " + key).trim();
 	}
 	setConfig(key: string, val: string) : R2Papi {
@@ -574,21 +577,29 @@ export class NativePointer {
 		return this;
 	}
 	writeAssembly(instruction: string) : NativePointer {
-		this.api.cmd(`\"wa ${instruction} @ ${this.addr}`);
+		this.api.cmd(`wa ${instruction} @ ${this.addr}`);
 		return this;
 	}
 	writeCString(s: string): NativePointer {
 		this.api.call("w " + s);
 		return this;
 	}
+	writeWideString(s: string): NativePointer {
+		this.api.call("ww " + s);
+		return this;
+	}
+	asNumber(): number {
+		const v = this.api.call("?vi " + this.addr);
+		return parseInt(v);
+	}
 	isNull(): boolean {
-		return +this.addr === 0;
+		return this.asNumber() == 0
 	}
 	compare(a : string|number|NativePointer) {
 		if (typeof a === "string" || typeof a === "number") {
 			a = new NativePointer(a);
 		}
-		return a.addr === this.addr;
+		return a.addr === this.addr || (new NativePointer(a.addr)).asNumber() === this.asNumber();
 	}
 	pointsToNull(): boolean {
 		return this.readPointer().compare(0);
@@ -608,15 +619,33 @@ export class NativePointer {
 	readU16(): number {
 		return parseInt(this.api.cmd(`pv2d@${this.addr}`));
 	}
+	readU16le(): number {
+		return parseInt(this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
+	}
+	readU16be(): number {
+		return parseInt(this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
+	}
 	readU32(): number {
 		return parseInt(this.api.cmd(`pv4d@${this.addr}`)); // requires 5.8.9
+	}
+	readU32le(): number {
+		return parseInt(this.api.cmd(`pv4d@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
+	}
+	readU32be(): number {
+		return parseInt(this.api.cmd(`pv4d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
 	}
 	readU64(): number {
 		// XXX: use bignum or string here
 		return parseInt(this.api.cmd(`pv8d@${this.addr}`));
 	}
-	writeInt(n:number): number {
-		return +this.api.cmd(`wv4 ${n}@${this.addr}`);
+	readU64le(): number {
+		return parseInt(this.api.cmd(`pv8d@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
+	}
+	readU64be(): number {
+		return parseInt(this.api.cmd(`pv8d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
+	}
+	writeInt(n:number): boolean {
+		return this.writeU32(n);
 	}
 	writeU8(n: number) : boolean {
 		this.api.cmd(`wv1 ${n}@${this.addr}`);
@@ -626,12 +655,36 @@ export class NativePointer {
 		this.api.cmd(`wv2 ${n}@${this.addr}`);
 		return true;
 	}
+	writeU16be(n: number) : boolean {
+		this.api.cmd(`wv2 ${n}@${this.addr}@e:cfg.bigendian=true`);
+		return true;
+	}
+	writeU16le(n: number) : boolean {
+		this.api.cmd(`wv2 ${n}@${this.addr}@e:cfg.bigendian=false`);
+		return true;
+	}
 	writeU32(n: number) : boolean {
 		this.api.cmd(`wv4 ${n}@${this.addr}`);
 		return true;
 	}
+	writeU32be(n: number) : boolean {
+		this.api.cmd(`wv4 ${n}@${this.addr}@e:cfg.bigendian=true`);
+		return true;
+	}
+	writeU32le(n: number) : boolean {
+		this.api.cmd(`wv4 ${n}@${this.addr}@e:cfg.bigendian=false`);
+		return true;
+	}
 	writeU64(n: number) : boolean {
 		this.api.cmd(`wv8 ${n}@${this.addr}`);
+		return true;
+	}
+	writeU64be(n: number) : boolean {
+		this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=true`);
+		return true;
+	}
+	writeU64le(n: number) : boolean {
+		this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=false`);
 		return true;
 	}
 	readInt(): number {
@@ -639,6 +692,12 @@ export class NativePointer {
 	}
 	readCString(): string {
 		return JSON.parse(this.api.cmd(`pszj@${this.addr}`)).string;
+	}
+	readWideString(): string {
+		return JSON.parse(this.api.cmd(`pswj@${this.addr}`)).string;
+	}
+	readPascalString(): string {
+		return JSON.parse(this.api.cmd(`pspj@${this.addr}`)).string;
 	}
 	instruction(): Instruction {
 		const op: any = this.api.cmdj(`aoj@${this.addr}`)[0];
@@ -658,6 +717,9 @@ export class NativePointer {
 	}
 	name(): string {
 		return this.api.cmd("fd " + this.addr).trim();
+	}
+	getFunction() : Function {
+		return this.api.cmdj("afij@"+this.addr);
 	}
 	basicBlock(): BasicBlock {
 		const bb: BasicBlock = this.api.cmdj("abj@" + this.addr);
@@ -681,7 +743,7 @@ export class Base64 {
 }
 
 interface base64Interface {
-    (message: string, decode?: boolean):string;
+	(message: string, decode?: boolean): string;
 }
 
 /*
