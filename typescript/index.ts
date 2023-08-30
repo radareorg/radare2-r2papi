@@ -618,7 +618,7 @@ export class NativePointer {
 		return this.readU32();
 	}
 	readCString(): string {
-		return JSON.parse(this.api.cmd(`psj@${this.addr}`)).string;
+		return JSON.parse(this.api.cmd(`pszj@${this.addr}`)).string;
 	}
 	instruction(): Instruction {
 		const op: any = this.api.cmdj(`aoj@${this.addr}`)[0];
