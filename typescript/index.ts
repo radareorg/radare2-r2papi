@@ -594,7 +594,7 @@ export class NativePointer {
 		return +this.api.cmd(`pv2d@"${this.addr}`);
 	}
 	readU32(): number {
-		return +this.api.cmd(`pv4d@"${this.addr}`); // requiers 5.8.9
+		return +this.api.cmd(`pv4d@"${this.addr}`); // requires 5.8.9
 	}
 	readU64(): number {
 		// XXX: use bignum or string here
