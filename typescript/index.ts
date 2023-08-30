@@ -2,7 +2,7 @@
 
 import { R2PapiShell } from "./shell.js";
 
-export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call";
+export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call" | "add" | "sub";
 export type InstructionFamily = "cpu" | "fpu" | "priv";
 export type GraphFormat = "dot" | "json" | "mermaid" | "ascii";
 export type Permission = "---" | "r--" | "rw-" | "rwx" | "r-x" | "-wx" | "--x";
@@ -172,7 +172,7 @@ export class Assembler {
 			// ok
 		} else {
 			hex = "____";
-			console.error("Invalid instruction: " + s);
+			// console.error("Invalid instruction: " + s);
 		}
 		this.append(hex);
 	}
@@ -578,9 +578,7 @@ export class NativePointer {
 		return this.addr.trim();
 	}
 	writePointer(p: NativePointer) : void {
-		const cmd = (+this.api.getConfig("asm.bits") === 64)? "wv8": "wv4";
-		this.api.cmd(`${cmd} ${p}@${this}`);
-		// 5.8.2 this.call("wvp " + p.addr);
+		this.api.cmd(`wvp ${p}@${this}`); // requires 5.8.2
 	}
 	readPointer() : NativePointer {
 		if (+this.api.getConfig("asm.bits") === 64) {
@@ -590,17 +588,17 @@ export class NativePointer {
 		}
 	}
 	readU8(): number {
-		return +this.api.cmd(`pv1@"${this.addr}`);
+		return +this.api.cmd(`pv1d@"${this.addr}`);
 	}
 	readU16(): number {
-		return +this.api.cmd(`pv2@"${this.addr}`);
+		return +this.api.cmd(`pv2d@"${this.addr}`);
 	}
 	readU32(): number {
-		return +this.api.cmd(`pv4@"${this.addr}`);
+		return +this.api.cmd(`pv4d@"${this.addr}`); // requiers 5.8.9
 	}
 	readU64(): number {
-		// XXX: use bignum or 
-		return +this.api.cmd(`pv8@"${this.addr}`);
+		// XXX: use bignum or string here
+		return +this.api.cmd(`pv8d@"${this.addr}`);
 	}
 	writeInt(n:number): number {
 		return +this.api.cmd(`wv4 ${n}@${this.addr}`);
@@ -672,6 +670,7 @@ interface base64Interface {
 }
 
 /*
+// already defined by r2
 function ptr(x: string|number) {
 	return new NativePointer(x);
 }
