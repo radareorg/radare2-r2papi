@@ -78,7 +78,6 @@ export interface BinFile {
 	linenum: boolean;
 	havecode: boolean;
 	intrp: string;
-
 };
 
 export interface Reference {
@@ -199,6 +198,22 @@ export class R2Papi {
 		}
 		return `${str}}\n`;
 	}
+	getBits() : string {
+		return this.cmd('-b');
+	}
+	getArch() : string {
+		return this.cmd('-a');
+	}
+	getCpu() : string {
+		return this.cmd('-e asm.cpu');
+	}
+	// TODO: setEndian, setCpu, ...
+	setArch(arch: string, bits: number | undefined) {
+		this.cmd("-a "+arch);
+		if (bits !== undefined) {
+			this.cmd("-b "+bits);
+		}
+	}
 	setLogLevel(level: number) : R2Papi {
 		this.cmd('e log.level=' + level);
 		return this;
@@ -238,21 +253,20 @@ export class R2Papi {
 	printAt(msg: string, x: number, y: number) : void {
 		// see pg, but pg is obrken :D
 	}
-
 	clearScreen() : R2Papi {
 		this.r2.cmd("!clear");
 		return this;
 	}
-
 	getConfig(key: string) : string {
 		return this.r2.call("e " + key).trim();
 	}
-
 	setConfig(key: string, val: string) : R2Papi {
 		this.r2.call("e " + key + "=" + val);
 		return this;
 	}
-
+	getRegisterStateForEsil(): string {
+		return this.cmdj("dre").trim();
+	}
 	getRegisters(): any {
 		// this.r2.log("winrar" + JSON.stringify(JSON.parse(this.r2.cmd("drj")),null, 2) );
 		return this.cmdj("drj");
@@ -298,6 +312,12 @@ export class R2Papi {
 	}
 	countFunctions() : number {
 		return Number(this.cmd("aflc"));
+	}
+	analyzeFunctionsWithEsil(depth?: number) {
+		this.cmd("aaef");
+	}
+	analyzeProgramWithEsil(depth?: number) {
+		this.cmd("aae");
 	}
 	analyzeProgram(depth?: number) {
 		if (depth === undefined) {
