@@ -302,6 +302,7 @@ impl R2PApi for R2 {
         self.send("aei")?;
         self.send("aeim")?;
         self.send("aeip")?;
+        self.send("e dbg.trace=true")?;
         Ok(())
     }
 
@@ -312,9 +313,66 @@ impl R2PApi for R2 {
         from_str(&raw_json).map_err(Error::SerdeError)
     }
 
-    /// Set esil register value
+    /// Set specific esil register value
     fn esil_set_reg(&mut self, reg: &str, value: u64) -> Result<(), Error> {
         self.send(&format!("aer {}={}", reg, value))?;
+        Ok(())
+    }
+
+    /// Get specific register value
+    fn esil_get_reg(&mut self, regname: &str) -> Result<u64, Error> {
+        self.send(&format!("aer {}", regname))?;
+        let a = self.recv();
+        let out = a.trim_end_matches('\n');
+        let n = u64::from_str_radix(&out[2..], 16).unwrap();
+        Ok(n)
+    }
+
+    /// Emulate single step
+    fn esil_step(&mut self) -> Result<(), Error> {
+        self.send("aes")?;
+        Ok(())
+    }
+
+    /// Emulate step over
+    fn esil_step_over(&mut self) -> Result<(), Error> {
+        self.send("aeso")?;
+        Ok(())
+    }
+
+    /// Emulate back step.
+    fn esil_step_back(&mut self) -> Result<(), Error> {
+        self.send("aesb")?;
+        Ok(())
+    }
+
+    /// Emulate until address.
+    fn esil_step_until_addr(&mut self, addr: u64) -> Result<(), Error> {
+        self.send(&format!("aseou 0x{:x}", addr))?;
+        Ok(())
+    }
+
+    /// Continue until exception.
+    fn esil_cont_until_exception(&mut self) -> Result<(), Error> {
+        self.send("aec")?;
+        Ok(())
+    }
+
+    /// Continue until interrupt.
+    fn esil_cont_until_int(&mut self) -> Result<(), Error> {
+        self.send("aecs")?;
+        Ok(())
+    }
+
+    /// Continue until call.
+    fn esil_cont_until_call(&mut self) -> Result<(), Error> {
+        self.send("aecc")?;
+        Ok(())
+    }
+
+    /// Continue until address.
+    fn esil_cont_until_addr(&mut self, addr: u64) -> Result<(), Error> {
+        self.send(&format!("aecu 0x{:x}", addr))?;
         Ok(())
     }
 }

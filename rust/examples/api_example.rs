@@ -36,8 +36,18 @@ fn main() {
     r2.esil_init().expect("cannot initialize esil");
     let esil_regs = r2.esil_regs().unwrap();
     println!("esil regs: {:#?}", esil_regs);
-    //r2.esil_set_reg("pc", pc).unwrap();
-
+    let mut pc = r2.esil_get_reg("pc").unwrap();
+    println!("esil pc: 0x{:x}", pc);
+    r2.esil_set_reg("pc", pc).unwrap();
+    r2.esil_step().unwrap();
+    r2.esil_step_over().unwrap();
+    r2.esil_step_back().unwrap();
+    r2.esil_step_until_addr(pc + 20).unwrap();
+    r2.esil_cont_until_int().unwrap();
+    r2.esil_cont_until_call().unwrap();
+    r2.esil_cont_until_exception().unwrap();
+    pc = r2.esil_get_reg("pc").unwrap();
+    r2.esil_cont_until_addr(pc + 20).unwrap();
     r2.set_arch("arm").unwrap();
     r2.set_bits(64).unwrap();
 }

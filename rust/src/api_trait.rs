@@ -116,10 +116,28 @@ pub trait R2PApi {
     /////////////////////////////////////////////////
     //// Esil emulation
     /////////////////////////////////////////////////
-    /// initialize esil memory
+    /// Initialize esil memory.
     fn esil_init(&mut self) -> Result<(), Error>;
-    /// get all the registers information
+    /// Get all the registers information.
     fn esil_regs(&mut self) -> Result<LRegInfo, Error>;
-    /// set specific register value
+    /// Set specific register value.
     fn esil_set_reg(&mut self, reg: &str, value: u64) -> Result<(), Error>;
+    /// Get specific register value.
+    fn esil_get_reg(&mut self, reg: &str) -> Result<u64, Error>;
+    /// Emulate single step.
+    fn esil_step(&mut self) -> Result<(), Error>;
+    /// Emulate step over.
+    fn esil_step_over(&mut self) -> Result<(), Error>;
+    /// Emulate back step.
+    fn esil_step_back(&mut self) -> Result<(), Error>;
+    /// Emulate until address.
+    fn esil_step_until_addr(&mut self, addr: u64) -> Result<(), Error>;
+    /// Continue until exception.
+    fn esil_cont_until_exception(&mut self) -> Result<(), Error>;
+    /// Continue until interrupt.
+    fn esil_cont_until_int(&mut self) -> Result<(), Error>;
+    /// Continue until call.
+    fn esil_cont_until_call(&mut self) -> Result<(), Error>;
+    /// Continue until address.
+    fn esil_cont_until_addr(&mut self, addr: u64) -> Result<(), Error>;
 }

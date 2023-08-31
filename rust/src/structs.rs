@@ -272,6 +272,17 @@ pub struct Hashes {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LEsilRegs {
+    pub regs: Vec<Reg>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Reg {
+    pub name: Option<String>,
+    pub value: Option<u64>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Segment {
     pub name: Option<String>,
     pub size: Option<u64>,
