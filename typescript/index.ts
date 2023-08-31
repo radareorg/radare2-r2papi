@@ -214,6 +214,9 @@ export class R2Papi {
 			this.cmd("-b "+bits);
 		}
 	}
+	setFlagSpace(name:string) {
+		this.cmd('fs ' + name);
+	}
 	setLogLevel(level: number) : R2Papi {
 		this.cmd('e log.level=' + level);
 		return this;
@@ -463,6 +466,9 @@ export class R2Papi {
 	enumerateMaps(): any {
 		return this.callj("omj");
 	}
+	enumerateClasses() : any {
+		return this.callj("icj");
+	}
 	enumerateSymbols() : any {
 		return this.callj("isj");
 	}
@@ -533,6 +539,12 @@ export class NativePointer {
 		}
 		// this.api.r2.log("NP " + s);
 		this.addr = ("" + s).trim();
+	}
+	setFlag(name: string) {
+		this.api.call(`f ${name}=${this.addr}`);
+	}
+	unsetFlag() {
+		this.api.call(`f-${this.addr}`);
 	}
 	hexdump(length?: number) : string{
 		let len = (length === undefined)? "": ""+length;
@@ -730,6 +742,14 @@ export class NativePointer {
 	name(): string {
 		return this.api.cmd("fd " + this.addr).trim();
 	}
+	methodName(): string {
+		// TODO: @ should be optional here, as addr should be passable as argument imho
+		return this.api.cmd("ic.@" + this.addr).trim();
+	}
+	symbolName(): any {
+		// TODO: @ should be optional here, as addr should be passable as argument imho
+		return this.api.cmd("isj.@" + this.addr).trim();
+	}
 	getFunction() : Function {
 		return this.api.cmdj("afij@"+this.addr);
 	}
@@ -768,4 +788,3 @@ function ptr(x: string|number) {
 export declare var b64: base64Interface;
 export declare var r2: R2Pipe;
 export declare var R: R2Papi;
-
