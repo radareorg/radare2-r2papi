@@ -625,24 +625,36 @@ export class NativePointer {
 	readU16be(): number {
 		return parseInt(this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
 	}
-	readU32(): number {
+	readS16(): number {
+		return parseInt(this.api.cmd(`pv2d@${this.addr}`)); // requires 5.8.9
+	}
+	readS16le(): number {
+		return parseInt(this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
+	}
+	readS16be(): number {
+		return parseInt(this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
+	}
+	readS32(): number {
 		return parseInt(this.api.cmd(`pv4d@${this.addr}`)); // requires 5.8.9
 	}
+	readU32(): number {
+		return parseInt(this.api.cmd(`pv4u@${this.addr}`)); // requires 5.8.9
+	}
 	readU32le(): number {
-		return parseInt(this.api.cmd(`pv4d@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
+		return parseInt(this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
 	}
 	readU32be(): number {
-		return parseInt(this.api.cmd(`pv4d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
+		return parseInt(this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
 	}
 	readU64(): number {
 		// XXX: use bignum or string here
-		return parseInt(this.api.cmd(`pv8d@${this.addr}`));
+		return parseInt(this.api.cmd(`pv8u@${this.addr}`));
 	}
 	readU64le(): number {
-		return parseInt(this.api.cmd(`pv8d@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
+		return parseInt(this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
 	}
 	readU64be(): number {
-		return parseInt(this.api.cmd(`pv8d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
+		return parseInt(this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
 	}
 	writeInt(n:number): boolean {
 		return this.writeU32(n);
