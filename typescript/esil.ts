@@ -3,6 +3,19 @@ import { R2Pipe } from "./index";
 declare var console: any;
 declare var r2: R2Pipe;
 
+// ("this is just a comment"), -- comments are also part of the runtime
+
+/*
+=("//", {
+	=(obj, {}())
+	=([obj, comment], 32)
+	if(eq([obj,comment], 32), 
+		ret()
+	)
+	ret(obj)
+})
+*/
+
 export class EsilToken {
 	label: string = "";
 	comment: string = "";
