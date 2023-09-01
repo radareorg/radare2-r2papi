@@ -112,6 +112,34 @@ pub trait R2PApi {
     //fn read_bits(&mut self, n: u64, offset: Option<u64>) -> Result<String, Error>;
     /// Write bytes to a specified offset, or None for current position
     fn write_bytes(&mut self, offset: Option<u64>, bytes: &[u8]) -> Result<(), Error>;
+    /// Read u8 from a specified offset, or None for current position
+    fn read_u8(&mut self, offset: Option<u64>) -> Result<u8, Error>;
+    /// Read u16 little endian from a specified offset, or None for current position
+    fn read_u16_le(&mut self, offset: Option<u64>) -> Result<u16, Error>;
+    /// Read u18 little endian from a specified offset, or None for current position
+    fn read_u32_le(&mut self, offset: Option<u64>) -> Result<u32, Error>;
+    /// Read u64 little endian from a specified offset, or None for current position
+    fn read_u64_le(&mut self, offset: Option<u64>) -> Result<u64, Error>;
+    /// Read u16 big endian from a specified offset, or None for current position
+    fn read_u16_be(&mut self, offset: Option<u64>) -> Result<u16, Error>;
+    /// Read u18 big endian from a specified offset, or None for current position
+    fn read_u32_be(&mut self, offset: Option<u64>) -> Result<u32, Error>;
+    /// Read u64 big endian from a specified offset, or None for current position
+    fn read_u64_be(&mut self, offset: Option<u64>) -> Result<u64, Error>;
+    /// Write u8 from a specified offset, or None for current position
+    fn write_u8(&mut self, offset: Option<u64>, value: u8) -> Result<(), Error>;
+    /// Write u16 little endian from a specified offset, or None for current position
+    fn write_u16_le(&mut self, offset: Option<u64>, value: u16) -> Result<(), Error>;
+    /// Write u18 little endian from a specified offset, or None for current position
+    fn write_u32_le(&mut self, offset: Option<u64>, value: u32) -> Result<(), Error>;
+    /// Write u64 little endian from a specified offset, or None for current position
+    fn write_u64_le(&mut self, offset: Option<u64>, value: u64) -> Result<(), Error>;
+    /// Write u16 big endian from a specified offset, or None for current position
+    fn write_u16_be(&mut self, offset: Option<u64>, value: u16) -> Result<(), Error>;
+    /// Write u18 big endian from a specified offset, or None for current position
+    fn write_u32_be(&mut self, offset: Option<u64>, value: u32) -> Result<(), Error>;
+    /// Write u64 big endian from a specified offset, or None for current position
+    fn write_u64_be(&mut self, offset: Option<u64>, value: u64) -> Result<(), Error>;
 
     /////////////////////////////////////////////////
     //// Esil emulation

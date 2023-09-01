@@ -29,9 +29,24 @@ fn main() {
     println!("size {:#?}", r2.size());
     println!("read_bytes {:#?}", r2.read_bytes(4, None));
     //println!("read_bits {:#?}", r2.read_bits(4, None));
-
     //r2.write_bytes(None, &[0x41,0x41,0x41,0x41]).unwrap();
     //r2.write_bytes(Some(0x11223344), &[0x41,0x41,0x41,0x41]).unwrap();
+    println!("read u8 {:#?}", r2.read_u8(None));
+    println!("read u16 le {:#?}", r2.read_u16_le(None));
+    println!("read u32 le {:#?}", r2.read_u32_le(None));
+    println!("read u64 le {:#?}", r2.read_u64_le(None));
+    println!("read u16 be {:#?}", r2.read_u16_be(None));
+    println!("read u32 be {:#?}", r2.read_u32_be(None));
+    println!("read u64 be {:#?}", r2.read_u64_be(None));
+    /*
+    println!("write u8 {:#?}", r2.write_u8(None, 0x41));
+    println!("write u16 le {:#?}", r2.write_u16_le(None, 0x4141));
+    println!("write u32 le {:#?}", r2.write_u32_le(None, 0x41414141));
+    println!("write u64 le {:#?}", r2.write_u64_le(None, 0x41414141_41414141));
+    println!("write u16 be {:#?}", r2.write_u16_be(None, 0x4141));
+    println!("write u32 be {:#?}", r2.write_u32_be(None, 0x41414141));
+    println!("write u64 be {:#?}", r2.write_u64_be(None, 0x41414141_41414141));
+    */
 
     r2.esil_init().expect("cannot initialize esil");
     let esil_regs = r2.esil_regs().unwrap();

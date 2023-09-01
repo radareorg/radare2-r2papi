@@ -297,6 +297,132 @@ impl R2PApi for R2 {
         Ok(())
     }
 
+    /// Read u8 from a specified offset, or None for current position
+    fn read_u8(&mut self, offset: Option<u64>) -> Result<u8, Error> {
+        match offset {
+            Some(off) => self.send(&format!("pv1d @{}", off))?,
+            None => self.send("pv1d")?,
+        }
+        Ok(u8::from_str_radix(&self.recv().trim_end_matches('\n')[2..], 16).unwrap())
+    }
+
+    /// Read u16 little endian from a specified offset, or None for current position
+    fn read_u16_le(&mut self, offset: Option<u64>) -> Result<u16, Error> {
+        match offset {
+            Some(off) => self.send(&format!("pv2d @{} @e:cfg.bigendian=false", off))?,
+            None => self.send("pv2d @e:cfg.bigendian=false")?,
+        }
+        Ok(u16::from_str_radix(&self.recv().trim_end_matches('\n')[2..], 16).unwrap())
+    }
+
+    /// Read u18 little endian from a specified offset, or None for current position
+    fn read_u32_le(&mut self, offset: Option<u64>) -> Result<u32, Error> {
+        match offset {
+            Some(off) => self.send(&format!("pv4d @{} @e:cfg.bigendian=false", off))?,
+            None => self.send("pv4d @e:cfg.bigendian=false")?,
+        }
+        Ok(u32::from_str_radix(&self.recv().trim_end_matches('\n')[2..], 16).unwrap())
+    }
+
+    /// Read u64 little endian from a specified offset, or None for current position
+    fn read_u64_le(&mut self, offset: Option<u64>) -> Result<u64, Error> {
+        match offset {
+            Some(off) => self.send(&format!("pv8d @{} @e:cfg.bigendian=false", off))?,
+            None => self.send("pv8d @e:cfg.bigendian=false")?,
+        }
+        Ok(u64::from_str_radix(&self.recv().trim_end_matches('\n')[2..], 16).unwrap())
+    }
+
+    /// Read u16 big endian from a specified offset, or None for current position
+    fn read_u16_be(&mut self, offset: Option<u64>) -> Result<u16, Error> {
+        match offset {
+            Some(off) => self.send(&format!("pv2d @{} @e:cfg.bigendian=true", off))?,
+            None => self.send("pv2d @e:cfg.bigendian=true")?,
+        }
+        Ok(u16::from_str_radix(&self.recv().trim_end_matches('\n')[2..], 16).unwrap())
+    }
+
+    /// Read u18 big endian from a specified offset, or None for current position
+    fn read_u32_be(&mut self, offset: Option<u64>) -> Result<u32, Error> {
+        match offset {
+            Some(off) => self.send(&format!("pv4d @{} @e:cfg.bigendian=true", off))?,
+            None => self.send("pv4d @e:cfg.bigendian=true")?,
+        }
+        Ok(u32::from_str_radix(&self.recv().trim_end_matches('\n')[2..], 16).unwrap())
+    }
+
+    /// Read u64 big endian from a specified offset, or None for current position
+    fn read_u64_be(&mut self, offset: Option<u64>) -> Result<u64, Error> {
+        match offset {
+            Some(off) => self.send(&format!("pv8d @{} @e:cfg.bigendian=true", off))?,
+            None => self.send("pv8d @e:cfg.bigendian=true")?,
+        }
+        Ok(u64::from_str_radix(&self.recv().trim_end_matches('\n')[2..], 16).unwrap())
+    }
+
+    /// Write u8 from a specified offset, or None for current position
+    fn write_u8(&mut self, offset: Option<u64>, value: u8) -> Result<(), Error> {
+        match offset {
+            Some(off) => self.send(&format!("wv1 {} @{}", value, off))?,
+            None => self.send(&format!("wv1 {}", value))?,
+        }
+        Ok(())
+    }
+
+    /// Write u16 little endian from a specified offset, or None for current position
+    fn write_u16_le(&mut self, offset: Option<u64>, value: u16) -> Result<(), Error> {
+        match offset {
+            Some(off) => self.send(&format!("wv2 {} @{} @e:cfg.bigendian=false", value, off))?,
+            None => self.send(&format!("wv2 {} @e:cfg.bigendian=false", value))?,
+        }
+        Ok(())
+    }
+
+    /// Write u18 little endian from a specified offset, or None for current position
+    fn write_u32_le(&mut self, offset: Option<u64>, value: u32) -> Result<(), Error> {
+        match offset {
+            Some(off) => self.send(&format!("wv4 {} @{} @e:cfg.bigendian=false", value, off))?,
+            None => self.send(&format!("wv4 {} @e:cfg.bigendian=false", value))?,
+        }
+        Ok(())
+    }
+
+    /// Write u64 little endian from a specified offset, or None for current position
+    fn write_u64_le(&mut self, offset: Option<u64>, value: u64) -> Result<(), Error> {
+        match offset {
+            Some(off) => self.send(&format!("wv8 {} @{} @e:cfg.bigendian=false", value, off))?,
+            None => self.send(&format!("wv8 {} @e:cfg.bigendian=false", value))?,
+        }
+        Ok(())
+    }
+
+    /// Write u16 big endian from a specified offset, or None for current position
+    fn write_u16_be(&mut self, offset: Option<u64>, value: u16) -> Result<(), Error> {
+        match offset {
+            Some(off) => self.send(&format!("wv2 {} @{} @e:cfg.bigendian=true", value, off))?,
+            None => self.send(&format!("wv2 {} @e:cfg.bigendian=true", value))?,
+        }
+        Ok(())
+    }
+
+    /// Write u18 big endian from a specified offset, or None for current position
+    fn write_u32_be(&mut self, offset: Option<u64>, value: u32) -> Result<(), Error> {
+        match offset {
+            Some(off) => self.send(&format!("wv4 {} @{} @e:cfg.bigendian=true", value, off))?,
+            None => self.send(&format!("wv4 {} @e:cfg.bigendian=true", value))?,
+        }
+        Ok(())
+    }
+
+    /// Write u64 big endian from a specified offset, or None for current position
+    fn write_u64_be(&mut self, offset: Option<u64>, value: u64) -> Result<(), Error> {
+        match offset {
+            Some(off) => self.send(&format!("wv8 {} @{} @e:cfg.bigendian=true", value, off))?,
+            None => self.send(&format!("wv8 {} @e:cfg.bigendian=true", value))?,
+        }
+        Ok(())
+    }
+
     /// Init esil emulator
     fn esil_init(&mut self) -> Result<(), Error> {
         self.send("aei")?;
@@ -322,9 +448,7 @@ impl R2PApi for R2 {
     /// Get specific register value
     fn esil_get_reg(&mut self, regname: &str) -> Result<u64, Error> {
         self.send(&format!("aer {}", regname))?;
-        let a = self.recv();
-        let out = a.trim_end_matches('\n');
-        let n = u64::from_str_radix(&out[2..], 16).unwrap();
+        let n = u64::from_str_radix(&self.recv().trim_end_matches('\n')[2..], 16).unwrap();
         Ok(n)
     }
 
