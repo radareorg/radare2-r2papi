@@ -10,6 +10,8 @@ pub trait R2PApi {
     fn raw(&mut self, cmd: String) -> Result<String, Error>;
     /// Run r2-based analysis on the file to extract information
     fn analyze(&mut self) -> Result<(), Error>;
+    /// Open file in write mode
+    fn write_mode(&mut self) -> Result<(), Error>;
 
     //////////////////////////////////////////////
     //// Architecture/OS Information

@@ -28,6 +28,12 @@ impl R2PApi for R2 {
         from_str(&raw_json).map_err(Error::SerdeError)
     }
 
+    /// change file to write mode
+    fn write_mode(&mut self) -> Result<(), Error> {
+        self.send("oo+")?;
+        Ok(())
+    }
+
     fn disassemble_n_bytes(&mut self, n: u64, offset: Option<u64>) -> Result<Vec<LOpInfo>, Error> {
         self.send(&format!(
             "pDj {} @ {}",
