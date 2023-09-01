@@ -505,4 +505,16 @@ impl R2PApi for R2 {
         self.send(&format!("aecu 0x{:x}", addr))?;
         Ok(())
     }
+
+    /*
+    /// Allocate a buffer of size sz
+    fn malloc(&mut self, sz: usize) -> Result<u64, Error> {
+        self.send(&format!("o malloc://{}", sz))?;
+        self.flush();
+        self.send(&format!("o ~malloc://{} | tail -1", sz))?;
+        let out = self.recv();
+        let saddr = out.split(' ').nth(4).unwrap();
+        println!("-{}-", saddr);
+        Ok(u64::from_str_radix(&saddr[2..], 16).unwrap())
+    }*/
 }

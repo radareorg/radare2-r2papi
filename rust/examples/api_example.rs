@@ -11,6 +11,7 @@ fn main() {
     r2.init().unwrap();
     r2.analyze().unwrap();
 
+    //println!("malloc {:#?}", r2.malloc(1024));
     println!("arch {:#?}", r2.arch());
     println!("reg_info {:#?}", r2.reg_info());
     println!("bin_info {:#?}", r2.bin_info());

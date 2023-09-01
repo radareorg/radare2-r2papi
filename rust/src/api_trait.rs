@@ -170,4 +170,10 @@ pub trait R2PApi {
     fn esil_cont_until_call(&mut self) -> Result<(), Error>;
     /// Continue until address.
     fn esil_cont_until_addr(&mut self, addr: u64) -> Result<(), Error>;
+
+    /////////////////////////////////////////////////
+    //// Buffers 
+    /////////////////////////////////////////////////
+    // /// Allocate a buffer of size sz
+    //fn malloc(&mut self, addr: u64, sz: usize) -> Result<u64, Error>;
 }

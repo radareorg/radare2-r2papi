@@ -291,3 +291,11 @@ pub struct Segment {
     pub paddr: Option<u64>,
     pub vaddr: Option<u64>,
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Buffer {
+    pub raised: Option<bool>,
+    pub fd: Option<u64>,
+    pub uri: Option<String>,
+
+}
