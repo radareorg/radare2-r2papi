@@ -174,6 +174,6 @@ pub trait R2PApi {
     /////////////////////////////////////////////////
     //// Buffers 
     /////////////////////////////////////////////////
-    // /// Allocate a buffer of size sz
-    //fn malloc(&mut self, addr: u64, sz: usize) -> Result<u64, Error>;
+    /// Allocate a buffer of size sz
+    fn malloc(&mut self, sz: usize) -> Result<(), Error>;
 }
