@@ -9,3 +9,6 @@ test:
 
 fmt:
 	 cargo fmt --all -- --check
+
+clean:
+	cargo clean
