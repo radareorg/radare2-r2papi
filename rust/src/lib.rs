@@ -19,10 +19,11 @@ pub mod structs;
 mod tests {
     use super::*;
     use api_trait::R2PApi;
+    use r2pipe::R2;
 
     #[test]
     fn lib_tests() {
-        let mut r2 = api::R2::new(None).unwrap();
+        let mut r2:R2 = api::R2::new(Some("-")).unwrap();
         r2.init().unwrap();
         r2.malloc(1024).unwrap();
         r2.set_arch("arm").unwrap();
