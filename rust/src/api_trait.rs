@@ -172,7 +172,7 @@ pub trait R2PApi {
     fn esil_cont_until_addr(&mut self, addr: u64) -> Result<(), Error>;
 
     /////////////////////////////////////////////////
-    //// Buffers 
+    //// Buffers
     /////////////////////////////////////////////////
     /// Allocate a buffer of size sz
     fn malloc(&mut self, sz: usize) -> Result<(), Error>;

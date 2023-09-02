@@ -27,7 +27,8 @@ mod tests {
         r2.malloc(1024).unwrap();
         r2.set_arch("arm").unwrap();
         r2.set_bits(64).unwrap();
-        r2.write_bytes(Some(0), &[0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48]).unwrap();
+        r2.write_bytes(Some(0), &[0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48])
+            .unwrap();
         assert!(r2.read_u8(Some(0)).unwrap() == 0x41);
         assert!(r2.read_u16_le(Some(0)).unwrap() == 0x4241);
         assert!(r2.read_u16_be(Some(0)).unwrap() == 0x4142);
@@ -57,7 +58,7 @@ mod tests {
         assert!(r2.exports().unwrap().len() > 10);
         let afl = r2.fn_list().unwrap();
         assert!(afl.len() > 200);
-        assert!(afl[0].name == Some("entry0".to_string())); 
+        assert!(afl[0].name == Some("entry0".to_string()));
         assert!(1 == 1);*/
     }
 }
