@@ -22,7 +22,7 @@ mod tests {
 
     #[test]
     fn lib_tests() {
-        let mut r2 = api::R2::new(Some(".")).unwrap();
+        let mut r2 = api::R2::new(None).unwrap();
         r2.init().unwrap();
         r2.malloc(1024).unwrap();
         r2.set_arch("arm").unwrap();
