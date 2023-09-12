@@ -224,7 +224,8 @@ export class R2Papi {
 	/**
 	 * should return the id for the new map using the given file descriptor
 	 */
-	newMap(fd: number, vaddr: NativePointer|number, size: number, paddr: NativePointer | number, perm: Permission, name: string = "") : void {
+	// rename to createMap or mapFile?
+	newMap(fd: number, vaddr: NativePointer, size: number, paddr: NativePointer, perm: Permission, name: string = "") : void {
 		this.cmd(`om ${fd} ${vaddr} ${size} ${paddr} ${perm} ${name}`);
 	}
 
@@ -260,9 +261,13 @@ export class R2Papi {
 		this.r2.cmd("!clear");
 		return this;
 	}
-	getConfig(key: string) : string {
+	getConfig(key: string) : Error | string {
 		if (key === '') {
-			throw new Error('Invalid key');
+			return new Error('Empty key');
+		}
+		const exist = this.r2.cmd(`e~^${key} =`).trim()
+		if (exist === '') {
+			return new Error('Config key does not exist');
 		}
 		return this.r2.call("e " + key).trim();
 	}
@@ -431,8 +436,23 @@ export class R2Papi {
 	selectBinary(id: number) : void {
 		this.call(`ob ${id}`);
 	}
-	openFile(name: string): void {
+	openFile(name: string): number | Error {
+		const ofd = this.call('oqq').trim();
 		this.call(`o ${name}`);
+		const nfd = this.call('oqq').trim();
+		if (ofd === nfd) {
+			return new Error('Cannot open file');
+		}
+		return parseInt(nfd);
+	}
+	openFileNomap(name: string): number | Error {
+		const ofd = this.call('oqq').trim();
+		this.call(`of ${name}`);
+		const nfd = this.call('oqq').trim();
+		if (ofd === nfd) {
+			return new Error('Cannot open file');
+		}
+		return parseInt(nfd);
 	}
 	currentFile(name: string): string {
 		return this.call('o.').trim();
