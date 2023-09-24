@@ -176,4 +176,8 @@ pub trait R2PApi {
     /////////////////////////////////////////////////
     /// Allocate a buffer of size sz
     fn malloc(&mut self, sz: usize) -> Result<(), Error>;
+    /// Get buffers
+    fn buffers(&mut self) -> Result<Vec<Buffer>, Error>;
+    /// Free buffer
+    fn free(&mut self, n: u64) -> Result<(), Error>;
 }

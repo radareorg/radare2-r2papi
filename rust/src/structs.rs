@@ -297,4 +297,7 @@ pub struct Buffer {
     pub raised: Option<bool>,
     pub fd: Option<u64>,
     pub uri: Option<String>,
+    pub from: Option<u64>,
+    pub writable: Option<bool>,
+    pub size: Option<u64>,
 }

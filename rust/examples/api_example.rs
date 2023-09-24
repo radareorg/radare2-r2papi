@@ -66,4 +66,8 @@ fn main() {
     r2.esil_cont_until_addr(pc + 20).unwrap();
     r2.set_arch("arm").unwrap();
     r2.set_bits(64).unwrap();
+
+    r2.malloc(1024).unwrap();
+    println!("buffers: {:#?}", r2.buffers());
+    r2.free(5).unwrap();
 }

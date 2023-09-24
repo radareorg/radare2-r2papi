@@ -518,4 +518,16 @@ impl R2PApi for R2 {
         println!("-{}-", saddr);
         Ok(u64::from_str_radix(&saddr[2..], 16).unwrap())*/
     }
+
+    /// Get list of buffers
+    fn buffers(&mut self) -> Result<Vec<Buffer>, Error> {
+        self.send("oj")?;
+        from_str(&self.recv()).map_err(Error::SerdeError)
+    }
+
+    /// Free buffer
+    fn free(&mut self, n: u64) -> Result<(), Error> {
+        self.send(&format!("o- {}", n))?;
+        Ok(())
+    }
 }
