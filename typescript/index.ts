@@ -666,7 +666,7 @@ export class NativePointer {
 	readS16be(): number {
 		return parseInt(this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
 	}
-	readS32(): number {
+	readS32(): number { // same as readInt32()
 		return parseInt(this.api.cmd(`pv4d@${this.addr}`)); // requires 5.8.9
 	}
 	readU32(): number {
@@ -731,7 +731,7 @@ export class NativePointer {
 		this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=false`);
 		return true;
 	}
-	readInt(): number {
+	readInt32(): number {
 		return this.readU32();
 	}
 	readCString(): string {
