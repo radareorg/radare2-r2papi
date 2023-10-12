@@ -224,7 +224,7 @@ export class ProcessClass {
 			}
 			return res;
 		} else {
-			const fname = (x) => {
+			const fname = (x: string) => {
 				const y = x.split("/");
 				return y[y.length - 1];
 			}
