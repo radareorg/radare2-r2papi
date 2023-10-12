@@ -975,6 +975,40 @@ interface base64Interface {
 	(message: string, decode?: boolean): string;
 }
 
+class R2AI {
+	available : boolean = false;
+	model : string = "";
+	constructor (num, model) {
+		this.available = r2.call(`r2ai -h`).trim() !== "";
+		if (this.available) {
+			r2.call(`r2ai -n ${num}`)
+			// r2.call('r2ai -e DEBUG=1')
+			this.model = model;
+		} else {
+			console.error("ERROR: r2ai is not installed");
+		}
+	}
+	reset() {
+		if (this.available) {
+			r2.call('r2ai -R')
+		}
+	}
+	setRole(msg) {
+		if (this.available) {
+			r2.call(`r2ai -r ${msg}`)
+		}
+	}
+	query(msg) {
+		if (!this.available || msg == '') {
+			return '';
+		}
+		r2.call(`r2ai -m ${this.model}`)
+		const fmsg = msg.trim().replace(/\n/g, '.');
+		return r2.call(`r2ai ${fmsg}`)
+	}
+}
+
+
 /*
 // already defined by r2
 function ptr(x: string|number) {
