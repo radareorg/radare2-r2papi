@@ -104,6 +104,19 @@ export interface BasicBlock {
 	traced: boolean
 };
 
+export class ThreadClass {
+	api : any = null;
+	constructor(r2: any) {
+		this.api = r2;
+	}
+	backtrace() {
+		return r2.call("dbtj");
+	}
+	sleep(seconds: number) {
+		return r2.call("sleep "+ seconds);
+	}
+}
+
 export interface Instruction {
 	type: InstructionType;
 	addr: number;
@@ -133,6 +146,153 @@ export interface R2Pipe {
 	log(msg: string): string;
 	plugin(type: string, maker: any): boolean;
 	unload(name: string): boolean;
+}
+
+export interface Radare2 {
+	version: string;
+}
+
+export class ModuleClass {
+	api : any = null;
+	constructor(r2: any) {
+		this.api = r2;
+	}
+	fileName() : string {
+		return this.api.call("dpe").trim()
+	}
+	name() : string {
+		return "Module";
+	}
+	findBaseAddress() {
+		return "TODO";
+	}
+	findExportByName(name: string) : any {
+		// TODO
+		return "TODO";
+	}
+	getBaseAddress(name: string) {
+		return "TODO";
+	}
+	getExportByName(name: string) {
+		return r2.call("iE,name/eq/"+name+",vaddr/cols,:quiet");
+	}
+	enumerateExports() {
+		// TODO: use frida json
+		return r2.callj("iEj");
+	}
+	enumerateImports() {
+		// TODO: use frida json
+		return r2.callj("iij");
+	}
+	enumerateRanges() {
+		// TODO: use frida json
+		return r2.callj("isj");
+	}
+	enumerateSymbols() {
+		// TODO: use frida json
+		return r2.callj("isj");
+	}
+}
+
+export class ProcessClass {
+	r2 : any = null;
+	constructor(r2: R2Pipe) {
+		this.r2 = r2;
+	}
+	enumerateMallocRanges() {
+	}
+	enumerateSystemRanges() {
+	}
+	enumerateRanges() {
+	}
+	enumerateThreads() {
+		return r2.call("dptj");
+	}
+	enumerateModules() : any {
+		r2.call("cfg.json.num=string"); // to handle 64bit values properly
+		if (r2.callj("e cfg.debug")) {
+			const modules = r2.callj("dmmj");
+			const res = [];
+			for (const mod of modules) {
+				const entry = {
+					base: new NativePointer(mod.addr),
+					size: new NativePointer(mod.addr_end).sub(mod.addr),
+					path: mod.file,
+					name: mod.name,
+				};
+				res.push(entry);
+			}
+			return res;
+		} else {
+			const fname = (x) => {
+				const y = x.split("/");
+				return y[y.length - 1];
+			}
+			const bobjs = r2.callj("obj");
+			const res = [];
+			for (const obj of bobjs) {
+				const entry = {
+					base: new NativePointer(obj.addr),
+					size: obj.size,
+					path: obj.file,
+					name: fname(obj.file)
+				};
+				res.push(entry);
+			}
+			const libs = r2.callj("ilj");
+			for (const lib of libs) {
+				const entry = {
+					base: 0,
+					size: 0,
+					path: lib,
+					name: fname(lib)
+				};
+				res.push(entry);
+			}
+			return res;
+		}
+	}
+	getModuleByAddress(addr: NativePointer | number | string) : any{
+	}
+	getModuleByName(moduleName: string) : any {
+	}
+	codeSigningPolicy() : string {
+		return "optional";
+	}
+	getTmpDir() {
+		return this.r2.call("e dir.tmp").trim();
+	}
+	getHomeDir() {
+		return this.r2.call("e dir.home").trim();
+	}
+	platform() {
+		return this.r2.call("e asm.os").trim();
+	}
+	getCurrentDir() {
+		return this.r2.call("pwd").trim();
+	}
+	getCurrentThreadId() : number{
+		return +this.r2.call("dpq");
+	}
+	pageSize() : number {
+		if (this.r2.callj("e asm.bits") === 64 && this.r2.call("e asm.arch").startsWith("arm")) {
+			return 16384;
+		}
+		return 4096;
+	}
+	isDebuggerAttached() : boolean {
+		return this.r2.callj("e cfg.debug");
+	}
+	setExceptionHandler() {
+		// do nothing
+	}
+	id() {
+		// 
+		return this.r2.callj("dpq");
+	}
+	pointerSize() {
+		return r2.callj("e asm.bits") / 8;
+	}
 }
 
 export class Assembler {
@@ -548,6 +708,20 @@ export class R2Papi {
 	}
 }
 
+// useful to call functions via dxc
+export class NativeFunction {
+	constructor() {
+	}
+}
+
+// uhm not sure how to map this into r2 yet
+export class NativeCallback {
+	constructor() {
+	}
+}
+
+// export const NULL = ptr("0");yet
+
 export class NativePointer {
 	addr: string;
 	api: R2Papi;
@@ -645,8 +819,11 @@ export class NativePointer {
 	readPointer() : NativePointer {
 		return new NativePointer(this.api.call("pvp@" + this.addr));
 	}
-	readU8(): number {
+	readS8(): number { // requires 5.8.9
 		return parseInt(this.api.cmd(`pv1d@${this.addr}`));
+	}
+	readU8(): number {
+		return parseInt(this.api.cmd(`pv1u@${this.addr}`));
 	}
 	readU16(): number {
 		return parseInt(this.api.cmd(`pv2d@${this.addr}`));
@@ -808,3 +985,6 @@ function ptr(x: string|number) {
 export declare var b64: base64Interface;
 export declare var r2: R2Pipe;
 export declare var R: R2Papi;
+export declare var Module: ModuleClass;
+export declare var Process: ProcessClass;
+export declare var Thread: ThreadClass;
