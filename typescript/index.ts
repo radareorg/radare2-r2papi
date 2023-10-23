@@ -315,17 +315,17 @@ export class Assembler {
 	toString() {
 		return this.program;
 	}
-	append(x:string) {
+	append(x: string) {
 		this.pc += x.length / 2;
 		this.program += x;
 	}
 	// api
-	label(s:string) : number {
+	label(s: string) : number {
 		const pos = this.pc; // this.#program.length / 4;
 		this.labels[s] = this.pc;
 		return pos;
 	}
-	asm(s:string) {
+	asm(s: string) {
 		let hex = this.r2.cmd('""pa ' + s).trim();
 		if (hex.length < 16) {
 			// ok
@@ -342,6 +342,12 @@ export class R2Papi {
 
 	constructor(r2: R2Pipe) {
 		this.r2 = r2;
+	}
+	toString() {
+		return "[object R2Papi]";
+	}
+	toJSON() {
+		return this.toString();
 	}
 	getBaseAddress(): NativePointer {
 		return new NativePointer(this.cmd("e bin.baddr"));
@@ -374,7 +380,7 @@ export class R2Papi {
 			this.cmd("-b "+bits);
 		}
 	}
-	setFlagSpace(name:string) {
+	setFlagSpace(name: string) {
 		this.cmd('fs ' + name);
 	}
 	setLogLevel(level: number) : R2Papi {
@@ -810,7 +816,10 @@ export class NativePointer {
 	pointsToNull(): boolean {
 		return this.readPointer().compare(0);
 	}
-	toString() :string {
+	toJSON() : string {
+		return this.toString();
+	}
+	toString() : string {
 		return this.addr.trim();
 	}
 	writePointer(p: NativePointer) : void {
