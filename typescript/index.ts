@@ -825,6 +825,9 @@ export class NativePointer {
 	writePointer(p: NativePointer) : void {
 		this.api.cmd(`wvp ${p}@${this}`); // requires 5.8.2
 	}
+	readRelativePointer() : NativePointer {
+		return this.add(this.readS32());
+	}
 	readPointer() : NativePointer {
 		return new NativePointer(this.api.call("pvp@" + this.addr));
 	}
