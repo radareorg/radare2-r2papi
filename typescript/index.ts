@@ -991,11 +991,15 @@ class R2AI {
 	available : boolean = false;
 	model : string = "";
 	constructor (num, model) {
-		this.available = r2.call(`r2ai -h`).trim() !== "";
+		this.available = r2.cmd('r2ai -h').trim() !== "";
 		if (this.available) {
-			r2.call(`r2ai -n ${num}`)
+			if (num) {
+				r2.call(`r2ai -n ${num}`)
+			}
 			// r2.call('r2ai -e DEBUG=1')
-			this.model = model;
+			if (model) {
+				this.model = model;
+			}
 		} else {
 			console.error("ERROR: r2ai is not installed");
 		}
@@ -1010,11 +1014,27 @@ class R2AI {
 			r2.call(`r2ai -r ${msg}`)
 		}
 	}
+	setModel(modelName) {
+		if (this.available) {
+			r2.call(`r2ai -m ${this.model}`)
+		}
+	}
+	getModel() {
+		if (this.available) {
+			return r2.call("r2ai -m");
+		}
+		return this.model;
+	}
+	listModels() {
+		if (this.available) {
+			return r2.call("r2ai -M").trim().split(/\n/g);
+		}
+		return [];
+	}
 	query(msg) {
 		if (!this.available || msg == '') {
 			return '';
 		}
-		r2.call(`r2ai -m ${this.model}`)
 		const fmsg = msg.trim().replace(/\n/g, '.');
 		return r2.call(`r2ai ${fmsg}`)
 	}
