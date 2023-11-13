@@ -139,6 +139,12 @@ export interface Instruction {
 }
 
 export interface R2Pipe {
+	/**
+         * Run a command in the associated instance of radare2
+         *
+         * @param {string} command to be executed inside radare2.
+         * @returns {string} The output of the command execution
+         */
 	cmd(cmd: string): string;
 	cmdj(cmd: string): any;
 	call(cmd: string): string;
@@ -820,7 +826,7 @@ export class NativePointer {
 		return this.toString();
 	}
 	toString() : string {
-		return this.addr.trim();
+		return this.api.cmd('?v ' + addr.trim());
 	}
 	writePointer(p: NativePointer) : void {
 		this.api.cmd(`wvp ${p}@${this}`); // requires 5.8.2
@@ -1049,6 +1055,11 @@ function ptr(x: string|number) {
 */
 
 export declare var b64: base64Interface;
+/**
+ * A global instance of R2Pipe associated with the current instance of radare2
+ *
+ * @type {R2Pipe}
+ */
 export declare var r2: R2Pipe;
 export declare var R: R2Papi;
 export declare var Module: ModuleClass;
