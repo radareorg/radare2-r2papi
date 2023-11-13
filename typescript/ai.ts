@@ -35,7 +35,7 @@ export class R2AI {
 	}
 	getModel() : string {
 		if (this.available) {
-			return r2.call("r2ai -m");
+			return r2.call("r2ai -m").trim();
 		}
 		return this.model;
 	}
@@ -50,7 +50,7 @@ export class R2AI {
 			return '';
 		}
 		const fmsg = msg.trim().replace(/\n/g, '.');
-		return r2.call(`r2ai ${fmsg}`)
+		return r2.call(`r2ai ${fmsg}`).trim();
 	}
 }
 
