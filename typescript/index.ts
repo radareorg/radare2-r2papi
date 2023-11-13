@@ -138,6 +138,12 @@ export interface Instruction {
 	stack: string; // "inc"|"dec"|"get"|"set"|"nop"|"null"; 
 }
 
+/**
+ * Generic interface to interact with radare2, abstracts the access to the associated
+ * instance of the tool, which could be native via rlang or remote via pipes or tcp/http.
+ * 
+ * @typedef R2Pipe
+ */
 export interface R2Pipe {
 	/**
          * Run a command in the associated instance of radare2
@@ -179,6 +185,12 @@ export interface R2Pipe {
          */
 	callAt(cmd: string, at: string|number|NativePointer): string;
 	callj(cmd: string): any;
+	/**
+         * Log a string to the associated console. This is used internally by `console.log` in some implementations.
+         *
+         * @param {string} text to be displayed
+         * @returns {boolean} true if successful
+         */
 	log(msg: string): string;
 	plugin(type: string, maker: any): boolean;
 	unload(name: string): boolean;
@@ -842,13 +854,13 @@ export class NativePointer {
          * @returns {boolean} true if null
          */
 	isNull(): boolean {
-		return this.asNumber() == 0
+		return this.toNumber() == 0
 	}
 	compare(a : string|number|NativePointer) {
 		if (typeof a === "string" || typeof a === "number") {
 			a = new NativePointer(a);
 		}
-		return a.addr === this.addr || (new NativePointer(a.addr)).asNumber() === this.asNumber();
+		return a.addr === this.addr || (new NativePointer(a.addr)).toNumber() === this.toNumber();
 	}
 	pointsToNull(): boolean {
 		return this.readPointer().compare(0);
