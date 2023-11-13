@@ -146,8 +146,38 @@ export interface R2Pipe {
          * @returns {string} The output of the command execution
          */
 	cmd(cmd: string): string;
+	/**
+         * Run a radare2 command in a different address. Same as `.cmd(x + '@ ' + a)`
+         *
+         * @param {string} command to be executed inside radare2.
+         * @returns {string} The output of the command execution
+         */
+	cmdAt(cmd: string): string;
+	/**
+         * Run a radare2 command expecting the output to be JSON
+         *
+         * @param {string} command to be executed inside radare2. The given command should end with `j`
+         * @returns {object} the JSON decoded object from the output of the command
+         */
 	cmdj(cmd: string): any;
+	/**
+         * Call a radare2 command. This is similar to `R2Pipe.cmd`, but skips all the command parsing rules,
+	 * which is safer and faster but you cannot use any special modifier like `@`, `~`, ...
+	 *
+	 * See R2Pipe.callAt() to call a command on a different address
+         *
+         * @param {string} command to be executed inside radare2. The given command should end with `j`
+         * @returns {object} the JSON decoded object from the output of the command
+         */
 	call(cmd: string): string;
+	/**
+         * Call a radare2 command in a different address
+         *
+         * @param {string} command to be executed inside radare2. The given command should end with `j`
+         * @param {NativePointer|string|number} where to seek to execute this command (previous offset is restored after executing it)
+         * @returns {object} the JSON decoded object from the output of the command
+         */
+	callAt(cmd: string, at: string|number|NativePointer): string;
 	callj(cmd: string): any;
 	log(msg: string): string;
 	plugin(type: string, maker: any): boolean;
@@ -806,10 +836,11 @@ export class NativePointer {
 		this.api.call("ww " + s);
 		return this;
 	}
-	asNumber(): number {
-		const v = this.api.call("?vi " + this.addr);
-		return parseInt(v);
-	}
+	/**
+         * Check if it's a pointer to the address zero. Also known as null pointer.
+         *
+         * @returns {boolean} true if null
+         */
 	isNull(): boolean {
 		return this.asNumber() == 0
 	}
@@ -823,10 +854,13 @@ export class NativePointer {
 		return this.readPointer().compare(0);
 	}
 	toJSON() : string {
-		return this.toString();
+		return this.api.cmd('?vi ' + this.addr.trim());
 	}
 	toString() : string {
-		return this.api.cmd('?v ' + addr.trim());
+		return this.api.cmd('?v ' + this.addr.trim());
+	}
+	toNumber(): number {
+		return parseInt(this.toString());
 	}
 	writePointer(p: NativePointer) : void {
 		this.api.cmd(`wvp ${p}@${this}`); // requires 5.8.2
