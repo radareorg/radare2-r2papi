@@ -1,6 +1,8 @@
 // r2papi main file
 
+// import { R, Module, Process, Thread } from "./global.js"
 import { R2PapiShell } from "./shell.js";
+import { r2, R2Pipe } from "./r2pipe.js";
 
 export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call" | "add" | "sub";
 export type InstructionFamily = "cpu" | "fpu" | "priv";
@@ -136,64 +138,6 @@ export interface Instruction {
 	direction: "read" | "write";
 	stackptr: number;
 	stack: string; // "inc"|"dec"|"get"|"set"|"nop"|"null"; 
-}
-
-/**
- * Generic interface to interact with radare2, abstracts the access to the associated
- * instance of the tool, which could be native via rlang or remote via pipes or tcp/http.
- * 
- * @typedef R2Pipe
- */
-export interface R2Pipe {
-	/**
-         * Run a command in the associated instance of radare2
-         *
-         * @param {string} command to be executed inside radare2.
-         * @returns {string} The output of the command execution
-         */
-	cmd(cmd: string): string;
-	/**
-         * Run a radare2 command in a different address. Same as `.cmd(x + '@ ' + a)`
-         *
-         * @param {string} command to be executed inside radare2.
-         * @returns {string} The output of the command execution
-         */
-	cmdAt(cmd: string): string;
-	/**
-         * Run a radare2 command expecting the output to be JSON
-         *
-         * @param {string} command to be executed inside radare2. The given command should end with `j`
-         * @returns {object} the JSON decoded object from the output of the command
-         */
-	cmdj(cmd: string): any;
-	/**
-         * Call a radare2 command. This is similar to `R2Pipe.cmd`, but skips all the command parsing rules,
-	 * which is safer and faster but you cannot use any special modifier like `@`, `~`, ...
-	 *
-	 * See R2Pipe.callAt() to call a command on a different address
-         *
-         * @param {string} command to be executed inside radare2. The given command should end with `j`
-         * @returns {object} the JSON decoded object from the output of the command
-         */
-	call(cmd: string): string;
-	/**
-         * Call a radare2 command in a different address
-         *
-         * @param {string} command to be executed inside radare2. The given command should end with `j`
-         * @param {NativePointer|string|number} where to seek to execute this command (previous offset is restored after executing it)
-         * @returns {object} the JSON decoded object from the output of the command
-         */
-	callAt(cmd: string, at: string|number|NativePointer): string;
-	callj(cmd: string): any;
-	/**
-         * Log a string to the associated console. This is used internally by `console.log` in some implementations.
-         *
-         * @param {string} text to be displayed
-         * @returns {boolean} true if successful
-         */
-	log(msg: string): string;
-	plugin(type: string, maker: any): boolean;
-	unload(name: string): boolean;
 }
 
 export interface Radare2 {
@@ -778,6 +722,7 @@ export class NativeCallback {
 
 export class NativePointer {
 	addr: string;
+
 	api: R2Papi;
 	constructor(s: string | number, api?: R2Papi) {
 		if (api === undefined) {
@@ -866,10 +811,10 @@ export class NativePointer {
 		return this.readPointer().compare(0);
 	}
 	toJSON() : string {
-		return this.api.cmd('?vi ' + this.addr.trim());
+		return this.api.cmd('?vi ' + this.addr.trim()).trim();
 	}
 	toString() : string {
-		return this.api.cmd('?v ' + this.addr.trim());
+		return this.api.cmd('?v ' + this.addr.trim()).trim();
 	}
 	toNumber(): number {
 		return parseInt(this.toString());
@@ -1026,72 +971,6 @@ export class NativePointer {
 	}
 }
 
-export class Base64 {
-	static encode(x: string) : string {
-		return b64(x);
-	}
-	static decode(x: string) : string {
-		return b64(x, true);
-	}
-}
-
-interface base64Interface {
-	(message: string, decode?: boolean): string;
-}
-
-class R2AI {
-	available : boolean = false;
-	model : string = "";
-	constructor (num, model) {
-		this.available = r2.cmd('r2ai -h').trim() !== "";
-		if (this.available) {
-			if (num) {
-				r2.call(`r2ai -n ${num}`)
-			}
-			// r2.call('r2ai -e DEBUG=1')
-			if (model) {
-				this.model = model;
-			}
-		} else {
-			console.error("ERROR: r2ai is not installed");
-		}
-	}
-	reset() {
-		if (this.available) {
-			r2.call('r2ai -R')
-		}
-	}
-	setRole(msg) {
-		if (this.available) {
-			r2.call(`r2ai -r ${msg}`)
-		}
-	}
-	setModel(modelName) {
-		if (this.available) {
-			r2.call(`r2ai -m ${this.model}`)
-		}
-	}
-	getModel() {
-		if (this.available) {
-			return r2.call("r2ai -m");
-		}
-		return this.model;
-	}
-	listModels() {
-		if (this.available) {
-			return r2.call("r2ai -M").trim().split(/\n/g);
-		}
-		return [];
-	}
-	query(msg) {
-		if (!this.available || msg == '') {
-			return '';
-		}
-		const fmsg = msg.trim().replace(/\n/g, '.');
-		return r2.call(`r2ai ${fmsg}`)
-	}
-}
-
 
 /*
 // already defined by r2
@@ -1100,13 +979,6 @@ function ptr(x: string|number) {
 }
 */
 
-export declare var b64: base64Interface;
-/**
- * A global instance of R2Pipe associated with the current instance of radare2
- *
- * @type {R2Pipe}
- */
-export declare var r2: R2Pipe;
 export declare var R: R2Papi;
 export declare var Module: ModuleClass;
 export declare var Process: ProcessClass;
