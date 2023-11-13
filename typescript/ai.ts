@@ -15,7 +15,7 @@ export class R2AI {
 				this.model = model;
 			}
 		} else {
-			console.error("ERROR: r2ai is not installed");
+			throw new Error ("ERROR: r2ai is not installed");
 		}
 	}
 	reset() {
