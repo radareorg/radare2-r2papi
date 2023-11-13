@@ -2,7 +2,7 @@
   "name": "r2papi",
   "version": "0.3.1",
   "description": "r2api on top of r2pipe for typescript and js",
-  "author": "",
+  "author": "pancake@nopcode.org",
   "homepage": "http://www.radare.org",
   "bugs": {
     "url": "https://github.com/radareorg/radare2-r2pipe/issues"
@@ -37,6 +37,9 @@
     "ai.js",
     "ai.ts",
     "ai.d.ts",
+    "index.js",
+    "index.ts",
+    "index.d.js",
     "base64.js",
     "base64.ts",
     "base64.d.js",

@@ -1,6 +1,7 @@
 TSC=node_modules/.bin/tsc
 
 all: node_modules
+	$(TSC)
 	$(TSC) --declaration r2papi.ts
 	$(TSC) -m node16 --target es2020 shell.ts && cp -f shell.js shell.r2.js
 	$(TSC) -m node16 --target es2020 esil.ts && cp -f esil.js esil.r2.js

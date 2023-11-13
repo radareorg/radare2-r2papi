@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "lib": ["es2017"],
+    "lib": ["es2015", "es2016", "esnext"],
     "module": "commonjs",
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -11,6 +11,7 @@
     "outDir": "./dist"
   },
   "include": [
+    "index.ts",
     "ai.ts",
     "base64.ts",
     "r2pipe.ts",

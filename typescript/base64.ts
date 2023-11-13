@@ -7,8 +7,8 @@ export class Base64 {
 	}
 }
 
-interface base64Interface {
+export interface Base64Interface {
 	(message: string, decode?: boolean): string;
 }
 
-export declare var b64: base64Interface;
+export declare var b64: Base64Interface;
