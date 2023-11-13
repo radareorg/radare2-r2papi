@@ -11,7 +11,10 @@
     "outDir": "./dist"
   },
   "include": [
-    "index.ts",
+    "ai.ts",
+    "base64.ts",
+    "r2pipe.ts",
+    "r2papi.ts",
     "esil.ts",
     "shell.ts"
   ]

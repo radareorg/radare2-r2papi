@@ -1,11 +1,11 @@
 TSC=node_modules/.bin/tsc
 
 all: node_modules
-	$(TSC) --declaration index.ts
+	$(TSC) --declaration r2papi.ts
 	$(TSC) -m node16 --target es2020 shell.ts && cp -f shell.js shell.r2.js
 	$(TSC) -m node16 --target es2020 esil.ts && cp -f esil.js esil.r2.js
 	$(TSC) -m node16 --target es2020 opt.ts && cp -f opt.js opt.r2.js
-	$(TSC) -m node16 --target es2020 index.ts && cp -f index.js index.r2.js
+	$(TSC) -m node16 --target es2020 r2papi.ts && cp -f r2papi.js index.r2.js
 
 pdq: node_modules
 	$(TSC) -m node16 --target es2020 pdq.ts
@@ -21,7 +21,7 @@ uninstall user-uninstall:
 	rm -f $(PLUGDIR)/pdq.qjs
 
 one:
-	cat shell.r2.js esil.r2.js index.r2.js pdq.r2.js |grep -v require > one.r2.js
+	cat shell.r2.js esil.r2.js base64.r2.js r2pipe.r2.js ai.r2.js r2papi.r2.js pdq.r2.js |grep -v require > one.r2.js
 	R2_DEBUG_NOPAPI=1 r2 -i one.r2.js /bin/ls
 
 test:

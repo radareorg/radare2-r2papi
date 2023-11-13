@@ -1,6 +1,6 @@
 // shell utilities on top of r2pipe
 
-import { R2Papi } from "./index.js";
+import { R2Papi } from "./r2papi.js";
 
 export class R2PapiShell {
 	public rp: R2Papi;

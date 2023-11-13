@@ -1,4 +1,4 @@
-import { R2Pipe } from "./index";
+import { R2Pipe } from "./r2pipe.js";
 
 declare var console: any;
 declare var r2: R2Pipe;
