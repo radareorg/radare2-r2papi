@@ -8,6 +8,7 @@ all: node_modules
 	$(TSC) -m node16 --target es2020 r2papi.ts && cp -f r2papi.js index.r2.js
 
 pdq: node_modules
+	# TODO: use pdq.r2.ts
 	$(TSC) -m node16 --target es2020 pdq.ts
 	cat pdq.js | sed -e 's,require.*$$,global;,' > pdq.r2.js
 
