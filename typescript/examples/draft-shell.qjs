@@ -3,7 +3,7 @@
 
 
 
-const SH = new R2PapiShell (R);
+const SH = new R2Shell (R);
 
 SH.system("git --help");
 

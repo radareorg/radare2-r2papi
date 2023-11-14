@@ -1,7 +1,7 @@
 // r2papi main file
 
 // import { R, Module, Process, Thread } from "./global.js"
-import { R2PapiShell } from "./shell.js";
+import { R2Shell } from "./shell.js";
 import { r2, R2Pipe } from "./r2pipe.js";
 
 export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call" | "add" | "sub";
@@ -390,8 +390,8 @@ export class R2Papi {
 	at(a: string) : NativePointer {
 		return new NativePointer(a);
 	}
-	getShell(): R2PapiShell {
-		return new R2PapiShell (this);
+	getShell(): R2Shell {
+		return new R2Shell (this);
 	}
 	// Radare/Frida
 	version(): string {
