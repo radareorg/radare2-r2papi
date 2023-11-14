@@ -180,4 +180,12 @@ pub trait R2PApi {
     fn buffers(&mut self) -> Result<Vec<Buffer>, Error>;
     /// Free buffer
     fn free(&mut self, n: u64) -> Result<(), Error>;
+
+    /////////////////////////////////////////////////
+    //// Eval
+    /////////////////////////////////////////////////
+    /// Set a setting (eval) set("dbg.clone", "true")
+    fn set(&mut self, key: &str, value: &str) -> Result<(), Error>;
+    /// Get setting  let clone = get("dbg.clone")
+    fn get(&mut self, key: &str) -> Result<String, Error>;
 }

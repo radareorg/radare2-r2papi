@@ -70,4 +70,6 @@ fn main() {
     r2.malloc(1024).unwrap();
     println!("buffers: {:#?}", r2.buffers());
     r2.free(5).unwrap();
+    r2.set("dbg.bpsize", "4").unwrap();
+    println!("dbg.bpsize: {:#?}", r2.get("dbg.bpsize"));
 }

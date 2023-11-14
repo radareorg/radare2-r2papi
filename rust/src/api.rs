@@ -4,6 +4,7 @@ use crate::structs::*;
 pub use r2pipe::r2::R2;
 use r2pipe::Error;
 use serde_json::from_str;
+use std::collections::HashMap;
 
 impl R2PApi for R2 {
     fn analyze(&mut self) -> Result<(), Error> {
@@ -529,5 +530,21 @@ impl R2PApi for R2 {
     fn free(&mut self, n: u64) -> Result<(), Error> {
         self.send(&format!("o- {}", n))?;
         Ok(())
+    }
+
+    /// Set a setting
+    fn set(&mut self, key: &str, value: &str) -> Result<(), Error> {
+        self.send(&format!("e {} = {}", key, value))?;
+        Ok(())
+    }
+
+    /// Get setting  
+    fn get(&mut self, key: &str) -> Result<String, Error> {
+        self.send("ej")?;
+        let data = self.recv();
+        let evalj = from_str::<HashMap<&str, String>>(&data).map_err(Error::SerdeError)?;
+        let value = evalj.get(key).unwrap();
+        let value2 = value.to_string();
+        Ok(value2)
     }
 }
