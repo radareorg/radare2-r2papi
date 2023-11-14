@@ -52,8 +52,22 @@ export interface R2Pipe {
          * @returns {boolean} true if successful
          */
 	log(msg: string): string;
+	/**
+         * Instantiate a new radare2 plugin with the given type and constructor method.
+         *
+         * @param {string} type of plugin ("core", "io", "arch", ...)
+         * @param {string} function that returns the plugin definition
+         * @returns {boolean} true if successful
+         */
 	plugin(type: string, maker: any): boolean;
-	unload(name: string): boolean;
+	/**
+         * Unload the plugin associated with a `type` and a `name`.
+         *
+         * @param {string} type of plugin ("core", "io", "arch", ...)
+         * @param {string} name of the plugin
+         * @returns {boolean} true if successful
+         */
+	unload(type: string, name: string): boolean;
 }
 
 /**
