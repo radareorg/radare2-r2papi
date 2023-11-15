@@ -141,7 +141,7 @@ export interface Instruction {
 
 export class ModuleClass {
 	api : any = null;
-	constructor(r2: any) {
+	constructor(r2: R2Pipe) {
 		this.api = r2;
 	}
 	fileName() : string {
@@ -161,7 +161,7 @@ export class ModuleClass {
 		return "TODO";
 	}
 	getExportByName(name: string) {
-		return r2.call("iE,name/eq/"+name+",vaddr/cols,:quiet");
+		return r2.call("iE,name/eq/"+name+",vaddr/cols,:quiet").trim();
 	}
 	enumerateExports() {
 		// TODO: use frida json
@@ -193,7 +193,7 @@ export class ProcessClass {
 	enumerateRanges() {
 	}
 	enumerateThreads() {
-		return r2.call("dptj");
+		return r2.callj("dptj");
 	}
 	enumerateModules() : any {
 		r2.call("cfg.json.num=string"); // to handle 64bit values properly
@@ -258,7 +258,7 @@ export class ProcessClass {
 	getCurrentDir() {
 		return this.r2.call("pwd").trim();
 	}
-	getCurrentThreadId() : number{
+	getCurrentThreadId() : number {
 		return +this.r2.call("dpq");
 	}
 	pageSize() : number {
@@ -275,7 +275,7 @@ export class ProcessClass {
 	}
 	id() {
 		// 
-		return this.r2.callj("dpq");
+		return this.r2.callj("dpq").trim();
 	}
 	pointerSize() {
 		return r2.callj("e asm.bits") / 8;
@@ -291,14 +291,20 @@ export class Assembler {
 	program : string = "";
 	labels : any = {};
 	endian : boolean = false;
-	pc : number = 0;
-	r2 : any = null;
-	constructor(myr2: R2Pipe | undefined) {
-		this.r2 = (typeof myr2 === 'undefined')? r2: myr2;
+	pc : NativePointer = ptr(0);
+	r2: R2Pipe;
+	constructor(myr2?: R2Pipe) {
+		this.r2 = (myr2 === undefined)? r2: myr2;
 		this.program = '';
 		this.labels = {};
 	}
-	setProgramCounter(pc: number) {
+	/**
+	* Change the address of the program counter, some instructions need to know where
+        * are they located before being encoded or decoded.
+	*
+        * @param {NativePointerValue} 
+ 	*/
+	setProgramCounter(pc: NativePointer) {
 		this.pc = pc;
 	}
 	setEndian(big:boolean) {
@@ -308,24 +314,36 @@ export class Assembler {
 		return this.program;
 	}
 	append(x: string) {
-		this.pc += x.length / 2;
+		// append text
+		this.pc = this.pc.add (x.length / 2);
 		this.program += x;
 	}
 	// api
-	label(s: string) : number {
+	label(s: string) : NativePointer {
 		const pos = this.pc; // this.#program.length / 4;
 		this.labels[s] = this.pc;
 		return pos;
 	}
-	asm(s: string) {
-		let hex = this.r2.cmd('""pa ' + s).trim();
-		if (hex.length < 16) {
-			// ok
-		} else {
-			hex = "____";
-			// console.error("Invalid instruction: " + s);
-		}
-		this.append(hex);
+
+	/**
+	* Encode (assemble) an instruction by taking the string representation.
+	*
+	* @param {string} the string representation of the instruction to assemble
+	* @returns {string} the hexpairs that represent the assembled instruciton
+ 	*/
+	encode(s: string) : string {
+		return this.r2.call(`pa ${s}`).trim();
+	}
+
+	/**
+	* Decode (disassemble) an instruction by taking the hexpairs string as input.
+	* TODO: should take an array of bytes too
+	*
+	* @param {string} the hexadecimal pairs of bytes to decode as an instruction
+	* @returns {string} the mnemonic and operands of the resulting decoding
+ 	*/
+	decode(s: string) : string {
+		return this.r2.call(`pad ${s}`).trim();
 	}
 }
 
