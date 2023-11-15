@@ -859,14 +859,34 @@ export class NativePointer {
 	isNull(): boolean {
 		return this.toNumber() == 0
 	}
-	compare(a : string|number|NativePointer) {
-		if (typeof a === "string" || typeof a === "number") {
-			a = new NativePointer(a);
+	/*
+         * Compare current pointer with the passed one, and return -1, 0 or 1.
+         *
+         * * if (this < arg) return -1;
+         * * if (this > arg) return 1;
+         * * if (this == arg) return 0;
+         *
+         * @returns {number} returns -1, 0 or 1 depending on the comparison of the pointers
+         */
+	compare(a : NativePointerValue) : number {
+		const bv : NativePointer = (typeof a === "string" || typeof a === "number")
+			? new NativePointer(a): a;
+		const dist = r2.call(`?vi ${this.addr} - ${bv.addr}`);
+		if (dist[0] === '-') {
+			return -1;
 		}
-		return a.addr === this.addr || (new NativePointer(a.addr)).toNumber() === this.toNumber();
+		if (dist[0] === '0') {
+			return 0;
+		}
+		return 1;
 	}
+	/**
+         * Check if it's a pointer to the address zero. Also known as null pointer.
+         *
+         * @returns {boolean} true if null
+         */
 	pointsToNull(): boolean {
-		return this.readPointer().compare(0);
+		return this.readPointer().compare(0) == 0;
 	}
 	toJSON() : string {
 		return this.api.cmd('?vi ' + this.addr.trim()).trim();
