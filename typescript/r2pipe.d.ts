@@ -41,9 +41,15 @@ export interface R2Pipe {
          *
          * @param {string} command to be executed inside radare2. The given command should end with `j`
          * @param {NativePointer|string|number} where to seek to execute this command (previous offset is restored after executing it)
-         * @returns {object} the JSON decoded object from the output of the command
+         * @returns {string} the string containing the output of the command
          */
     callAt(cmd: string, at: string | number | any): string;
+    /**
+         * Same as cmdj but using .call which avoids command injection problems
+         *
+         * @param {string} command to be executed inside radare2. The given command should end with `j`
+         * @returns {object} the JSON decoded object from the command output
+         */
     callj(cmd: string): any;
     /**
          * Log a string to the associated console. This is used internally by `console.log` in some implementations.

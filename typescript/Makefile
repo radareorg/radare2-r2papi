@@ -45,6 +45,16 @@ doc:
 	zip -r docs.zip docs
 	r2 -qc "open docs/index.html" --
 
+webdoc:
+	npm run doc
+	rm -rf .tmp
+	mkdir .tmp
+	mv docs .tmp/r2papi
+	cd .tmp && tar czvf r2papi.tgz r2papi
+	scp .tmp/r2papi.tgz radare.org:doc
+	ssh radare.org 'cd doc && tar xzvf r2papi.tgz'
+	rm -rf .tmp
+
 npm publish pub:
 	${MAKE}
 	npm publish

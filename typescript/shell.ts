@@ -8,9 +8,36 @@ import { R2Papi } from "./r2papi.js";
  * @typedef FileSystemType
  */
 export interface FileSystemType {
+	/**
+	 * name of the filesystem format, to be used when mounting it.
+	 *
+	 * @type {string}
+	 */
 	name: string;
+	/**
+	 * short string that describes the plugin
+	 *
+	 * @type {string}
+	 */
 	description: string;
 }
+
+/**
+ * Global static class providing information about the actual radare2 in use.
+ * This class mimics the `Frida` global object in frida, which can be useful to
+ * determine the executing environment of the script
+ *
+ * @typedef Radare2
+ */
+export interface Radare2 {
+	/**
+	 * string representing the radare2 version (3 numbers separated by dots)
+	 *
+	 * @type {string}
+	 */
+	version: string;
+}
+
 
 /**
  * Class that interacts with the `r2ai` plugin (requires `rlang-python` and `r2i` r2pm packages to be installed).

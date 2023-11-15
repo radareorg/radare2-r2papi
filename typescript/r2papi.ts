@@ -1,6 +1,5 @@
-// r2papi main file
+// main r2papi file
 
-// import { R, Module, Process, Thread } from "./global.js"
 import { R2Shell } from "./shell.js";
 import { r2, R2Pipe } from "./r2pipe.js";
 
@@ -138,10 +137,6 @@ export interface Instruction {
 	direction: "read" | "write";
 	stackptr: number;
 	stack: string; // "inc"|"dec"|"get"|"set"|"nop"|"null"; 
-}
-
-export interface Radare2 {
-	version: string;
 }
 
 export class ModuleClass {
@@ -287,6 +282,11 @@ export class ProcessClass {
 	}
 }
 
+/**
+ * Assembler and disassembler facilities to decode and encode instructions
+ * 
+ * @typedef Assembler
+ */
 export class Assembler {
 	program : string = "";
 	labels : any = {};
@@ -329,9 +329,25 @@ export class Assembler {
 	}
 }
 
+/**
+ * High level abstraction on top of the r2 command interface provided by r2pipe.
+ * 
+ * @typedef R2Papi
+ */
 export class R2Papi {
+	/**
+	 * Keep a reference r2pipe instance
+	 *
+	 * @type {R2Pipe}
+	 */
 	public r2: R2Pipe;
 
+	/**
+	* Create a new instance of the R2Papi class, taking an r2pipe interface as reference.
+	*
+        * @param {R2Pipe} the r2pipe instance to use as backend.
+        * @returns {R2Papi} instance
+ 	*/
 	constructor(r2: R2Pipe) {
 		this.r2 = r2;
 	}
@@ -706,7 +722,7 @@ export class R2Papi {
 	}
 }
 
-// useful to call functions via dxc
+// useful to call functions via dxc and to define and describe function signatures
 export class NativeFunction {
 	constructor() {
 	}
@@ -720,11 +736,35 @@ export class NativeCallback {
 
 // export const NULL = ptr("0");yet
 
+/**
+ * Global function that returns a new instance of a NativePointer.
+ * Saves some typing: `ptr(0)` is the same as `new NativePointer(0)`
+ * 
+ * @type function
+ */
+export declare function ptr(v: NativePointerValue): NativePointer;
+
+/**
+ * A NativePointer can be described using a string that contains a number in any base (hexadecimal and decimal are the most common formats used)
+ * But it actually supports anything else that could be handled by radare2. You can use symbol names, math operations or special symbols like `$$`.
+ * 
+ * @type NativePointerValue
+ */
+export type NativePointerValue = string | number | NativePointer;
+
+/**
+ * Class providing a way to work with 64bit pointers from Javascript, this API mimics the same
+ * well-known promitive available in Frida, but it's baked by the current session of r2.
+ * 
+ * It is also possible to use this class via the global `ptr` function.
+ * 
+ * @typedef NativePointer
+ */
 export class NativePointer {
 	addr: string;
 
 	api: R2Papi;
-	constructor(s: string | number, api?: R2Papi) {
+	constructor(s: NativePointerValue, api?: R2Papi) {
 		if (api === undefined) {
 			this.api = R;
 		} else {
@@ -971,7 +1011,6 @@ export class NativePointer {
 	}
 }
 
-
 /*
 // already defined by r2
 function ptr(x: string|number) {
@@ -979,7 +1018,34 @@ function ptr(x: string|number) {
 }
 */
 
+/**
+ * Global instance of R2Papi based on the current session of radare2.
+ * Note that `r2` is the global instance of `r2pipe` used by `R`.
+ * 
+ * @type R2Papi
+ */
 export declare var R: R2Papi;
+
+/**
+ * Global instance of the Module class based on the current radare2 session.
+ * This variable mimics the same APIs shipped by Frida.
+ * 
+ * @type ModuleClass
+ */
 export declare var Module: ModuleClass;
+
+/**
+ * Global instance of the Process class based on the current radare2 session.
+ * This variable mimics the same APIs shipped by Frida.
+ * 
+ * @type ProcessClass
+ */
 export declare var Process: ProcessClass;
+
+/**
+ * Global instance of the Thread class based on the current radare2 session.
+ * This variable mimics the same APIs shipped by Frida.
+ * 
+ * @type ThreadClass
+ */
 export declare var Thread: ThreadClass;

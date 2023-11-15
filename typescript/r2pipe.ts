@@ -12,6 +12,7 @@ export interface R2Pipe {
          * @returns {string} The output of the command execution
          */
 	cmd(cmd: string): string;
+
 	/**
          * Run a radare2 command in a different address. Same as `.cmd(x + '@ ' + a)`
          *
@@ -19,6 +20,7 @@ export interface R2Pipe {
          * @returns {string} The output of the command execution
          */
 	cmdAt(cmd: string): string;
+
 	/**
          * Run a radare2 command expecting the output to be JSON
          *
@@ -26,6 +28,7 @@ export interface R2Pipe {
          * @returns {object} the JSON decoded object from the output of the command
          */
 	cmdj(cmd: string): any;
+
 	/**
          * Call a radare2 command. This is similar to `R2Pipe.cmd`, but skips all the command parsing rules,
 	 * which is safer and faster but you cannot use any special modifier like `@`, `~`, ...
@@ -36,15 +39,24 @@ export interface R2Pipe {
          * @returns {object} the JSON decoded object from the output of the command
          */
 	call(cmd: string): string;
+
 	/**
          * Call a radare2 command in a different address
          *
          * @param {string} command to be executed inside radare2. The given command should end with `j`
          * @param {NativePointer|string|number} where to seek to execute this command (previous offset is restored after executing it)
-         * @returns {object} the JSON decoded object from the output of the command
+         * @returns {string} the string containing the output of the command
          */
 	callAt(cmd: string, at: string|number|any): string;
+
+	/**
+         * Same as cmdj but using .call which avoids command injection problems
+         *
+         * @param {string} command to be executed inside radare2. The given command should end with `j`
+         * @returns {object} the JSON decoded object from the command output
+         */
 	callj(cmd: string): any;
+
 	/**
          * Log a string to the associated console. This is used internally by `console.log` in some implementations.
          *
@@ -52,6 +64,7 @@ export interface R2Pipe {
          * @returns {boolean} true if successful
          */
 	log(msg: string): string;
+
 	/**
          * Instantiate a new radare2 plugin with the given type and constructor method.
          *
@@ -60,6 +73,7 @@ export interface R2Pipe {
          * @returns {boolean} true if successful
          */
 	plugin(type: string, maker: any): boolean;
+
 	/**
          * Unload the plugin associated with a `type` and a `name`.
          *
