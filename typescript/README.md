@@ -1,27 +1,23 @@
-Typescript implementation of r2papi
-===================================
+# Typescript APIs for radare2
 
-This directory contains the source for the `r2papi` node module.
+The r2papi module implements a set of idiomatic and high-level APIs
+that are based on top of the minimalistic `r2pipe` API.
 
-It provides a high level API on top of r2pipe to have a more
-idiomatic way to write your r2 scripts, the module can be used
-from TypeScript or Javascript and it offers autocompletion when
-used with an editor with a language server (lsp).
+The constructor of the `R2Papi` class takes an actual r2pipe instance,
+which only requires the `.cmd()` method to interface with radare2.
 
-This module is included in the default installation of radare2
-starting in versoin 5.8.0. This means that you can use it directly
-from the r2 shell when using the `js` command, so there's no need
-to ship NodeJS to run them.
+The whole r2papi module is documented and integrates well with any
+editor with LSP support (like Visual Studio Code or
 
-Bear in mind that r2's javascript engine doesn't offer the same
-APIs as NodeJS, and despite there's a plan to make it more compatible
-it is relying on radare2 APIs and its own sandbox configuration.
+R2Papi relies on commands and functionalities that were implemented
+around r2-5.8.x, so take this into account and update your software!
 
-* `[-----]` esil emulation api
-* `[x----]` NativePointer from Frida
-* `[x----]` Shell
-* `[xx---]` requirejs
-* `[xxx--]` Base64
-* `[xxx--]` r2pipe
+Note that TypeScript usually transpiles to Javascript, and as long as
+r2 ships it's own javascript runtime (based on QuickJS, which is ES6)
+it is possible to run the resulting r2papi scripts without any extra
+dependency in your system.
+
+But that does not mean that you need r2 to use r2papi, you can also
+use this module from NodeJS, Bun, Frida and even r2frida-compile!
 
 --pancake
