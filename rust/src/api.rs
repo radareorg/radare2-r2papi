@@ -6,6 +6,30 @@ use r2pipe::Error;
 use serde_json::from_str;
 use std::collections::HashMap;
 
+use std::fmt;
+
+struct HexSlice<'a>(&'a [u8]);
+
+impl<'a> HexSlice<'a> {
+    fn new<T>(data: &'a T) -> HexSlice<'a>
+    where
+        T: ?Sized + AsRef<[u8]> + 'a,
+    {
+        HexSlice(data.as_ref())
+    }
+}
+
+// You can choose to implement multiple traits, like Lower and UpperHex
+impl fmt::Display for HexSlice<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for byte in self.0 {
+            // Decide if you want to pad the value or have spaces inbetween, etc.
+            write!(f, "{:02X} ", byte)?;
+        }
+        Ok(())
+    }
+}
+
 impl R2PApi for R2 {
     fn analyze(&mut self) -> Result<(), Error> {
         self.send("aaa")?;
@@ -295,7 +319,8 @@ impl R2PApi for R2 {
 
     /// Write bytes to a specified offset, or None for current position
     fn write_bytes(&mut self, offset: Option<u64>, bytes: &[u8]) -> Result<(), Error> {
-        let hex: String = bytes.iter().map(|b| format!("{:02X}", b)).collect();
+        // let hex: String = bytes.iter().map(|b| format!("{:02X}", b)).collect();
+        let hex: String = format!("{}", HexSlice::new(bytes));
 
         match offset {
             Some(off) => self.send(&format!("wx {} @{}", hex, off))?,

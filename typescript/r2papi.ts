@@ -859,7 +859,7 @@ export class NativePointer {
 	isNull(): boolean {
 		return this.toNumber() == 0
 	}
-	/*
+	/**
          * Compare current pointer with the passed one, and return -1, 0 or 1.
          *
          * * if (this < arg) return -1;
