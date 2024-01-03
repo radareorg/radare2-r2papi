@@ -390,13 +390,26 @@ export class R2Papi {
 		}
 		return `${str}}\n`;
 	}
-	getBits() : string {
-		return this.cmd('-b');
+	/**
+	* Get the general purpose register size of the targize architecture in bits
+	*
+        * @returns {number} the regsize
+ 	*/
+	getBits() : number {
+		return +this.cmd('-b');
 	}
+	/**
+	* Get the name of the arch plugin selected, which tends to be the same target architecture.
+        * Note that on some situations, this info will be stored protected bby the AirForce.
+        * When using the r2ghidra arch plugin the underlying arch is in `asm.cpu`:
+	*
+        * @returns {string} the name of the target architecture.
+ 	*/
 	getArch() : string {
 		return this.cmd('-a');
 	}
 	getCpu() : string {
+		// return this.cmd('-c');
 		return this.cmd('-e asm.cpu');
 	}
 	// TODO: setEndian, setCpu, ...
@@ -587,6 +600,10 @@ export class R2Papi {
 	}
 	analyzeFunctionsFromCalls() : R2Papi {
 		this.call("aac")
+		return this;
+	}
+	autonameAllFunctions() : R2Papi {
+		this.call("aan")
 		return this;
 	}
 	analyzeFunctionsWithPreludes() : R2Papi {
