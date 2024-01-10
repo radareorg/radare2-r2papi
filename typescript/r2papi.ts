@@ -106,7 +106,7 @@ export interface BasicBlock {
 };
 
 export class ThreadClass {
-	api : any = null;
+	api: any = null;
 	constructor(r2: any) {
 		this.api = r2;
 	}
@@ -114,7 +114,7 @@ export class ThreadClass {
 		return r2.call("dbtj");
 	}
 	sleep(seconds: number) {
-		return r2.call("sleep "+ seconds);
+		return r2.call("sleep " + seconds);
 	}
 }
 
@@ -140,20 +140,20 @@ export interface Instruction {
 }
 
 export class ModuleClass {
-	api : any = null;
+	api: any = null;
 	constructor(r2: R2Pipe) {
 		this.api = r2;
 	}
-	fileName() : string {
+	fileName(): string {
 		return this.api.call("dpe").trim()
 	}
-	name() : string {
+	name(): string {
 		return "Module";
 	}
 	findBaseAddress() {
 		return "TODO";
 	}
-	findExportByName(name: string) : any {
+	findExportByName(name: string): any {
 		// TODO
 		return "TODO";
 	}
@@ -161,7 +161,7 @@ export class ModuleClass {
 		return "TODO";
 	}
 	getExportByName(name: string) {
-		return r2.call("iE,name/eq/"+name+",vaddr/cols,:quiet").trim();
+		return r2.call("iE,name/eq/" + name + ",vaddr/cols,:quiet").trim();
 	}
 	enumerateExports() {
 		// TODO: use frida json
@@ -182,7 +182,7 @@ export class ModuleClass {
 }
 
 export class ProcessClass {
-	r2 : any = null;
+	r2: any = null;
 	constructor(r2: R2Pipe) {
 		this.r2 = r2;
 	}
@@ -195,7 +195,7 @@ export class ProcessClass {
 	enumerateThreads() {
 		return r2.callj("dptj");
 	}
-	enumerateModules() : any {
+	enumerateModules(): any {
 		r2.call("cfg.json.num=string"); // to handle 64bit values properly
 		if (r2.callj("e cfg.debug")) {
 			const modules = r2.callj("dmmj");
@@ -239,11 +239,11 @@ export class ProcessClass {
 			return res;
 		}
 	}
-	getModuleByAddress(addr: NativePointer | number | string) : any{
+	getModuleByAddress(addr: NativePointer | number | string): any {
 	}
-	getModuleByName(moduleName: string) : any {
+	getModuleByName(moduleName: string): any {
 	}
-	codeSigningPolicy() : string {
+	codeSigningPolicy(): string {
 		return "optional";
 	}
 	getTmpDir() {
@@ -258,16 +258,16 @@ export class ProcessClass {
 	getCurrentDir() {
 		return this.r2.call("pwd").trim();
 	}
-	getCurrentThreadId() : number {
+	getCurrentThreadId(): number {
 		return +this.r2.call("dpq");
 	}
-	pageSize() : number {
+	pageSize(): number {
 		if (this.r2.callj("e asm.bits") === 64 && this.r2.call("e asm.arch").startsWith("arm")) {
 			return 16384;
 		}
 		return 4096;
 	}
-	isDebuggerAttached() : boolean {
+	isDebuggerAttached(): boolean {
 		return this.r2.callj("e cfg.debug");
 	}
 	setExceptionHandler() {
@@ -288,26 +288,26 @@ export class ProcessClass {
  * @typedef Assembler
  */
 export class Assembler {
-	program : string = "";
-	labels : any = {};
-	endian : boolean = false;
-	pc : NativePointer = ptr(0);
+	program: string = "";
+	labels: any = {};
+	endian: boolean = false;
+	pc: NativePointer = ptr(0);
 	r2: R2Pipe;
 	constructor(myr2?: R2Pipe) {
-		this.r2 = (myr2 === undefined)? r2: myr2;
+		this.r2 = (myr2 === undefined) ? r2 : myr2;
 		this.program = '';
 		this.labels = {};
 	}
 	/**
 	* Change the address of the program counter, some instructions need to know where
-        * are they located before being encoded or decoded.
+		* are they located before being encoded or decoded.
 	*
-        * @param {NativePointerValue} 
- 	*/
+		* @param {NativePointerValue} 
+	  */
 	setProgramCounter(pc: NativePointer) {
 		this.pc = pc;
 	}
-	setEndian(big:boolean) {
+	setEndian(big: boolean) {
 		this.endian = big;
 	}
 	toString() {
@@ -315,11 +315,11 @@ export class Assembler {
 	}
 	append(x: string) {
 		// append text
-		this.pc = this.pc.add (x.length / 2);
+		this.pc = this.pc.add(x.length / 2);
 		this.program += x;
 	}
 	// api
-	label(s: string) : NativePointer {
+	label(s: string): NativePointer {
 		const pos = this.pc; // this.#program.length / 4;
 		this.labels[s] = this.pc;
 		return pos;
@@ -330,8 +330,8 @@ export class Assembler {
 	*
 	* @param {string} the string representation of the instruction to assemble
 	* @returns {string} the hexpairs that represent the assembled instruciton
- 	*/
-	encode(s: string) : string {
+	  */
+	encode(s: string): string {
 		return this.r2.call(`pa ${s}`).trim();
 	}
 
@@ -341,8 +341,8 @@ export class Assembler {
 	*
 	* @param {string} the hexadecimal pairs of bytes to decode as an instruction
 	* @returns {string} the mnemonic and operands of the resulting decoding
- 	*/
-	decode(s: string) : string {
+	  */
+	decode(s: string): string {
 		return this.r2.call(`pad ${s}`).trim();
 	}
 }
@@ -363,9 +363,9 @@ export class R2Papi {
 	/**
 	* Create a new instance of the R2Papi class, taking an r2pipe interface as reference.
 	*
-        * @param {R2Pipe} the r2pipe instance to use as backend.
-        * @returns {R2Papi} instance
- 	*/
+		* @param {R2Pipe} the r2pipe instance to use as backend.
+		* @returns {R2Papi} instance
+	  */
 	constructor(r2: R2Pipe) {
 		this.r2 = r2;
 	}
@@ -375,10 +375,15 @@ export class R2Papi {
 	toJSON() {
 		return this.toString();
 	}
+	/**
+	 * Get the base address used by the current loaded binary
+	 *
+	 * @returns {NativePointer} address of the base of the binary
+	 */
 	getBaseAddress(): NativePointer {
 		return new NativePointer(this.cmd("e bin.baddr"));
 	}
-	jsonToTypescript(name: string, a: any) : string {
+	jsonToTypescript(name: string, a: any): string {
 		let str = `interface ${name} {\n`;
 		if (a.length && a.length > 0) {
 			a = a[0];
@@ -393,36 +398,41 @@ export class R2Papi {
 	/**
 	* Get the general purpose register size of the targize architecture in bits
 	*
-        * @returns {number} the regsize
- 	*/
-	getBits() : number {
+	* @returns {number} the regsize
+	  */
+	getBits(): number {
 		return +this.cmd('-b');
 	}
 	/**
-	* Get the name of the arch plugin selected, which tends to be the same target architecture.
-        * Note that on some situations, this info will be stored protected bby the AirForce.
-        * When using the r2ghidra arch plugin the underlying arch is in `asm.cpu`:
-	*
-        * @returns {string} the name of the target architecture.
- 	*/
-	getArch() : string {
+	 * Get the name of the arch plugin selected, which tends to be the same target architecture.
+	 * Note that on some situations, this info will be stored protected bby the AirForce.
+	 * When using the r2ghidra arch plugin the underlying arch is in `asm.cpu`:
+	 *
+	 * @returns {string} the name of the target architecture.
+	  */
+	getArch(): string {
 		return this.cmd('-a');
 	}
-	getCpu() : string {
+	/**
+	 * Get the name of the selected CPU for the current selected architecture.
+	 *
+	 * @returns {string} the value of asm.cpu
+	  */
+	getCpu(): string {
 		// return this.cmd('-c');
-		return this.cmd('-e asm.cpu');
+		return this.cmd('-e asm.cpu'); // use arch.cpu
 	}
 	// TODO: setEndian, setCpu, ...
 	setArch(arch: string, bits: number | undefined) {
-		this.cmd("-a "+arch);
+		this.cmd("-a " + arch);
 		if (bits !== undefined) {
-			this.cmd("-b "+bits);
+			this.cmd("-b " + bits);
 		}
 	}
 	setFlagSpace(name: string) {
 		this.cmd('fs ' + name);
 	}
-	setLogLevel(level: number) : R2Papi {
+	setLogLevel(level: number): R2Papi {
 		this.cmd('e log.level=' + level);
 		return this;
 	}
@@ -430,15 +440,15 @@ export class R2Papi {
 	 * should return the id for the new map using the given file descriptor
 	 */
 	// rename to createMap or mapFile?
-	newMap(fd: number, vaddr: NativePointer, size: number, paddr: NativePointer, perm: Permission, name: string = "") : void {
+	newMap(fd: number, vaddr: NativePointer, size: number, paddr: NativePointer, perm: Permission, name: string = ""): void {
 		this.cmd(`om ${fd} ${vaddr} ${size} ${paddr} ${perm} ${name}`);
 	}
 
-	at(a: string) : NativePointer {
+	at(a: string): NativePointer {
 		return new NativePointer(a);
 	}
 	getShell(): R2Shell {
-		return new R2Shell (this);
+		return new R2Shell(this);
 	}
 	// Radare/Frida
 	version(): string {
@@ -459,14 +469,14 @@ export class R2Papi {
 		return +this.r2.cmd("?vi:$p");
 	}
 	// Other stuff
-	printAt(msg: string, x: number, y: number) : void {
+	printAt(msg: string, x: number, y: number): void {
 		// see pg, but pg is obrken :D
 	}
-	clearScreen() : R2Papi {
+	clearScreen(): R2Papi {
 		this.r2.cmd("!clear");
 		return this;
 	}
-	getConfig(key: string) : Error | string {
+	getConfig(key: string): Error | string {
 		if (key === '') {
 			return new Error('Empty key');
 		}
@@ -476,7 +486,7 @@ export class R2Papi {
 		}
 		return this.r2.call("e " + key).trim();
 	}
-	setConfig(key: string, val: string) : R2Papi {
+	setConfig(key: string, val: string): R2Papi {
 		this.r2.call("e " + key + "=" + val);
 		return this;
 	}
@@ -487,46 +497,46 @@ export class R2Papi {
 		// this.r2.log("winrar" + JSON.stringify(JSON.parse(this.r2.cmd("drj")),null, 2) );
 		return this.cmdj("drj");
 	}
-	resizeFile(newSize: number) : R2Papi {
+	resizeFile(newSize: number): R2Papi {
 		this.cmd(`r ${newSize}`);
 		return this;
 	}
-	insertNullBytes(newSize: number, at?: NativePointer|number|string) : R2Papi {
+	insertNullBytes(newSize: number, at?: NativePointer | number | string): R2Papi {
 		if (at === undefined) {
 			at = "$$";
 		}
 		this.cmd(`r+${newSize}@${at}`);
 		return this;
 	}
-	removeBytes(newSize: number, at?: NativePointer | number | string) : R2Papi {
+	removeBytes(newSize: number, at?: NativePointer | number | string): R2Papi {
 		if (at === undefined) {
 			at = "$$";
 		}
 		this.cmd(`r-${newSize}@${at}`);
 		return this;
 	}
-	seek(addr: number) : R2Papi {
+	seek(addr: number): R2Papi {
 		this.cmd(`s ${addr}`);
 		return this;
 	}
-	currentSeek() : NativePointer {
+	currentSeek(): NativePointer {
 		return new NativePointer('$$');
 	}
-	seekToRelativeOpcode(nth: number) : NativePointer {
+	seekToRelativeOpcode(nth: number): NativePointer {
 		this.cmd(`so ${nth}`);
 		return this.currentSeek();
 	}
-	getBlockSize() : number {
+	getBlockSize(): number {
 		return +this.cmd("b");
 	}
-	setBlockSize(a: number) : R2Papi {
+	setBlockSize(a: number): R2Papi {
 		this.cmd(`b ${a}`);
 		return this;
 	}
-	countFlags() : number {
+	countFlags(): number {
 		return Number(this.cmd("f~?"));
 	}
-	countFunctions() : number {
+	countFunctions(): number {
 		return Number(this.cmd("aflc"));
 	}
 	analyzeFunctionsWithEsil(depth?: number) {
@@ -540,14 +550,14 @@ export class R2Papi {
 			depth = 0;
 		}
 		switch (depth) {
-		case 0: this.cmd("aa"); break;
-		case 1: this.cmd("aaa"); break;
-		case 2: this.cmd("aaaa"); break;
-		case 3: this.cmd("aaaaa"); break;
+			case 0: this.cmd("aa"); break;
+			case 1: this.cmd("aaa"); break;
+			case 2: this.cmd("aaaa"); break;
+			case 3: this.cmd("aaaaa"); break;
 		}
 		return this;
 	}
-	enumerateThreads() : ThreadContext[] {
+	enumerateThreads(): ThreadContext[] {
 		// TODO: use apt/dpt to list threads at iterate over them to get the registers
 		const regs0 = this.cmdj("drj");
 		const thread0 = {
@@ -587,7 +597,7 @@ export class R2Papi {
 	stepUntil(dst: NativePointer | string | number): void {
 		this.cmd(`dsu ${dst}`);
 	}
-	enumerateXrefsTo(s: string) : string[] {
+	enumerateXrefsTo(s: string): string[] {
 		return this.call("axtq " + s).trim().split(/\n/);
 	}
 	// TODO: rename to searchXrefsTo ?
@@ -598,23 +608,23 @@ export class R2Papi {
 			this.call("/re " + s);
 		}
 	}
-	analyzeFunctionsFromCalls() : R2Papi {
+	analyzeFunctionsFromCalls(): R2Papi {
 		this.call("aac")
 		return this;
 	}
-	autonameAllFunctions() : R2Papi {
+	autonameAllFunctions(): R2Papi {
 		this.call("aan")
 		return this;
 	}
-	analyzeFunctionsWithPreludes() : R2Papi {
+	analyzeFunctionsWithPreludes(): R2Papi {
 		this.call("aap")
 		return this;
 	}
-	analyzeObjCReferences() : R2Papi {
+	analyzeObjCReferences(): R2Papi {
 		this.cmd("aao");
 		return this;
 	}
-	analyzeImports() : R2Papi {
+	analyzeImports(): R2Papi {
 		this.cmd("af @ sym.imp.*");
 		return this;
 	}
@@ -627,7 +637,7 @@ export class R2Papi {
 		return res;
 	}
 	searchBytes(data: number[]): SearchResult[] {
-		function num2hex(data: number) : string {
+		function num2hex(data: number): string {
 			return (data & 0xff).toString(16);
 		}
 		const s = data.map(num2hex).join('');
@@ -642,7 +652,7 @@ export class R2Papi {
 		}
 	}
 	// TODO: take a BinFile as argument instead of number
-	selectBinary(id: number) : void {
+	selectBinary(id: number): void {
 		this.call(`ob ${id}`);
 	}
 	openFile(name: string): number | Error {
@@ -666,24 +676,24 @@ export class R2Papi {
 	currentFile(name: string): string {
 		return this.call('o.').trim();
 	}
-	enumeratePlugins(type: PluginFamily) : any {
+	enumeratePlugins(type: PluginFamily): any {
 		switch (type) {
-		case "bin":
-			return this.callj("Lij");
-		case "io":
-			return this.callj("Loj");
-		case "core":
-			return this.callj("Lcj");
-		case "arch":
-			return this.callj("LAj");
-		case "anal":
-			return this.callj("Laj");
-		case "lang":
-			return this.callj("Llj");
+			case "bin":
+				return this.callj("Lij");
+			case "io":
+				return this.callj("Loj");
+			case "core":
+				return this.callj("Lcj");
+			case "arch":
+				return this.callj("LAj");
+			case "anal":
+				return this.callj("Laj");
+			case "lang":
+				return this.callj("Llj");
 		}
 		return []
 	}
-	enumerateModules() : DebugModule[] {
+	enumerateModules(): DebugModule[] {
 		return this.callj("dmmj");
 	}
 	enumerateFiles(): any {
@@ -695,37 +705,37 @@ export class R2Papi {
 	enumerateMaps(): any {
 		return this.callj("omj");
 	}
-	enumerateClasses() : any {
+	enumerateClasses(): any {
 		return this.callj("icj");
 	}
-	enumerateSymbols() : any {
+	enumerateSymbols(): any {
 		return this.callj("isj");
 	}
-	enumerateExports() : any {
+	enumerateExports(): any {
 		return this.callj("iEj");
 	}
-	enumerateImports() : any {
+	enumerateImports(): any {
 		return this.callj("iij");
 	}
-	enumerateLibraries() : string[] {
+	enumerateLibraries(): string[] {
 		return this.callj("ilj");
 	}
-	enumerateSections() : any {
+	enumerateSections(): any {
 		return this.callj("iSj");
 	}
-	enumerateSegments() : any {
+	enumerateSegments(): any {
 		return this.callj("iSSj");
 	}
-	enumerateEntrypoints() : any {
+	enumerateEntrypoints(): any {
 		return this.callj("iej");
 	}
-	enumerateRelocations() : any {
+	enumerateRelocations(): any {
 		return this.callj("irj");
 	}
-	enumerateFunctions() : Function[] {
+	enumerateFunctions(): Function[] {
 		return this.cmdj("aflj");
 	}
-	enumerateFlags() : Flag[] {
+	enumerateFlags(): Flag[] {
 		return this.cmdj("fj");
 	}
 	skip() {
@@ -808,17 +818,34 @@ export class NativePointer {
 		// this.api.r2.log("NP " + s);
 		this.addr = ("" + s).trim();
 	}
+	/**
+	 * Set a flag (name) at the offset pointed
+	 *
+	 * @param {string} name name of the flag to set
+	 * @returns {string} base64 decoded string
+	 */
 	setFlag(name: string) {
 		this.api.call(`f ${name}=${this.addr}`);
 	}
+	/**
+	 * Remove the flag in the current offset
+	 *
+	 */
 	unsetFlag() {
 		this.api.call(`f-${this.addr}`);
 	}
-	hexdump(length?: number) : string{
-		let len = (length === undefined)? "": ""+length;
+	/**
+	 * Render an hexadecimal dump of the bytes contained in the range starting
+	 * in the current pointer and given length.
+	 *
+	 * @param {number} length optional amount of bytes to dump, using blocksize
+	 * @returns {string} string containing the hexadecimal dump of memory
+	 */
+	hexdump(length?: number): string {
+		let len = (length === undefined) ? "" : "" + length;
 		return this.api.cmd(`x${len}@${this.addr}`);
 	}
-	functionGraph(format?: GraphFormat) : string {
+	functionGraph(format?: GraphFormat): string {
 		if (format === "dot") {
 			return this.api.cmd(`agfd@ ${this.addr}`);
 		}
@@ -830,10 +857,10 @@ export class NativePointer {
 		}
 		return this.api.cmd(`agf@${this.addr}`);
 	}
-	readByteArray(len: number) : number[] {
+	readByteArray(len: number): number[] {
 		return JSON.parse(this.api.cmd(`p8j ${len}@${this.addr}`));
 	}
-	readHexString(len: number) : string {
+	readHexString(len: number): string {
 		return this.api.cmd(`p8 ${len}@${this.addr}`).trim();
 	}
 	and(a: number): NativePointer {
@@ -856,7 +883,7 @@ export class NativePointer {
 		this.api.cmd("wx " + data.join(""))
 		return this;
 	}
-	writeAssembly(instruction: string) : NativePointer {
+	writeAssembly(instruction: string): NativePointer {
 		this.api.cmd(`wa ${instruction} @ ${this.addr}`);
 		return this;
 	}
@@ -869,25 +896,25 @@ export class NativePointer {
 		return this;
 	}
 	/**
-         * Check if it's a pointer to the address zero. Also known as null pointer.
-         *
-         * @returns {boolean} true if null
-         */
+		 * Check if it's a pointer to the address zero. Also known as null pointer.
+		 *
+		 * @returns {boolean} true if null
+		 */
 	isNull(): boolean {
 		return this.toNumber() == 0
 	}
 	/**
-         * Compare current pointer with the passed one, and return -1, 0 or 1.
-         *
-         * * if (this < arg) return -1;
-         * * if (this > arg) return 1;
-         * * if (this == arg) return 0;
-         *
-         * @returns {number} returns -1, 0 or 1 depending on the comparison of the pointers
-         */
-	compare(a : NativePointerValue) : number {
-		const bv : NativePointer = (typeof a === "string" || typeof a === "number")
-			? new NativePointer(a): a;
+		 * Compare current pointer with the passed one, and return -1, 0 or 1.
+		 *
+		 * * if (this < arg) return -1;
+		 * * if (this > arg) return 1;
+		 * * if (this == arg) return 0;
+		 *
+		 * @returns {number} returns -1, 0 or 1 depending on the comparison of the pointers
+		 */
+	compare(a: NativePointerValue): number {
+		const bv: NativePointer = (typeof a === "string" || typeof a === "number")
+			? new NativePointer(a) : a;
 		const dist = r2.call(`?vi ${this.addr} - ${bv.addr}`);
 		if (dist[0] === '-') {
 			return -1;
@@ -898,29 +925,29 @@ export class NativePointer {
 		return 1;
 	}
 	/**
-         * Check if it's a pointer to the address zero. Also known as null pointer.
-         *
-         * @returns {boolean} true if null
-         */
+		 * Check if it's a pointer to the address zero. Also known as null pointer.
+		 *
+		 * @returns {boolean} true if null
+		 */
 	pointsToNull(): boolean {
 		return this.readPointer().compare(0) == 0;
 	}
-	toJSON() : string {
+	toJSON(): string {
 		return this.api.cmd('?vi ' + this.addr.trim()).trim();
 	}
-	toString() : string {
+	toString(): string {
 		return this.api.cmd('?v ' + this.addr.trim()).trim();
 	}
 	toNumber(): number {
 		return parseInt(this.toString());
 	}
-	writePointer(p: NativePointer) : void {
+	writePointer(p: NativePointer): void {
 		this.api.cmd(`wvp ${p}@${this}`); // requires 5.8.2
 	}
-	readRelativePointer() : NativePointer {
+	readRelativePointer(): NativePointer {
 		return this.add(this.readS32());
 	}
-	readPointer() : NativePointer {
+	readPointer(): NativePointer {
 		return new NativePointer(this.api.call("pvp@" + this.addr));
 	}
 	readS8(): number { // requires 5.8.9
@@ -969,46 +996,52 @@ export class NativePointer {
 	readU64be(): number {
 		return parseInt(this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
 	}
-	writeInt(n:number): boolean {
+	writeInt(n: number): boolean {
 		return this.writeU32(n);
 	}
-	writeU8(n: number) : boolean {
+	/**
+	 * Write a byte in the current offset, the value must be between 0 and 255
+	 *
+	 * @param {string} n number to write in the pointed byte in the current address
+	 * @returns {boolean} false if the operation failed
+	 */
+	writeU8(n: number): boolean {
 		this.api.cmd(`wv1 ${n}@${this.addr}`);
 		return true;
 	}
-	writeU16(n: number) : boolean {
+	writeU16(n: number): boolean {
 		this.api.cmd(`wv2 ${n}@${this.addr}`);
 		return true;
 	}
-	writeU16be(n: number) : boolean {
+	writeU16be(n: number): boolean {
 		this.api.cmd(`wv2 ${n}@${this.addr}@e:cfg.bigendian=true`);
 		return true;
 	}
-	writeU16le(n: number) : boolean {
+	writeU16le(n: number): boolean {
 		this.api.cmd(`wv2 ${n}@${this.addr}@e:cfg.bigendian=false`);
 		return true;
 	}
-	writeU32(n: number) : boolean {
+	writeU32(n: number): boolean {
 		this.api.cmd(`wv4 ${n}@${this.addr}`);
 		return true;
 	}
-	writeU32be(n: number) : boolean {
+	writeU32be(n: number): boolean {
 		this.api.cmd(`wv4 ${n}@${this.addr}@e:cfg.bigendian=true`);
 		return true;
 	}
-	writeU32le(n: number) : boolean {
+	writeU32le(n: number): boolean {
 		this.api.cmd(`wv4 ${n}@${this.addr}@e:cfg.bigendian=false`);
 		return true;
 	}
-	writeU64(n: number) : boolean {
+	writeU64(n: number): boolean {
 		this.api.cmd(`wv8 ${n}@${this.addr}`);
 		return true;
 	}
-	writeU64be(n: number) : boolean {
+	writeU64be(n: number): boolean {
 		this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=true`);
 		return true;
 	}
-	writeU64le(n: number) : boolean {
+	writeU64le(n: number): boolean {
 		this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=false`);
 		return true;
 	}
@@ -1028,15 +1061,15 @@ export class NativePointer {
 		const op: any = this.api.cmdj(`aoj@${this.addr}`)[0];
 		return op;
 	}
-	disassemble(length?: number) : string {
-		let len = (length === undefined)? "": ""+length;
+	disassemble(length?: number): string {
+		let len = (length === undefined) ? "" : "" + length;
 		return this.api.cmd(`pd ${len}@${this.addr}`);
 	}
-	analyzeFunction() : NativePointer {
+	analyzeFunction(): NativePointer {
 		this.api.cmd("af@" + this.addr);
 		return this;
 	}
-	analyzeFunctionRecursively() : NativePointer {
+	analyzeFunctionRecursively(): NativePointer {
 		this.api.cmd("afr@" + this.addr);
 		return this;
 	}
@@ -1051,15 +1084,15 @@ export class NativePointer {
 		// TODO: @ should be optional here, as addr should be passable as argument imho
 		return this.api.cmd("isj.@" + this.addr).trim();
 	}
-	getFunction() : Function {
-		return this.api.cmdj("afij@"+this.addr);
+	getFunction(): Function {
+		return this.api.cmdj("afij@" + this.addr);
 	}
 	basicBlock(): BasicBlock {
 		const bb: BasicBlock = this.api.cmdj("abj@" + this.addr);
 		return bb;
 	}
 	functionBasicBlocks(): BasicBlock[] {
-		return this.api.cmdj("afbj@"+this.addr);
+		return this.api.cmdj("afbj@" + this.addr);
 	}
 	xrefs(): Reference[] {
 		return this.api.cmdj("axtj@" + this.addr);

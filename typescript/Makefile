@@ -8,6 +8,9 @@ all: node_modules
 	$(TSC) -m node16 --target es2020 opt.ts && cp -f opt.js opt.r2.js
 	$(TSC) -m node16 --target es2020 r2papi.ts && cp -f r2papi.js index.r2.js
 
+vs:
+	open -a "Visual Studio Code" . || vscode .
+
 pdq: node_modules
 	# TODO: use pdq.r2.ts
 	$(TSC) -m node16 --target es2020 pdq.ts

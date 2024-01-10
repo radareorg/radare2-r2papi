@@ -1,9 +1,21 @@
 export class Base64 {
-	static encode(x: string) : string {
-		return b64(x);
+	/**
+	 * Encode the given input string using base64
+	 *
+	 * @param {string} input string to encode
+	 * @returns {string} base64 encoded string
+	 */
+	static encode(input: string): string {
+		return b64(input);
 	}
-	static decode(x: string) : string {
-		return b64(x, true);
+	/**
+	 * Decode the given base64 string into plain text
+	 *
+	 * @param {string} input string encoded in base64 format
+	 * @returns {string} base64 decoded string
+	 */
+	static decode(input: string): string {
+		return b64(input, true);
 	}
 }
 
