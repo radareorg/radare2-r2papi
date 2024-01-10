@@ -9,15 +9,16 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 	long_description = f.read()
 
 setup(
-	name='r2api',
-	version='0.1.0',
-	packages=['r2api'],
-	description='High level API for radare2 pipe',
+	name='r2papi',
+	version='0.1.2',
+	packages=['r2papi'],
+	description='High level API on top of r2pipe',
+	long_description_content_type='text/markdown',
 	long_description=long_description,
-	url='https://rada.re',
+	url='https://www.radare.org',
 	author='radare2',
 	install_requires=['r2pipe'],
 	project_urls={
-		'Source': 'https://github.com/radare/radare2-r2pipe-api/',
+		'Source': 'https://github.com/radare/radare2-r2papi/',
 	},
 )

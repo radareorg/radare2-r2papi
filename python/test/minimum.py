@@ -1,6 +1,6 @@
 import r2pipe
-import r2api
+import r2papi
 
-api = r2api.R2Api("/bin/ls")
+api = r2papi.R2Api("/bin/ls")
 print(api.info().arch)
 api.quit()
