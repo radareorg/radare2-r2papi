@@ -15,14 +15,14 @@ export interface R2Pipe {
     /**
          * Run a radare2 command in a different address. Same as `.cmd(x + '@ ' + a)`
          *
-         * @param {string} command to be executed inside radare2.
+         * @param {string} cmd to be executed inside radare2.
          * @returns {string} The output of the command execution
          */
     cmdAt(cmd: string): string;
     /**
          * Run a radare2 command expecting the output to be JSON
          *
-         * @param {string} command to be executed inside radare2. The given command should end with `j`
+         * @param {string} cmd to be executed inside radare2.
          * @returns {object} the JSON decoded object from the output of the command
          */
     cmdj(cmd: string): any;
@@ -32,14 +32,14 @@ export interface R2Pipe {
      *
      * See R2Pipe.callAt() to call a command on a different address
          *
-         * @param {string} command to be executed inside radare2. The given command should end with `j`
+         * @param {string} cmd to be executed inside radare2. The given command should end with `j`
          * @returns {object} the JSON decoded object from the output of the command
          */
     call(cmd: string): string;
     /**
          * Call a radare2 command in a different address
          *
-         * @param {string} command to be executed inside radare2. The given command should end with `j`
+         * @param {string} cmd to be executed inside radare2.
          * @param {NativePointer|string|number} where to seek to execute this command (previous offset is restored after executing it)
          * @returns {string} the string containing the output of the command
          */
@@ -47,15 +47,15 @@ export interface R2Pipe {
     /**
          * Same as cmdj but using .call which avoids command injection problems
          *
-         * @param {string} command to be executed inside radare2. The given command should end with `j`
-         * @returns {object} the JSON decoded object from the command output
+         * @param {string} cmd to be executed inside radare2.
+         * @returns {string} the string containing the output of the command
          */
     callj(cmd: string): any;
     /**
-         * Log a string to the associated console. This is used internally by `console.log` in some implementations.
+         * Same as cmdj but using .call which avoids command injection problems
          *
-         * @param {string} text to be displayed
-         * @returns {boolean} true if successful
+         * @param {string} cmd to be executed inside radare2.
+         * @returns {object} the JSON decoded object from the output of the command
          */
     log(msg: string): string;
     /**
