@@ -54,8 +54,7 @@ export interface R2Pipe {
     /**
          * Same as cmdj but using .call which avoids command injection problems
          *
-         * @param {string} cmd to be executed inside radare2.
-         * @returns {object} the JSON decoded object from the output of the command
+         * @param {string} text to be displayed
          */
     log(msg: string): string;
     /**

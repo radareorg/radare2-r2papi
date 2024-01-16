@@ -17,9 +17,10 @@ export interface R2Pipe {
      * Run a radare2 command in a different address. Same as `.cmd(x + '@ ' + a)`
      *
      * @param {string} command to be executed inside radare2.
+     * @param {number|string|NativePointer} command to be executed inside radare2.
      * @returns {string} The output of the command execution
      */
-    cmdAt(cmd: string): string;
+    cmdAt(cmd: string, address: number | string | any): string;
 
     /**
      * Run a radare2 command expecting the output to be JSON
@@ -47,7 +48,7 @@ export interface R2Pipe {
      * @param {NativePointer|string|number} where to seek to execute this command (previous offset is restored after executing it)
      * @returns {string} the string containing the output of the command
      */
-    callAt(cmd: string, at: string | number | any): string;
+    callAt(cmd: string, address: string | number | any): string;
 
     /**
      * Same as cmdj but using .call which avoids command injection problems
