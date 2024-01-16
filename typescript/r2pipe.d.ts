@@ -55,7 +55,6 @@ export interface R2Pipe {
          * Log a string to the associated console. This is used internally by `console.log` in some implementations.
          *
          * @param {string} text to be displayed
-         * @returns {boolean} true if successful
          */
     log(msg: string): string;
     /**
