@@ -15,8 +15,9 @@ async:
 	rm -rf async
 	mkdir -p async
 	cp -f r2papi.ts opt.ts esil.ts esil.ts shell.ts base64.ts ai.ts r2frida.ts index.ts async
-	for a in async/*.ts ; do sed -e 's,r2.c,await r2.c,' -i .bak $$a ; done
-	rm -f async/*.bak
+	python tools/asyncify.py
+	vim async/r2papi.ts
+
 .PHONY: async
 
 pdq: node_modules

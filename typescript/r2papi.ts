@@ -160,26 +160,21 @@ export class ModuleClass {
 	getBaseAddress(name: string) {
 		return "TODO";
 	}
-	// maybe-async
 	getExportByName(name: string) {
 		return r2.call("iE,name/eq/" + name + ",vaddr/cols,:quiet").trim();
 	}
-	// maybe-async
 	enumerateExports() {
 		// TODO: adjust to be the same output as Frida
 		return r2.callj("iEj");
 	}
-	// maybe-async
 	enumerateImports() {
 		// TODO: adjust to be the same output as Frida
 		return r2.callj("iij");
 	}
-	// maybe-async
 	enumerateRanges() {
 		// TODO: adjust to be the same output as Frida
 		return r2.callj("isj");
 	}
-	// maybe-async
 	enumerateSymbols() {
 		// TODO: adjust to be the same output as Frida
 		return r2.callj("isj");
@@ -346,7 +341,7 @@ export class Assembler {
 	*
 	* @param {string} the hexadecimal pairs of bytes to decode as an instruction
 	* @returns {string} the mnemonic and operands of the resulting decoding
-	  */
+	*/
 	decode(s: string): string {
 		return this.r2.call(`pad ${s}`).trim();
 	}
