@@ -160,23 +160,28 @@ export class ModuleClass {
 	getBaseAddress(name: string) {
 		return "TODO";
 	}
+	// maybe-async
 	getExportByName(name: string) {
 		return r2.call("iE,name/eq/" + name + ",vaddr/cols,:quiet").trim();
 	}
+	// maybe-async
 	enumerateExports() {
-		// TODO: use frida json
+		// TODO: adjust to be the same output as Frida
 		return r2.callj("iEj");
 	}
+	// maybe-async
 	enumerateImports() {
-		// TODO: use frida json
+		// TODO: adjust to be the same output as Frida
 		return r2.callj("iij");
 	}
+	// maybe-async
 	enumerateRanges() {
-		// TODO: use frida json
+		// TODO: adjust to be the same output as Frida
 		return r2.callj("isj");
 	}
+	// maybe-async
 	enumerateSymbols() {
-		// TODO: use frida json
+		// TODO: adjust to be the same output as Frida
 		return r2.callj("isj");
 	}
 }

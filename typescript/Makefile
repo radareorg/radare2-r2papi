@@ -11,6 +11,14 @@ all: node_modules
 vs:
 	open -a "Visual Studio Code" . || vscode .
 
+async:
+	rm -rf async
+	mkdir -p async
+	cp -f r2papi.ts opt.ts esil.ts esil.ts shell.ts base64.ts ai.ts r2frida.ts index.ts async
+	for a in async/*.ts ; do sed -e 's,r2.c,await r2.c,' -i .bak $$a ; done
+	rm -f async/*.bak
+.PHONY: async
+
 pdq: node_modules
 	# TODO: use pdq.r2.ts
 	$(TSC) -m node16 --target es2020 pdq.ts
@@ -73,4 +81,4 @@ r2wip.d.ts:
 	sh tsi.sh abj >> r2wip.d.ts
 
 clean:
-	rm *.qjs *.r2.js
+	rm -rf *.qjs *.r2.js one.* dist __dist *.zip *.d.ts *.js
