@@ -97,8 +97,8 @@ export class R2Shell {
         * @param {string} path to the directory
         * @returns {boolean} true if successful
  	*/
-	chdir(path:string) : boolean {
-		this.rp.call (`cd ${path}`);
+	async chdir(path:string) : Promise<boolean> {
+		await this.rp.call (`cd ${path}`);
 		return true;
 	}
 
@@ -107,8 +107,9 @@ export class R2Shell {
 	*
         * @returns {string[]} array of file names
  	*/
-	ls(): string[] {
-		return this.rp.call(`ls -q`).trim().split('\n')
+	async ls(): Promise<string[]> {
+		const files = await this.rp.call(`ls -q`);
+		return files.trim().split('\n');
 	}
 
 	/**
@@ -127,8 +128,8 @@ export class R2Shell {
 	*
         * @param {string} URI or file to open by the system
  	*/
-	open(arg: string): void {
-		this.rp.call (`open ${arg}`);
+	async open(arg: string): Promise<void> {
+		await this.rp.call (`open ${arg}`);
 	}
 
 	/**
@@ -164,8 +165,8 @@ export class R2Shell {
         * @param {string} path to the mounted filesystem
         * @returns {void} TODO: should return boolean
  	*/
-	umount(path: string) : void {
-		this.rp.call (`m-${path}`);
+	async umount(path: string) : Promise<void> {
+		await this.rp.call (`m-${path}`);
 	}
 	/**
 	* Change current directory on the internal radare2 filesystem
@@ -173,8 +174,8 @@ export class R2Shell {
         * @param {string} path name to change to
         * @returns {void} TODO: should return boolean
  	*/
-	chdir2(path: string) : void {
-		this.rp.call (`mdq ${path}`);
+	async chdir2(path: string) : Promise<void> {
+		await this.rp.call (`mdq ${path}`);
 	}
 	/**
 	* List the files contained in the given path within the virtual radare2 filesystem.
@@ -182,22 +183,24 @@ export class R2Shell {
         * @param {string} path name to change to
         * @returns {void} TODO: should return boolean
  	*/
-	ls2(path: string) : string[] {
-		return this.rp.call (`mdq ${path}`).trim().split('\n');
+	async ls2(path: string) : Promise<string[]> {
+		const files = await this.rp.call (`mdq ${path}`)
+		return files.trim().split('\n');
 	}
 	/**
 	 * Enumerate all the mountpoints set in the internal virtual filesystem of radare2
 	 * @returns {any[]} array of mount
 	 */
-	enumerateFilesystemTypes(): any[] {
+	async enumerateFilesystemTypes(): Promise<any[]> {
 		return this.rp.cmdj ("mLj");
 	}
 	/**
 	 * Enumerate all the mountpoints set in the internal virtual filesystem of radare2
 	 * @returns {any[]} array of mount
 	 */
-	enumerateMountpoints(): any[] {
-		return this.rp.cmdj ("mj")['mountpoints'];
+	async enumerateMountpoints(): Promise<any[]> {
+		const output = await this.rp.cmdj ("mj");
+		return output['mountpoints'];
 	}
 	/**
 	 * TODO: not implemented

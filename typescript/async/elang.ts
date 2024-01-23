@@ -1,4 +1,4 @@
-import { R2Pipe } from "./index";
+import { R2PipeAsync } from "./index";
 
 // esil high level language - functional programming
 //
@@ -36,7 +36,7 @@ const code = `[
 `;
 
 el.eval(code);
-println("Hello `test()` World"),
+console.log("Hello `test()` World");
 
 /*
    96,sp,-=,x28,sp,=[8],x27,sp,8,+,=[8]

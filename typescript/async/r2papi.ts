@@ -1,7 +1,7 @@
 // main r2papi file
 
 import { R2Shell } from "./shell.js";
-import { r2, R2PipeAsync } from "./r2pipe.js";
+import { newAsyncR2PipeFromSync, r2, R2PipeAsync } from "./r2pipe.js";
 
 export type InstructionType = "mov" | "jmp" | "cmp" | "nop" | "call" | "add" | "sub";
 export type InstructionFamily = "cpu" | "fpu" | "priv";
@@ -295,7 +295,11 @@ export class Assembler {
 	pc: NativePointer = ptr(0);
 	r2: R2PipeAsync;
 	constructor(myr2?: R2PipeAsync) {
-		this.r2 = (myr2 === undefined) ? r2 : myr2;
+		if (myr2 === undefined) {
+			this.r2 = newAsyncR2PipeFromSync(r2);
+		} else {
+			this.r2 = myr2;
+		}
 		this.program = '';
 		this.labels = {};
 	}
@@ -314,9 +318,9 @@ export class Assembler {
 	toString() {
 		return this.program;
 	}
-	append(x: string) {
+	async append(x: string) {
 		// append text
-		this.pc = this.pc.add(x.length / 2);
+		this.pc = await this.pc.add(x.length / 2);
 		this.program += x;
 	}
 	// api
@@ -332,8 +336,9 @@ export class Assembler {
 	* @param {string} the string representation of the instruction to assemble
 	* @returns {string} the hexpairs that represent the assembled instruciton
 	  */
-	encode(s: string): string {
-		return this.r2.call(`pa ${s}`).trim();
+	async encode(s: string): Promise<string> {
+		const output = await this.r2.call(`pa ${s}`);
+		return output.trim();
 	}
 
 	/**
@@ -343,8 +348,9 @@ export class Assembler {
 	* @param {string} the hexadecimal pairs of bytes to decode as an instruction
 	* @returns {string} the mnemonic and operands of the resulting decoding
 	*/
-	decode(s: string): string {
-		return this.r2.call(`pad ${s}`).trim();
+	async decode(s: string): Promise<string> {
+		const output = await this.r2.call(`pad ${s}`);
+		return output.trim();
 	}
 }
 
@@ -381,8 +387,8 @@ export class R2PapiAsync {
 	 *
 	 * @returns {NativePointer} address of the base of the binary
 	 */
-	getBaseAddress(): NativePointer {
-		return new NativePointer(this.cmd("e bin.baddr"));
+	async getBaseAddress(): Promise<NativePointer> {
+		return new NativePointer(await this.cmd("e bin.baddr"));
 	}
 	jsonToTypescript(name: string, a: any): string {
 		let str = `interface ${name} {\n`;
@@ -456,14 +462,17 @@ export class R2PapiAsync {
 		return v.trim();
 	}
 	// Process
-	platform(): string {
-		return this.r2.cmd("uname").trim();
+	async platform(): Promise<string> {
+		const output = await this.r2.cmd("uname");
+		return output.trim();
 	}
-	arch(): string {
-		return this.r2.cmd("uname -a").trim();
+	async arch(): Promise<string> {
+		const output = await this.r2.cmd("uname -a");
+		return output.trim();
 	}
-	bits(): string {
-		return this.r2.cmd("uname -b").trim();
+	async bits(): Promise<string> {
+		const output = await this.r2.cmd("uname -b");
+		return output.trim();
 	}
 	id(): number {
 		// getpid();
@@ -477,24 +486,26 @@ export class R2PapiAsync {
 		this.r2.cmd("!clear");
 		return this;
 	}
-	getConfig(key: string): Error | string {
+	async getConfig(key: string): Promise<Error | string> {
 		if (key === '') {
 			return new Error('Empty key');
 		}
-		const exist = this.r2.cmd(`e~^${key} =`).trim()
-		if (exist === '') {
+		const exist = await this.r2.cmd(`e~^${key} =`);
+		if (exist.trim() === "") {
 			return new Error('Config key does not exist');
 		}
-		return this.r2.call("e " + key).trim();
+		const value = await this.r2.call("e " + key);
+		return value.trim();
 	}
-	setConfig(key: string, val: string): R2Papi {
-		this.r2.call("e " + key + "=" + val);
+	async setConfig(key: string, val: string): Promise<R2Papi> {
+		await this.r2.call("e " + key + "=" + val);
 		return this;
 	}
-	getRegisterStateForEsil(): string {
-		return this.cmdj("dre").trim();
+	async getRegisterStateForEsil(): Promise<string> {
+		const dre = await this.cmdj("dre");
+		return this.cmdj("dre");
 	}
-	getRegisters(): any {
+	async getRegisters(): Promise<any> {
 		// this.r2.log("winrar" + JSON.stringify(JSON.parse(this.r2.cmd("drj")),null, 2) );
 		return this.cmdj("drj");
 	}
@@ -581,10 +592,11 @@ export class R2PapiAsync {
 			this.r2.cmd("dr " + r + "=" + v);
 		}
 	}
-	hex(s: number | string): string {
-		return this.r2.cmd("?v " + s).trim();
+	async hex(s: number | string): Promise<string> {
+		const output = await this.r2.cmd("?v " + s);
+		return output.trim();
 	}
-	async step(): R2Papi {
+	async step(): Promise<R2Papi> {
 		await this.r2.cmd("ds");
 		return this;
 	}
@@ -598,8 +610,9 @@ export class R2PapiAsync {
 	stepUntil(dst: NativePointer | string | number): void {
 		this.cmd(`dsu ${dst}`);
 	}
-	enumerateXrefsTo(s: string): string[] {
-		return this.call("axtq " + s).trim().split(/\n/);
+	async enumerateXrefsTo(s: string): Promise<string[]> {
+		const output = await this.call("axtq " + s);
+		return output.trim().split(/\n/);
 	}
 	// TODO: rename to searchXrefsTo ?
 	findXrefsTo(s: string, use_esil: boolean) {
@@ -625,27 +638,27 @@ export class R2PapiAsync {
 		this.cmd("aao");
 		return this;
 	}
-	analyzeImports(): R2Papi {
-		this.cmd("af @ sym.imp.*");
+	async analyzeImports(): Promise<R2Papi> {
+		await this.cmd("af @ sym.imp.*");
 		return this;
 	}
-	searchDisasm(s: string): SearchResult[] {
-		const res: SearchResult[] = this.callj("/ad " + s);
+	async searchDisasm(s: string): Promise<SearchResult[]> {
+		const res: SearchResult[] = await this.callj("/ad " + s);
 		return res;
 	}
-	searchString(s: string): SearchResult[] {
-		const res: SearchResult[] = this.cmdj("/j " + s);
+	async searchString(s: string): Promise<SearchResult[]> {
+		const res: SearchResult[] = await this.cmdj("/j " + s);
 		return res;
 	}
-	searchBytes(data: number[]): SearchResult[] {
+	async searchBytes(data: number[]): Promise<SearchResult[]> {
 		function num2hex(data: number): string {
 			return (data & 0xff).toString(16);
 		}
 		const s = data.map(num2hex).join('');
-		const res: SearchResult[] = this.cmdj("/xj " + s);
+		const res: SearchResult[] = await this.cmdj("/xj " + s);
 		return res;
 	}
-	binInfo(): BinFile {
+	async binInfo(): Promise<BinFile> {
 		try {
 			return this.cmdj("ij~{bin}");
 		} catch (e: any) {
@@ -656,26 +669,26 @@ export class R2PapiAsync {
 	selectBinary(id: number): void {
 		this.call(`ob ${id}`);
 	}
-	openFile(name: string): number | Error {
-		const ofd = this.call('oqq').trim();
-		this.call(`o ${name}`);
-		const nfd = this.call('oqq').trim();
-		if (ofd === nfd) {
+	async openFile(name: string): Promise<number | Error> {
+		const ofd = await this.call('oqq');
+		await this.call(`o ${name}`);
+		const nfd = await this.call('oqq');
+		if (ofd.trim() === nfd.trim()) {
 			return new Error('Cannot open file');
 		}
 		return parseInt(nfd);
 	}
-	openFileNomap(name: string): number | Error {
-		const ofd = this.call('oqq').trim();
+	async openFileNomap(name: string): Promise<number | Error> {
+		const ofd = await this.call('oqq');
 		this.call(`of ${name}`);
-		const nfd = this.call('oqq').trim();
-		if (ofd === nfd) {
+		const nfd = await this.call('oqq');
+		if (ofd.trim() === nfd.trim()) {
 			return new Error('Cannot open file');
 		}
 		return parseInt(nfd);
 	}
-	currentFile(name: string): string {
-		return this.call('o.').trim();
+	async currentFile(name: string): Promise<string> {
+		return (await this.call("o.")).trim();
 	}
 	enumeratePlugins(type: PluginFamily): any {
 		switch (type) {
@@ -694,49 +707,49 @@ export class R2PapiAsync {
 		}
 		return []
 	}
-	enumerateModules(): DebugModule[] {
+	async enumerateModules(): Promise<DebugModule[]> {
 		return this.callj("dmmj");
 	}
-	enumerateFiles(): any {
+	async enumerateFiles(): Promise<any> {
 		return this.callj("oj");
 	}
-	enumerateBinaries(): any {
+	async enumerateBinaries(): Promise<any> {
 		return this.callj("obj");
 	}
-	enumerateMaps(): any {
+	async enumerateMaps(): Promise<any> {
 		return this.callj("omj");
 	}
-	enumerateClasses(): any {
+	async enumerateClasses(): Promise<any> {
 		return this.callj("icj");
 	}
-	enumerateSymbols(): any {
+	async enumerateSymbols(): Promise<any> {
 		return this.callj("isj");
 	}
-	enumerateExports(): any {
+	async enumerateExports(): Promise<any> {
 		return this.callj("iEj");
 	}
-	enumerateImports(): any {
+	async enumerateImports(): Promise<any> {
 		return this.callj("iij");
 	}
-	enumerateLibraries(): string[] {
+	async enumerateLibraries(): Promise<string[]> {
 		return this.callj("ilj");
 	}
-	enumerateSections(): any {
+	async enumerateSections(): Promise<any> {
 		return this.callj("iSj");
 	}
-	enumerateSegments(): any {
+	async enumerateSegments(): Promise<any> {
 		return this.callj("iSSj");
 	}
-	enumerateEntrypoints(): any {
+	async enumerateEntrypoints(): Promise<any> {
 		return this.callj("iej");
 	}
-	enumerateRelocations(): any {
+	async enumerateRelocations(): Promise<any> {
 		return this.callj("irj");
 	}
-	enumerateFunctions(): Function[] {
+	async enumerateFunctions(): Promise<Function[]> {
 		return this.cmdj("aflj");
 	}
-	enumerateFlags(): Flag[] {
+	async enumerateFlags(): Promise<Flag[]> {
 		return this.cmdj("fj");
 	}
 	skip() {
@@ -745,26 +758,26 @@ export class R2PapiAsync {
 	ptr(s: string | number): NativePointer {
 		return new NativePointer(s, this);
 	}
-	call(s: string): string {
+	async call(s: string): Promise<string> {
 		return this.r2.call(s);
 	}
-	callj(s: string): any {
-		return JSON.parse(this.call(s));
+	async callj(s: string): Promise<any> {
+		return JSON.parse(await this.call(s));
 	}
-	cmd(s: string): string {
+	async cmd(s: string): Promise<string> {
 		return this.r2.cmd(s);
 	}
-	cmdj(s: string): any {
-		return JSON.parse(this.cmd(s));
+	async cmdj(s: string): Promise<any> {
+		return JSON.parse(await this.cmd(s));
 	}
-	log(s: string) {
+	async log(s: string) {
 		return this.r2.log(s);
 	}
-	clippy(msg: string): void {
-		this.r2.log(this.r2.cmd("?E " + msg));
+	async clippy(msg: string): Promise<void> {
+		this.r2.log(await this.r2.cmd("?E " + msg));
 	}
-	ascii(msg: string): void {
-		this.r2.log(this.r2.cmd("?ea " + msg));
+	async ascii(msg: string): Promise<void> {
+		this.r2.log(await this.r2.cmd("?ea " + msg));
 	}
 }
 
@@ -842,11 +855,11 @@ export class NativePointer {
 	 * @param {number} length optional amount of bytes to dump, using blocksize
 	 * @returns {string} string containing the hexadecimal dump of memory
 	 */
-	hexdump(length?: number): string {
+	async hexdump(length?: number): Promise<string> {
 		let len = (length === undefined) ? "" : "" + length;
 		return this.api.cmd(`x${len}@${this.addr}`);
 	}
-	functionGraph(format?: GraphFormat): string {
+	async functionGraph(format?: GraphFormat): Promise<string> {
 		if (format === "dot") {
 			return this.api.cmd(`agfd@ ${this.addr}`);
 		}
@@ -858,30 +871,30 @@ export class NativePointer {
 		}
 		return this.api.cmd(`agf@${this.addr}`);
 	}
-	readByteArray(len: number): number[] {
-		return JSON.parse(this.api.cmd(`p8j ${len}@${this.addr}`));
+	async readByteArray(len: number): Promise<number[]> {
+		return JSON.parse(await this.api.cmd(`p8j ${len}@${this.addr}`));
 	}
-	readHexString(len: number): string {
-		return this.api.cmd(`p8 ${len}@${this.addr}`).trim();
+	async readHexString(len: number): Promise<string> {
+		return (await this.api.cmd(`p8 ${len}@${this.addr}`)).trim();
 	}
-	and(a: number): NativePointer {
-		const addr = this.api.call(`?v ${this.addr} & ${a}`).trim();
+	async and(a: number): Promise<NativePointer> {
+		const addr = await this.api.call(`?v ${this.addr} & ${a}`);
+		return new NativePointer(addr.trim());
+	}
+	async or(a: number): Promise<NativePointer> {
+		const addr = await this.api.call(`?v ${this.addr} | ${a}`);
+		return new NativePointer(addr.trim());
+	}
+	async add(a: number): Promise<NativePointer> {
+		const addr = await this.api.call(`?v ${this.addr}+${a}`);
 		return new NativePointer(addr);
 	}
-	or(a: number): NativePointer {
-		const addr = this.api.call(`?v ${this.addr} | ${a}`).trim();
+	async sub(a: number): Promise<NativePointer> {
+		const addr = await this.api.call(`?v ${this.addr}-${a}`);
 		return new NativePointer(addr);
 	}
-	add(a: number): NativePointer {
-		const addr = this.api.call(`?v ${this.addr}+${a}`).trim();
-		return new NativePointer(addr);
-	}
-	sub(a: number): NativePointer {
-		const addr = this.api.call(`?v ${this.addr}-${a}`).trim();
-		return new NativePointer(addr);
-	}
-	writeByteArray(data: number[]): NativePointer {
-		this.api.cmd("wx " + data.join(""))
+	async writeByteArray(data: number[]): Promise<NativePointer> {
+		await this.api.cmd("wx " + data.join(""))
 		return this;
 	}
 	writeAssembly(instruction: string): NativePointer {
@@ -901,8 +914,8 @@ export class NativePointer {
 		 *
 		 * @returns {boolean} true if null
 		 */
-	isNull(): boolean {
-		return this.toNumber() == 0
+	async isNull(): Promise<boolean> {
+		return (await this.toNumber()) == 0
 	}
 	/**
 		 * Compare current pointer with the passed one, and return -1, 0 or 1.
@@ -926,78 +939,81 @@ export class NativePointer {
 		return 1;
 	}
 	/**
-		 * Check if it's a pointer to the address zero. Also known as null pointer.
-		 *
-		 * @returns {boolean} true if null
-		 */
-	pointsToNull(): boolean {
-		return this.readPointer().compare(0) == 0;
+	 * Check if it's a pointer to the address zero. Also known as null pointer.
+	 *
+	 * @returns {boolean} true if null
+	 */
+	async pointsToNull(): Promise<boolean> {
+		const value = await this.readPointer();
+		return await value.compare(0) == 0;
 	}
-	toJSON(): string {
-		return this.api.cmd('?vi ' + this.addr.trim()).trim();
+	async toJSON(): Promise<string> {
+		const output = await this.api.cmd('?vi ' + this.addr.trim());
+		return output.trim();
 	}
-	toString(): string {
-		return this.api.cmd('?v ' + this.addr.trim()).trim();
+	async toString(): Promise<string> {
+		return (await this.api.cmd('?v ' + this.addr.trim())).trim();
 	}
-	toNumber(): number {
-		return parseInt(this.toString());
+	async toNumber(): Promise<number> {
+		return parseInt(await this.toString());
 	}
 	writePointer(p: NativePointer): void {
 		this.api.cmd(`wvp ${p}@${this}`); // requires 5.8.2
 	}
-	readRelativePointer(): NativePointer {
-		return this.add(this.readS32());
+	async readRelativePointer(): Promise<NativePointer> {
+		return this.add(await this.readS32());
 	}
-	readPointer(): NativePointer {
-		return new NativePointer(this.api.call("pvp@" + this.addr));
+	async readPointer(): Promise<NativePointer> {
+		const address = await this.api.call("pvp@" + this.addr);
+		return new NativePointer(address);
 	}
-	readS8(): number { // requires 5.8.9
-		return parseInt(this.api.cmd(`pv1d@${this.addr}`));
+	async readS8(): Promise<number> { // requires 5.8.9
+		return parseInt(await this.api.cmd(`pv1d@${this.addr}`));
 	}
-	readU8(): number {
-		return parseInt(this.api.cmd(`pv1u@${this.addr}`));
+	async readU8(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv1u@${this.addr}`));
 	}
-	readU16(): number {
-		return parseInt(this.api.cmd(`pv2d@${this.addr}`));
+	async readU16(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv2d@${this.addr}`));
 	}
-	readU16le(): number {
-		return parseInt(this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
+	async readU16le(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
 	}
-	readU16be(): number {
-		return parseInt(this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
+	async readU16be(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
 	}
-	readS16(): number {
-		return parseInt(this.api.cmd(`pv2d@${this.addr}`)); // requires 5.8.9
+	async readS16(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv2d@${this.addr}`)); // requires 5.8.9
 	}
-	readS16le(): number {
-		return parseInt(this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
+	async readS16le(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
 	}
-	readS16be(): number {
-		return parseInt(this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
+	async readS16be(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
 	}
-	readS32(): number { // same as readInt32()
-		return parseInt(this.api.cmd(`pv4d@${this.addr}`)); // requires 5.8.9
+	async readS32(): Promise<number> { // same as readInt32()
+		return parseInt(await this.api.cmd(`pv4d@${this.addr}`)); // requires 5.8.9
 	}
-	readU32(): number {
-		return parseInt(this.api.cmd(`pv4u@${this.addr}`)); // requires 5.8.9
+	async readU32(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv4u@${this.addr}`)); // requires 5.8.9
 	}
-	readU32le(): number {
-		return parseInt(this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
+	async readU32le(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
 	}
-	readU32be(): number {
-		return parseInt(this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
+	async readU32be(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
 	}
-	readU64(): number {
+	async readU64(): Promise<number> {
 		// XXX: use bignum or string here
-		return parseInt(this.api.cmd(`pv8u@${this.addr}`));
+		return parseInt(await this.api.cmd(`pv8u@${this.addr}`));
 	}
-	readU64le(): number {
-		return parseInt(this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
+	async readU64le(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=false`)); // requires 5.8.9
 	}
-	readU64be(): number {
-		return parseInt(this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
+	async readU64be(): Promise<number> {
+		return parseInt(await this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=true`)); // requires 5.8.9
 	}
-	writeInt(n: number): boolean {
+	async writeInt(n: number): Promise<boolean> {
 		return this.writeU32(n);
 	}
 	/**
@@ -1006,96 +1022,99 @@ export class NativePointer {
 	 * @param {string} n number to write in the pointed byte in the current address
 	 * @returns {boolean} false if the operation failed
 	 */
-	writeU8(n: number): boolean {
+	async writeU8(n: number): Promise<boolean> {
 		this.api.cmd(`wv1 ${n}@${this.addr}`);
 		return true;
 	}
-	writeU16(n: number): boolean {
+	async writeU16(n: number): Promise<boolean> {
 		this.api.cmd(`wv2 ${n}@${this.addr}`);
 		return true;
 	}
-	writeU16be(n: number): boolean {
+	async writeU16be(n: number): Promise<boolean> {
 		this.api.cmd(`wv2 ${n}@${this.addr}@e:cfg.bigendian=true`);
 		return true;
 	}
-	writeU16le(n: number): boolean {
+	async writeU16le(n: number): Promise<boolean> {
 		this.api.cmd(`wv2 ${n}@${this.addr}@e:cfg.bigendian=false`);
 		return true;
 	}
-	writeU32(n: number): boolean {
-		this.api.cmd(`wv4 ${n}@${this.addr}`);
+	async writeU32(n: number): Promise<boolean> {
+		await this.api.cmd(`wv4 ${n}@${this.addr}`);
 		return true;
 	}
-	writeU32be(n: number): boolean {
-		this.api.cmd(`wv4 ${n}@${this.addr}@e:cfg.bigendian=true`);
+	async writeU32be(n: number): Promise<boolean> {
+		await this.api.cmd(`wv4 ${n}@${this.addr}@e:cfg.bigendian=true`);
 		return true;
 	}
-	writeU32le(n: number): boolean {
-		this.api.cmd(`wv4 ${n}@${this.addr}@e:cfg.bigendian=false`);
+	async writeU32le(n: number): Promise<boolean> {
+		await this.api.cmd(`wv4 ${n}@${this.addr}@e:cfg.bigendian=false`);
 		return true;
 	}
-	writeU64(n: number): boolean {
-		this.api.cmd(`wv8 ${n}@${this.addr}`);
+	async writeU64(n: number): Promise<boolean> {
+		await this.api.cmd(`wv8 ${n}@${this.addr}`);
 		return true;
 	}
-	writeU64be(n: number): boolean {
-		this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=true`);
+	async writeU64be(n: number): Promise<boolean> {
+		await this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=true`);
 		return true;
 	}
-	writeU64le(n: number): boolean {
-		this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=false`);
+	async writeU64le(n: number): Promise<boolean> {
+		await this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=false`);
 		return true;
 	}
-	readInt32(): number {
+	async readInt32(): Promise<number> {
 		return this.readU32();
 	}
-	readCString(): string {
-		return JSON.parse(this.api.cmd(`pszj@${this.addr}`)).string;
+	async readCString(): Promise<string> {
+		const output = await this.api.cmd(`pszj@${this.addr}`);
+		return JSON.parse(output).string;
 	}
-	readWideString(): string {
-		return JSON.parse(this.api.cmd(`pswj@${this.addr}`)).string;
+	async readWideString(): Promise<string> {
+		const output = await this.api.cmd(`pswj@${this.addr}`);
+		return JSON.parse(output).string;
 	}
-	readPascalString(): string {
-		return JSON.parse(this.api.cmd(`pspj@${this.addr}`)).string;
+	async readPascalString(): Promise<string> {
+		const output = await this.api.cmd(`pspj@${this.addr}`);
+		return JSON.parse(output).string;
 	}
-	instruction(): Instruction {
-		const op: any = this.api.cmdj(`aoj@${this.addr}`)[0];
-		return op;
+	async instruction(): Promise<Instruction> {
+		const output = await this.api.cmdj(`aoj@${this.addr}`);
+		return output[0] as Instruction;
 	}
-	disassemble(length?: number): string {
+	async disassemble(length?: number): Promise<string> {
 		let len = (length === undefined) ? "" : "" + length;
 		return this.api.cmd(`pd ${len}@${this.addr}`);
 	}
-	analyzeFunction(): NativePointer {
-		this.api.cmd("af@" + this.addr);
+	async analyzeFunction(): Promise<NativePointer> {
+		await this.api.cmd("af@" + this.addr);
 		return this;
 	}
-	analyzeFunctionRecursively(): NativePointer {
-		this.api.cmd("afr@" + this.addr);
+	async analyzeFunctionRecursively(): Promise<NativePointer> {
+		await this.api.cmd("afr@" + this.addr);
 		return this;
 	}
-	name(): string {
-		return this.api.cmd("fd " + this.addr).trim();
+	async name(): Promise<string> {
+		return (await this.api.cmd("fd " + this.addr)).trim();
 	}
-	methodName(): string {
+	async methodName(): Promise<string> {
 		// TODO: @ should be optional here, as addr should be passable as argument imho
-		return this.api.cmd("ic.@" + this.addr).trim();
+		return (await this.api.cmd("ic.@" + this.addr)).trim();
 	}
-	symbolName(): any {
+	async symbolName(): Promise<string> {
 		// TODO: @ should be optional here, as addr should be passable as argument imho
-		return this.api.cmd("isj.@" + this.addr).trim();
+		const name = await this.api.cmd("isj.@" + this.addr);
+		return name.trim();
 	}
-	getFunction(): Function {
+	async getFunction(): Promise<Function> {
 		return this.api.cmdj("afij@" + this.addr);
 	}
-	basicBlock(): BasicBlock {
-		const bb: BasicBlock = this.api.cmdj("abj@" + this.addr);
-		return bb;
+	async basicBlock(): Promise<BasicBlock> {
+		return this.api.cmdj("abj@" + this.addr);
 	}
-	functionBasicBlocks(): BasicBlock[] {
+	async functionBasicBlocks(): Promise<BasicBlock[]> {
 		return this.api.cmdj("afbj@" + this.addr);
 	}
-	xrefs(): Reference[] {
+	async xrefs(): Promise<Reference[]> {
 		return this.api.cmdj("axtj@" + this.addr);
 	}
 }

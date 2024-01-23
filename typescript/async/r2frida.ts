@@ -1,26 +1,37 @@
-import { r2, R2Pipe } from "r2papi";
+import { r2 } from "r2papi";
+import { R2PipeAsync, newAsyncR2PipeFromSync } from "./r2pipe.js";
 
 export class R2Frida {
-	constructor(r2: R2Pipe) {
-		console.log("Welcome to R2frida");
-		if (r2.cmd("o~frida://").trim() == "") {
-			throw new Error("There's no frida session available");
+	isAvailable: boolean;
+	r2: R2PipeAsync;
+	constructor(r2: R2PipeAsync) {
+		this.r2 = r2;
+		this.isAvailable = false;
+	}
+	async checkAvailability() {
+		if (!this.isAvailable) {
+			const output = await r2.cmd("o~frida://");
+			if (output.trim() === "") {
+				throw new Error("There's no frida session available");
+			}
 		}
+		this.isAvailable = true;
 	}
 
-	eval(expr : string) : string {
+	async eval(expr : string) : Promise<string> {
 		return r2.cmd(`"": ${expr}`);
 	}
-	targetDetails() : TargetDetails {
+	async targetDetails() : Promise<TargetDetails> {
 		return r2.cmdj(":ij") as TargetDetails;
 	}
 }
 
-export function main() {
+export async function main() {
 	console.log("Hello from r2papi-r2frida");
-	const r2f = new R2Frida(r2);
+	const r2async = newAsyncR2PipeFromSync(r2);
+	const r2f = new R2Frida(r2async);
 	r2f.eval("console.log(123);");
-	const { pid, arch, cwd } = r2f.targetDetails();
+	const { pid, arch, cwd } = await r2f.targetDetails();
 	console.log(pid, arch, cwd);
 }
 main();

@@ -20,8 +20,19 @@ export class R2AI {
 	 * @type {string}
 	 */
 	model: string = "";
-	constructor(num?: number, model?: string) {
+	r2: R2PipeAsync;
+
+	constructor(r2: R2PipeAsync, num?: number, model?: string) {
+		this.r2 = r2;
+		this.available = false;
+	}
+
+	async checkAvailability() : Promise<boolean> {
+		if (this.available) {
+			return true;
+		}
 		this.available = r2.cmd('r2ai -h').trim() !== "";
+		/*
 		if (this.available) {
 			if (num) {
 				r2.call(`r2ai -n ${num}`)
@@ -30,16 +41,17 @@ export class R2AI {
 			if (model) {
 				this.model = model;
 			}
-		} else {
-			throw new Error("ERROR: r2ai is not installed");
 		}
+		*/
+		return this.available;
 	}
 	/**
 	 * Reset conversation messages
 	 */
-	reset() {
+	async reset() {
+		await this.checkAvailability();
 		if (this.available) {
-			r2.call('r2ai -R')
+			await r2.call('r2ai -R')
 		}
 	}
 	/**
@@ -48,9 +60,9 @@ export class R2AI {
 	 * @param {string} text containing the system prompt
 	 * @returns {boolean} true if successful
 	 */
-	setRole(msg: string): boolean {
+	async setRole(msg: string): Promise<boolean> {
 		if (this.available) {
-			r2.call(`r2ai -r ${msg}`);
+			await r2.call(`r2ai -r ${msg}`);
 			return true;
 		}
 		return false;
@@ -61,9 +73,9 @@ export class R2AI {
 	 * @param {string} model name or path to GGUF file
 	 * @returns {boolean} true if successful
 	 */
-	setModel(modelName: string): boolean {
+	async setModel(modelName: string): Promise<boolean> {
 		if (this.available) {
-			r2.call(`r2ai -m ${this.model}`)
+			await r2.call(`r2ai -m ${this.model}`)
 			return true;
 		}
 		return false;
@@ -73,9 +85,9 @@ export class R2AI {
 	 *
 	 * @returns {boolean} model name
 	 */
-	getModel(): string {
+	async getModel(): Promise<string> {
 		if (this.available) {
-			this.model = r2.call("r2ai -m").trim();
+			this.model = await r2.call("r2ai -m").trim();
 		}
 		return this.model;
 	}
@@ -84,9 +96,10 @@ export class R2AI {
 	 *
 	 * @returns {string[]} array of strings containing the model names known to work
 	 */
-	listModels(): string[] {
+	async listModels(): Promise<string[]> {
 		if (this.available) {
-			return r2.call("r2ai -M").replace(/-m /, "").trim().split(/\n/g).filter((x) => x.indexOf(":") !== -1);
+			const models = await r2.call("r2ai -M");
+			return models.replace(/-m /, "").trim().split(/\n/g).filter((x: string) => x.indexOf(":") !== -1);
 		}
 		return [];
 	}
@@ -96,11 +109,12 @@ export class R2AI {
 	 * @param {string} text sent from the user to the language model
 	 * @returns {string} response from the language model
 	 */
-	query(msg: string): string {
+	async query(msg: string): Promise<string> {
 		if (!this.available || msg == '') {
 			return '';
 		}
 		const fmsg = msg.trim().replace(/\n/g, '.');
-		return r2.call(`r2ai ${fmsg}`).trim();
+		const response = r2.call(`r2ai ${fmsg}`);
+		return response.trim();
 	}
 }

@@ -1,7 +1,7 @@
-import { R2Pipe } from "./index";
+import { R2PipeAsync } from "./index";
 import { EsilParser } from "./esil";
 
-declare var r2: R2Pipe;
+declare var r2: R2PipeAsync;
 declare var r2plugin: any;
 /// ========== main =========== ///
 
@@ -28,31 +28,31 @@ function testConditional() {
 	ep.parse("zf,!,nf,vf,^,!,&,?{,4294982284,pc,:=,}");
 }
 
-function pdq(arg:string) {
+async function pdq(arg:string) {
 	r2.cmd("e cfg.json.num=string");
 	switch (arg[0]) {
 	case " ":
-		parseAmount (+arg);
+		await parseAmount (+arg);
 		break;
 	case "i":
-		parseAmount (1);
+		await parseAmount (1);
 		break;
 	case "f":
 	case undefined:
 	case "":
-		const oaddr = r2.cmd("?v $$").trim();
+		const oaddr = (await r2.cmd("?v $$")).trim();
 		// const func = r2.cmdj("pdrj"); // XXX this command changes the current seek
-		const bbs = r2.cmdj("afbj"); // XXX this command changes the current seek
+		const bbs = await r2.cmdj("afbj"); // XXX this command changes the current seek
 		for (let bb of bbs) {
 			console.log("bb_" + bb.addr + ":");
 			r2.cmd(`s ${bb.addr}`);
-			parseAmount (bb.ninstr);
+			await parseAmount (bb.ninstr);
 		}
 		r2.cmd(`s ${oaddr}`);
 		break;
 	case "e":
 		ep.reset ();
-		ep.parse(arg.slice(1).trim(), r2.cmd("?v $$"));
+		ep.parse(arg.slice(1).trim(), await r2.cmd("?v $$"));
 		console.log(ep.toString());
 		break;
 	case "t":
@@ -75,9 +75,10 @@ function pdq(arg:string) {
 	}
 }
 
-function parseAmount(n:number) : void {
+async function parseAmount(n:number) : Promise<void> {
 	// console.log("PDQ "+n);
-	const lines = r2.cmd("pie " + n + " @e:scr.color=0").trim().split("\n");
+	const pies = await r2.cmd("pie " + n + " @e:scr.color=0");
+	const lines = pies.trim().split("\n");
 	for (const line of lines) {
 		if (line.length === 0) {
 			console.log("Empty");

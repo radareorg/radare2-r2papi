@@ -2,7 +2,9 @@ declare var r2: any;
 
 class Graph {
 	constructor () {
-		r2.cmd("ag-");
+	}
+	async reset() {
+		await r2.cmd("ag-");
 	}
 
 	/**
@@ -11,8 +13,8 @@ class Graph {
 	 * @param {string} title label of the node, this label must be unique to the graph
 	 * @param {string} body contents of the node
      */
-	addNode(title: string, body: string) {
-		r2.cmd(`agn ${title} ${body}`);
+	async addNode(title: string, body: string) {
+		await r2.cmd(`agn ${title} ${body}`);
 	}
 
 	/**
@@ -21,8 +23,8 @@ class Graph {
 	 * @param {string} a source title node
 	 * @param {string} b destination title node
      */
-	addEdge(a: string, b: string) {
-		r2.cmd(`age ${a} ${b}`);
+	async addEdge(a: string, b: string) {
+		await r2.cmd(`age ${a} ${b}`);
 	}
 
 	/**
@@ -30,21 +32,21 @@ class Graph {
 	 *
      * @returns {string} the computed graph
      */
-	toString() {
+	async toString() : Promise<string> {
 		return r2.cmd("agg");
 	}
 }
 
-export function main() {
+export async function main() {
 	var g = new Graph();
 
-	g.addNode("hello", "World");
-	g.addNode("world", "Hello");
-	g.addNode("patata", "Hello");
-	g.addEdge("hello", "world");
-	g.addEdge("hello", "patata");
-	g.addEdge("world", "world");
+	await g.addNode("hello", "World");
+	await g.addNode("world", "Hello");
+	await g.addNode("patata", "Hello");
+	await g.addEdge("hello", "world");
+	await g.addEdge("hello", "patata");
+	await g.addEdge("world", "world");
 
 	console.log(g);
 }
-main();
+await main();

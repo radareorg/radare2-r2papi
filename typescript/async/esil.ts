@@ -136,27 +136,28 @@ export class EsilParser {
 			.map( (x) => x.toEsil())
 			.join(',');
 	}
-	private optimizeFlags(node: EsilNode) {
+	private async optimizeFlags(node: EsilNode) {
 		if (node.rhs !== undefined) {
-			this.optimizeFlags(node.rhs);
+			await this.optimizeFlags(node.rhs);
 		}
 		if (node.lhs !== undefined) {
-			this.optimizeFlags(node.lhs);
+			await this.optimizeFlags(node.lhs);
 		}
 		for (let i = 0; i < node.children.length;i++) {
-			this.optimizeFlags(node.children[i]);
+			await this.optimizeFlags(node.children[i]);
 		}
 		const addr : string = node.toString();
 		if (+addr > 4096) {
-			const fname = r2.cmd(`fd.@ ${addr}`).trim().split("\n")[0].trim();
+			const cname = await r2.cmd(`fd.@ ${addr}`);
+			const fname = cname.trim().split("\n")[0].trim();
 			if (fname != "" && fname.indexOf("+") === -1) {
 				node.token.text = fname;
 			}
 		}
 	}
-	optimize(options: string) : void {
+	async optimize(options: string) : Promise<void> {
 		if (options.indexOf("flag") != -1) {
-			this.optimizeFlags(this.root);
+			await this.optimizeFlags(this.root);
 		}
 	}
 	toString() : string {
@@ -187,11 +188,12 @@ export class EsilParser {
 		}
 		// console.log("done");
 	}
-	parseFunction(addr?: string) : void {
+	async parseFunction(addr?: string) : Promise<void> {
 		var ep = this;
-		function parseAmount(n:number) : void {
+		async function parseAmount(n:number) : Promise<void> {
 			// console.log("PDQ "+n);
-			const lines = r2.cmd("pie " + n + " @e:scr.color=0").trim().split("\n");
+			const output = await r2.cmd("pie " + n + " @e:scr.color=0");
+			const lines = output.trim().split("\n");
 			for (const line of lines) {
 				if (line.length === 0) {
 					console.log("Empty");
@@ -202,7 +204,7 @@ export class EsilParser {
 				if (kv.length > 1) { // line != "") {
 					// console.log("// @ " + kv[0]);
 					//ep.reset ();
-					r2.cmd(`s ${kv[0]}`);
+					await r2.cmd(`s ${kv[0]}`);
 					ep.parse(kv[1], kv[0]);
 					ep.optimize("flags,labels");
 					//console.log(ep.toString());
@@ -210,16 +212,16 @@ export class EsilParser {
 			}
 			// console.log(ep.toString());
 		}
-		const oaddr = r2.cmd("?v $$").trim();
+		const oaddr = (await r2.cmd("?v $$")).trim();
 		// const func = r2.cmdj("pdrj"); // XXX this command changes the current seek
 		if (addr === undefined) {
 			addr = oaddr;
 		}
-		const bbs = r2.cmdj(`afbj@${addr}`); // XXX this command changes the current seek
+		const bbs = await r2.cmdj(`afbj@${addr}`); // XXX this command changes the current seek
 		for (let bb of bbs) {
 			// console.log("bb_" + bb.addr + ":");
-			r2.cmd(`s ${bb.addr}`);
-			parseAmount (bb.ninstr);
+			await r2.cmd(`s ${bb.addr}`);
+			await parseAmount (bb.ninstr);
 		}
 		r2.cmd(`s ${oaddr}`);
 	}
