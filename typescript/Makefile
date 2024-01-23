@@ -1,13 +1,13 @@
 TSC=$(shell pwd)/node_modules/.bin/tsc
 PLUGDIR=$(shell r2 -H R2_USER_PLUGINS)
 ESLINT=$(shell pwd)/node_modules/.bin/eslint
+TSI=sh tools/tsi.sh
 
 all: node_modules
 	$(MAKE) build
 
 vs:
 	open -a "Visual Studio Code" async || vscode .
-
 
 SYNCREGEX=
 SYNCREGEX+=-e 's,await ,,g'
@@ -18,7 +18,6 @@ SYNCREGEX+=-e 's/Promise<\(.*\)>/\1/'
 
 lint:
 	$(ESLINT) async/*.ts
-#eslint async/*.ts
 
 sync:
 	rm -rf sync/*.ts
@@ -26,6 +25,13 @@ sync:
 	for a in sync/*.ts ; do sed $(SYNCREGEX) -i=.bak $$a ; done
 	rm -f sync/*.bak
 	cp async/tsconfig.json sync
+
+abuild: sync
+	rm -rf build
+	mkdir build
+	cp -f async/*.ts build
+	cp -rf async/tsconfig.json build
+	cd build && $(TSC)
 
 build: sync
 	rm -rf build
@@ -90,18 +96,24 @@ webdoc:
 	rm -rf .tmp
 
 npm publish pub:
+	# Publishing the sync api
 	$(MAKE)
-	npm publish
+	cp -f package.json package-lock.json build
+	cd build && npm publish
+	# Publishing the async api
+	$(MAKE) abuild
+	sed -e 's,r2papi",r2papi-async",' < package.json > build/package.json
+	sed -e 's,r2papi",r2papi-async",' < package-lock.json > build/package-lock.json
+	cd build && npm publish
 
-unpublish:
-	$(MAKE)
-	npm unpublish @${MODVER}
+unpub unpublish:
+	npm unpublish r2papi@${MODVER}
 
 r2wip.d.ts:
-	sh tsi.sh ij >> r2wip.d.ts
-	sh tsi.sh pdj >> r2wip.d.ts
-	sh tsi.sh afij >> r2wip.d.ts
-	sh tsi.sh abj >> r2wip.d.ts
+	$(TSI) ij >> r2wip.d.ts
+	$(TSI) pdj >> r2wip.d.ts
+	$(TSI) afij >> r2wip.d.ts
+	$(TSI) abj >> r2wip.d.ts
 
 clean:
 	rm -rf *.qjs *.r2.js one.* dist __dist *.zip *.d.ts *.js
