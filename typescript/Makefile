@@ -1,31 +1,45 @@
-TSC=node_modules/.bin/tsc
+TSC=$(shell pwd)/node_modules/.bin/tsc
+PLUGDIR=$(shell r2 -H R2_USER_PLUGINS)
 
 all: node_modules
-	$(TSC)
-	$(TSC) --declaration r2papi.ts
-	$(TSC) -m node16 --target es2020 shell.ts && cp -f shell.js shell.r2.js
-	$(TSC) -m node16 --target es2020 esil.ts && cp -f esil.js esil.r2.js
-	$(TSC) -m node16 --target es2020 opt.ts && cp -f opt.js opt.r2.js
-	$(TSC) -m node16 --target es2020 r2papi.ts && cp -f r2papi.js index.r2.js
+	$(MAKE) build
 
 vs:
 	open -a "Visual Studio Code" . || vscode .
 
-async:
-	rm -rf async
-	mkdir -p async
-	cp -f r2papi.ts opt.ts esil.ts esil.ts shell.ts base64.ts ai.ts r2frida.ts index.ts async
-	python tools/asyncify.py
-	vim async/r2papi.ts
 
-.PHONY: async
+SYNCREGEX=
+SYNCREGEX+=-e 's,await ,,g'
+SYNCREGEX+=-e 's,async ,,g'
+SYNCREGEX+=-e 's,R2PipeAsync,R2PipeSync,g'
+SYNCREGEX+=-e 's,R2PapiAsync,R2PapiSync,g'
+SYNCREGEX+=-e 's/Promise<\(.*\)>/\1/'
+
+sync:
+	rm -rf sync/*.ts
+	cd async && cp -f r2pipe.ts r2papi.ts opt.ts esil.ts esil.ts shell.ts base64.ts ai.ts r2frida.ts index.ts ../sync
+	for a in sync/*.ts ; do sed $(SYNCREGEX) -i .bak $$a ; done
+	rm -f sync/*.bak
+	cp async/tsconfig.json sync
+
+build: sync
+	rm -rf build
+	mkdir build
+	cp -f sync/*.ts build
+	cp -rf async/tsconfig.json build
+	cd build && $(TSC)
+	cd build && $(TSC) --declaration r2papi.ts
+	cd build && $(TSC) -m node16 --target es2020 shell.ts && cp -f shell.js shell.r2.js
+	cd build && $(TSC) -m node16 --target es2020 esil.ts && cp -f esil.js esil.r2.js
+	cd build && $(TSC) -m node16 --target es2020 opt.ts && cp -f opt.js opt.r2.js
+	cd build && $(TSC) -m node16 --target es2020 r2papi.ts && cp -f r2papi.js index.r2.js
+
+.PHONY: sync build
 
 pdq: node_modules
 	# TODO: use pdq.r2.ts
 	$(TSC) -m node16 --target es2020 pdq.ts
 	cat pdq.js | sed -e 's,require.*$$,global;,' > pdq.r2.js
-
-PLUGDIR=$(shell r2 -H R2_USER_PLUGINS)
 
 install user-install:
 	mkdir -p $(PLUGDIR)
@@ -51,11 +65,14 @@ node_modules/jsfmt:
 
 MODVER=$(shell node -e 'console.log(JSON.parse(require("fs").readFileSync("package.json"))["version"])')
 
-doc:
-	npm run doc
+doc docs: sync
+	npm run adoc
+	npm run sdoc
 	rm -f docs.zip
-	zip -r docs.zip docs
+	zip -r docs.zip sync/docs async/docs
 	r2 -qc "open docs/index.html" --
+
+.PHONY: doc docs webdoc
 
 webdoc:
 	npm run doc

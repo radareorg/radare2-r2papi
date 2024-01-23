@@ -15,7 +15,8 @@
   "scripts": {
     "build": "tsc -m node16 --target es2020 --declaration r2pipe.ts base64.ts ai.ts r2papi.ts esil.ts shell.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "doc": "typedoc r2pipe.ts ai.ts r2papi.ts base64.ts shell.ts esil.ts"
+    "adoc": "cd async && typedoc r2pipe.ts ai.ts r2papi.ts base64.ts shell.ts esil.ts",
+    "sdoc": "cd sync && typedoc r2pipe.ts ai.ts r2papi.ts base64.ts shell.ts esil.ts"
   },
   "repository": {
     "type": "git",

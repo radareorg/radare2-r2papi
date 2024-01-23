@@ -19,4 +19,11 @@ Install the Radare2 Skeleton tool and check the project templates in the [r2skel
 $ r2pm -ci r2skel
 ```
 
+## Development
+
+The source code is contained in the `async/` directory. The code is then converted into sync using a sed oneliner.
+
+* The published module is the synchronous version
+* The whole sync api generation is still wip
+
 --pancake
