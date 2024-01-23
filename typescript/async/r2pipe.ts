@@ -22,7 +22,7 @@ export class R2PipeAsyncFromSync {
 		return this.r2p.cmdAt(command, address);
 	}
     async log(msg: string) {
-        console.log(msg);
+        return this.r2p.log(msg);
     }
     async plugin(type: string, maker: any): Promise<boolean> {
         return this.r2p.plugin(type, maker);

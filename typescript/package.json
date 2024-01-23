@@ -8,9 +8,12 @@
     "url": "https://github.com/radareorg/radare2-r2pipe/issues"
   },
   "devDependencies": {
-    "r2pipe": "^2.8.4",
-    "typedoc": "^0.24.7",
-    "typescript": "5.0.4"
+    "r2pipe": "^2.8.6",
+    "typedoc": "^0.25.7",
+    "typescript": "^5.3.3",
+    "eslint": "^8.34.0",
+    "@typescript-eslint/parser": "^6.19.1",
+    "@typescript-eslint/eslint-plugin": "^6.19.1"
   },
   "scripts": {
     "build": "tsc -m node16 --target es2020 --declaration r2pipe.ts base64.ts ai.ts r2papi.ts esil.ts shell.ts",

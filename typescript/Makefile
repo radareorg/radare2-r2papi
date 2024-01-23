@@ -15,6 +15,9 @@ SYNCREGEX+=-e 's,R2PipeAsync,R2PipeSync,g'
 SYNCREGEX+=-e 's,R2PapiAsync,R2PapiSync,g'
 SYNCREGEX+=-e 's/Promise<\(.*\)>/\1/'
 
+lint:
+	eslint async/*.ts
+
 sync:
 	rm -rf sync/*.ts
 	cd async && cp -f r2pipe.ts r2papi.ts opt.ts esil.ts esil.ts shell.ts base64.ts ai.ts r2frida.ts index.ts ../sync
