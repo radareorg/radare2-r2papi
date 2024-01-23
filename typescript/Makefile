@@ -98,10 +98,11 @@ webdoc:
 npm publish pub:
 	# Publishing the sync api
 	$(MAKE)
-	cp -f package.json package-lock.json build
+	cp -f README.md package.json package-lock.json build
 	cd build && npm publish
 	# Publishing the async api
 	$(MAKE) abuild
+	cp -f README.md build
 	sed -e 's,r2papi",r2papi-async",' < package.json > build/package.json
 	sed -e 's,r2papi",r2papi-async",' < package-lock.json > build/package-lock.json
 	cd build && npm publish

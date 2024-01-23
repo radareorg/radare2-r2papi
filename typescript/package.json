@@ -1,6 +1,6 @@
 {
   "name": "r2papi",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "r2api on top of r2pipe for typescript and js",
   "author": "pancake@nopcode.org",
   "homepage": "http://www.radare.org",
