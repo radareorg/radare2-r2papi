@@ -1,26 +1,32 @@
 export class R2PipeAsyncFromSync {
-	r2p: R2Pipe;
-	constructor(r2p: R2Pipe) {
-		this.r2p = r2p;
-	}
-	async cmd(command: string): Promise<string> {
-		return this.r2p.cmd(command);
-	}
-	async cmdAt(command : string, address: number | string | any): Promise<string> {
-		return this.r2p.cmdAt(command, address);
-	}
+    r2p: R2Pipe;
+    constructor(r2p: R2Pipe) {
+        this.r2p = r2p;
+    }
+    async cmd(command: string): Promise<string> {
+        return this.r2p.cmd(command);
+    }
+    async cmdAt(
+        command: string,
+        address: number | string | any
+    ): Promise<string> {
+        return this.r2p.cmdAt(command, address);
+    }
     async cmdj(cmd: string): Promise<any> {
-		return this.r2p.cmdj(cmd);
+        return this.r2p.cmdj(cmd);
     }
-	async call(command: string): Promise<string> {
-		return this.r2p.call(command);
-	}
+    async call(command: string): Promise<string> {
+        return this.r2p.call(command);
+    }
     async callj(cmd: string): Promise<any> {
-		return this.r2p.cmdj(cmd);
+        return this.r2p.cmdj(cmd);
     }
-	async callAt(command : string, address: number | string | any): Promise<string> {
-		return this.r2p.cmdAt(command, address);
-	}
+    async callAt(
+        command: string,
+        address: number | string | any
+    ): Promise<string> {
+        return this.r2p.cmdAt(command, address);
+    }
     async log(msg: string) {
         return this.r2p.log(msg);
     }
@@ -34,13 +40,13 @@ export class R2PipeAsyncFromSync {
 
 export function newAsyncR2PipeFromSync(r2p: R2Pipe): R2PipeAsync {
     const asyncR2Pipe = new R2PipeAsyncFromSync(r2p);
-	return asyncR2Pipe as R2PipeAsync
+    return asyncR2Pipe as R2PipeAsync;
 }
 
 /**
  * Generic interface to interact with radare2, abstracts the access to the associated
  * instance of the tool, which could be native via rlang or remote via pipes or tcp/http.
- * 
+ *
  * @typedef R2Pipe
  */
 export interface R2Pipe {
@@ -126,7 +132,7 @@ export interface R2Pipe {
 /**
  * Generic interface to interact with radare2, abstracts the access to the associated
  * instance of the tool, which could be native via rlang or remote via pipes or tcp/http.
- * 
+ *
  * @typedef R2PipeAsync
  */
 export interface R2PipeAsync {

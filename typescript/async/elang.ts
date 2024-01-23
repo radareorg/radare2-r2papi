@@ -4,31 +4,30 @@ import { R2PipeAsync } from "./index";
 //
 
 export class EsilLang {
-	[vars : string]: any;
-	constructor() {
-		this.vars = {};
-	}
-	set(obj: any, val: any) {
-		this.vars[obj] = val;
-	}
-	fun(name: string, code: any[]) {
-		this.vars[name] = code;
-	}
-	get(varname: string) : any {
-		if (varname in Object.keys(this.vars)) {
-			return this.vars[varname];
-		}
-		this.vars[varname] = 0;
-		return 0;
-	}
-	println(...args: any) {
-		console.log(...args);
-	}
-	eval(code: string) {
-	}
+    [vars: string]: any;
+    constructor() {
+        this.vars = {};
+    }
+    set(obj: any, val: any) {
+        this.vars[obj] = val;
+    }
+    fun(name: string, code: any[]) {
+        this.vars[name] = code;
+    }
+    get(varname: string): any {
+        if (varname in Object.keys(this.vars)) {
+            return this.vars[varname];
+        }
+        this.vars[varname] = 0;
+        return 0;
+    }
+    println(...args: any) {
+        console.log(...args);
+    }
+    eval(code: string) {}
 }
 
-// basic elements: array, string, 
+// basic elements: array, string,
 // console.log("Hello Lang");
 const el = new EsilLang();
 const code = `[

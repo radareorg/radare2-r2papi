@@ -5,7 +5,7 @@ all: node_modules
 	$(MAKE) build
 
 vs:
-	open -a "Visual Studio Code" . || vscode .
+	open -a "Visual Studio Code" async || vscode .
 
 
 SYNCREGEX=
