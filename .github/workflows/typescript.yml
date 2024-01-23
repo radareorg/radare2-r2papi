@@ -27,6 +27,8 @@ jobs:
       run: |
         make -C typescript all
         cd typescript && npm run build
+    - name: Run lint
+      run: cd typescript && make lint
     - name: Run tests
       run: cd typescript && r2 -qi esil.ts -c 'af;pdq' /bin/ls
     - name: Make Documentation

@@ -16,7 +16,7 @@ SYNCREGEX+=-e 's,R2PapiAsync,R2PapiSync,g'
 SYNCREGEX+=-e 's/Promise<\(.*\)>/\1/'
 
 lint:
-	eslint --fix async/*.ts
+	eslint async/*.ts
 #eslint async/*.ts
 
 sync:
@@ -89,11 +89,11 @@ webdoc:
 	rm -rf .tmp
 
 npm publish pub:
-	${MAKE}
+	$(MAKE)
 	npm publish
 
 unpublish:
-	${MAKE}
+	$(MAKE)
 	npm unpublish @${MODVER}
 
 r2wip.d.ts:
