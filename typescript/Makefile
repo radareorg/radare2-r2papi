@@ -1,5 +1,6 @@
 TSC=$(shell pwd)/node_modules/.bin/tsc
 PLUGDIR=$(shell r2 -H R2_USER_PLUGINS)
+ESLINT=$(shell pwd)/node_modules/.bin/eslint
 
 all: node_modules
 	$(MAKE) build
@@ -16,7 +17,7 @@ SYNCREGEX+=-e 's,R2PapiAsync,R2PapiSync,g'
 SYNCREGEX+=-e 's/Promise<\(.*\)>/\1/'
 
 lint:
-	eslint async/*.ts
+	$(ESLINT) async/*.ts
 #eslint async/*.ts
 
 sync:
