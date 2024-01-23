@@ -26,7 +26,7 @@ export class R2PipeAsyncFromSync {
     }
     async plugin(type: string, maker: any): Promise<boolean> {
         return this.r2p.plugin(type, maker);
-    };
+    }
     async unload(type: string, name: string): Promise<boolean> {
         return this.r2p.unload(type, name);
     }
@@ -214,4 +214,4 @@ export interface R2PipeAsync {
  *
  * @type {R2PipeSync}
  */
-export declare var r2: R2Pipe;
+export declare const r2: R2Pipe;

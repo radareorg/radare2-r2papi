@@ -3,13 +3,13 @@ import { EsilParser } from "./esil";
 
 // Type 'R2Pipe' is missing the following properties from type 'R2Pipe': cmdj, callj, plugin, unload
 // import { R2Pipe } from "./r2pipe";
-declare var r2 : any;
+declare let r2 : any;
 
 export function plusZero() {
 }
 
 function traverse(ep: EsilParser, child: any) {
-	for (let child of ep.nodes) {
+	for (const child of ep.nodes) {
 		if (child) {
 			traverse(ep, child);
 		}
@@ -17,7 +17,7 @@ function traverse(ep: EsilParser, child: any) {
 	}
 }
 
-var ep = new EsilParser(r2);
+const ep = new EsilParser(r2);
 ep.parseFunction();
 ep.parse("0,eax,+,ebx,:=");
 traverse(ep, null);

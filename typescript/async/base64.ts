@@ -23,4 +23,4 @@ export interface Base64Interface {
 	(message: string, decode?: boolean): string;
 }
 
-export declare var b64: Base64Interface;
+export declare const b64: Base64Interface;

@@ -59,9 +59,9 @@ export class R2Shell {
         * @param {R2Papi} take the R2Papi intance to used as backend to run the commands
         * @returns {R2Shell} instance of the shell api
  	*/
-	constructor(papi: R2Papi) {
-		this.rp = papi;
-	}
+    constructor(papi: R2Papi) {
+        this.rp = papi;
+    }
 
 	/**
 	* Create a new directory in the host system, if the opational recursive argument is set to

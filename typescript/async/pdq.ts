@@ -1,8 +1,8 @@
 import { R2PipeAsync } from "./index";
 import { EsilParser } from "./esil";
 
-declare var r2: R2PipeAsync;
-declare var r2plugin: any;
+declare let r2: R2PipeAsync;
+declare let r2plugin: any;
 /// ========== main =========== ///
 
 const ep = new EsilParser(r2);
@@ -40,15 +40,17 @@ async function pdq(arg:string) {
 	case "f":
 	case undefined:
 	case "":
-		const oaddr = (await r2.cmd("?v $$")).trim();
-		// const func = r2.cmdj("pdrj"); // XXX this command changes the current seek
-		const bbs = await r2.cmdj("afbj"); // XXX this command changes the current seek
-		for (let bb of bbs) {
-			console.log("bb_" + bb.addr + ":");
-			r2.cmd(`s ${bb.addr}`);
-			await parseAmount (bb.ninstr);
+		{
+			const oaddr = (await r2.cmd("?v $$")).trim();
+			// const func = r2.cmdj("pdrj"); // XXX this command changes the current seek
+			const bbs = await r2.cmdj("afbj"); // XXX this command changes the current seek
+			for (const bb of bbs) {
+				console.log("bb_" + bb.addr + ":");
+				r2.cmd(`s ${bb.addr}`);
+				await parseAmount (bb.ninstr);
+			}
+			r2.cmd(`s ${oaddr}`);
 		}
-		r2.cmd(`s ${oaddr}`);
 		break;
 	case "e":
 		ep.reset ();

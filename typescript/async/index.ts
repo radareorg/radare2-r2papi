@@ -5,4 +5,4 @@ export { R, NativePointer, R2Papi, Reference, BasicBlock, ThreadClass } from "./
 export { EsilNode, EsilParser } from "./esil.js";
 export { Base64, Base64Interface } from "./base64.js";
 
-export declare var r2: R2PipeAsync;
+export declare const r2: R2PipeAsync;

@@ -1,4 +1,4 @@
-declare var r2: any;
+declare let r2: any;
 
 class Graph {
 	constructor () {
@@ -38,7 +38,7 @@ class Graph {
 }
 
 export async function main() {
-	var g = new Graph();
+	const g = new Graph();
 
 	await g.addNode("hello", "World");
 	await g.addNode("world", "Hello");

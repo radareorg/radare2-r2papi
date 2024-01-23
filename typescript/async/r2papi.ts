@@ -13,20 +13,20 @@ export interface SearchResult {
 	offset: number; // TODO: rename to addr
 	type: string;
 	data: string;
-};
+}
 
 export interface DebugModule {
 	base: string;
 	name: string;
 	path: string;
 	size: number;
-};
+}
 
 export interface Flag {
 	name: string;
 	size: number;
 	offset: number;
-};
+}
 
 export type PluginFamily = "core" | "io" | "arch" | "esil" | "lang" | "bin" | "debug" | "anal" | "crypto";
 
@@ -42,9 +42,9 @@ export interface CallRef {
 	addr: number;
 	type: string;
 	at: number;
-};
+}
 
-export interface Function {
+export interface FunctionDetails {
 	offset: number;
 	name: string;
 	size: number;
@@ -55,7 +55,7 @@ export interface Function {
 	nbbs: number;
 	callrefs: CallRef[];
 	codexrefs: CallRef[];
-};
+}
 
 export interface BinFile {
 	arch: string;
@@ -80,7 +80,7 @@ export interface BinFile {
 	linenum: boolean;
 	havecode: boolean;
 	intrp: string;
-};
+}
 
 export interface Reference {
 	from: number;
@@ -91,7 +91,7 @@ export interface Reference {
 	fcn_name: string;
 	realname: string;
 	refname: string;
-};
+}
 
 export interface BasicBlock {
 	addr: number,
@@ -104,7 +104,7 @@ export interface BasicBlock {
 	ninstr: number,
 	instrs: number[],
 	traced: boolean
-};
+}
 
 export class ThreadClass {
 	api: any = null;
@@ -395,7 +395,7 @@ export class R2PapiAsync {
 		if (a.length && a.length > 0) {
 			a = a[0];
 		}
-		for (let k of Object.keys(a)) {
+		for (const k of Object.keys(a)) {
 			const typ = typeof (a[k]);
 			const nam = k;
 			str += `    ${nam}: ${typ};\n`;
@@ -587,7 +587,7 @@ export class R2PapiAsync {
 		return this.id();
 	}
 	setRegisters(obj: any) {
-		for (let r of Object.keys(obj)) {
+		for (const r of Object.keys(obj)) {
 			const v = obj[r];
 			this.r2.cmd("dr " + r + "=" + v);
 		}
@@ -746,7 +746,7 @@ export class R2PapiAsync {
 	async enumerateRelocations(): Promise<any> {
 		return this.callj("irj");
 	}
-	async enumerateFunctions(): Promise<Function[]> {
+	async enumerateFunctions(): Promise<FunctionDetails[]> {
 		return this.cmdj("aflj");
 	}
 	async enumerateFlags(): Promise<Flag[]> {
@@ -856,7 +856,7 @@ export class NativePointer {
 	 * @returns {string} string containing the hexadecimal dump of memory
 	 */
 	async hexdump(length?: number): Promise<string> {
-		let len = (length === undefined) ? "" : "" + length;
+		const len = (length === undefined) ? "" : "" + length;
 		return this.api.cmd(`x${len}@${this.addr}`);
 	}
 	async functionGraph(format?: GraphFormat): Promise<string> {
@@ -1082,7 +1082,7 @@ export class NativePointer {
 		return output[0] as Instruction;
 	}
 	async disassemble(length?: number): Promise<string> {
-		let len = (length === undefined) ? "" : "" + length;
+		const len = (length === undefined) ? "" : "" + length;
 		return this.api.cmd(`pd ${len}@${this.addr}`);
 	}
 	async analyzeFunction(): Promise<NativePointer> {
@@ -1105,7 +1105,7 @@ export class NativePointer {
 		const name = await this.api.cmd("isj.@" + this.addr);
 		return name.trim();
 	}
-	async getFunction(): Promise<Function> {
+	async getFunction(): Promise<FunctionDetails> {
 		return this.api.cmdj("afij@" + this.addr);
 	}
 	async basicBlock(): Promise<BasicBlock> {
@@ -1132,7 +1132,7 @@ function ptr(x: string|number) {
  * 
  * @type R2Papi
  */
-export declare var R: R2Papi;
+export declare const R: R2Papi;
 
 /**
  * Global instance of the Module class based on the current radare2 session.
@@ -1140,7 +1140,7 @@ export declare var R: R2Papi;
  * 
  * @type ModuleClass
  */
-export declare var Module: ModuleClass;
+export declare const Module: ModuleClass;
 
 /**
  * Global instance of the Process class based on the current radare2 session.
@@ -1148,7 +1148,7 @@ export declare var Module: ModuleClass;
  * 
  * @type ProcessClass
  */
-export declare var Process: ProcessClass;
+export declare const Process: ProcessClass;
 
 /**
  * Global instance of the Thread class based on the current radare2 session.
@@ -1156,4 +1156,4 @@ export declare var Process: ProcessClass;
  * 
  * @type ThreadClass
  */
-export declare var Thread: ThreadClass;
+export declare const Thread: ThreadClass;

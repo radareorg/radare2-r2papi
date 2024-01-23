@@ -16,7 +16,8 @@ SYNCREGEX+=-e 's,R2PapiAsync,R2PapiSync,g'
 SYNCREGEX+=-e 's/Promise<\(.*\)>/\1/'
 
 lint:
-	eslint async/*.ts
+	eslint --fix async/*.ts
+#eslint async/*.ts
 
 sync:
 	rm -rf sync/*.ts

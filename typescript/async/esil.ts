@@ -1,7 +1,7 @@
 import { R2PipeAsync } from "./r2pipe.js";
 
-declare var console: any;
-declare var r2: R2PipeAsync;
+declare let console: any;
+declare let r2: R2PipeAsync;
 
 // ("this is just a comment"), -- comments are also part of the runtime
 
@@ -62,7 +62,7 @@ export class EsilNode {
 			if (left !== "") {
 				left += ",";
 			}
-			let right = this.rhs.toEsil();
+			const right = this.rhs.toEsil();
 			return `${right},${left}${this.token}`;
 		}
 		return ''; // this.token.text;
@@ -84,13 +84,13 @@ export class EsilNode {
 				str += "goto label_" + children.token.position + ";\n";
 			} else {
 				// console.log(JSON.stringify(this,null, 2));
-				let pos = 0;
+				const pos = 0;
 				str += `goto label_${pos};\n`;
 			}
 		}
 		if (this.children.length > 0) {
 			str += `  (if (${this.rhs})\n`;
-			for (let children of this.children) {
+			for (const children of this.children) {
 				if (children !== null) {
 					const x = children.toString();
 					if (x != "") {
@@ -189,7 +189,7 @@ export class EsilParser {
 		// console.log("done");
 	}
 	async parseFunction(addr?: string) : Promise<void> {
-		var ep = this;
+		const ep = this;
 		async function parseAmount(n:number) : Promise<void> {
 			// console.log("PDQ "+n);
 			const output = await r2.cmd("pie " + n + " @e:scr.color=0");
@@ -218,7 +218,7 @@ export class EsilParser {
 			addr = oaddr;
 		}
 		const bbs = await r2.cmdj(`afbj@${addr}`); // XXX this command changes the current seek
-		for (let bb of bbs) {
+		for (const bb of bbs) {
 			// console.log("bb_" + bb.addr + ":");
 			await r2.cmd(`s ${bb.addr}`);
 			await parseAmount (bb.ninstr);
@@ -228,7 +228,7 @@ export class EsilParser {
 	parse(expr: string, addr?: string) : void | never {
 		const tokens = expr.trim().split(',').map( (x) => x.trim() );
 		const from = this.tokens.length;
-		for (let tok of tokens) {
+		for (const tok of tokens) {
 			const token = new EsilToken(tok, this.tokens.length);
 			if (addr !== undefined) {
 				token.addr = addr;
@@ -309,7 +309,7 @@ export class EsilParser {
 		if (tok === undefined) {
 			return null;
 		}
-		for (let node of this.nodes) {
+		for (const node of this.nodes) {
 			if (node.token.position === index) {
 				return node;
 			}
@@ -318,7 +318,7 @@ export class EsilParser {
 		return null;
 	}
 	private findNodeFor(index:number): null | EsilNode {
-		for (let node of this.nodes) {
+		for (const node of this.nodes) {
 			if (node.token.position === index) {
 				return node;
 			}
@@ -359,10 +359,9 @@ export class EsilParser {
 				// no pops or nothing, just does nothing
 				return true;
 			case "DUP":
-				if (true) {
-					if (this.stack.length < 1) {
-						throw new Error("goto cant pop");
-					}
+				if (this.stack.length < 1) {
+					throw new Error("goto cant pop");
+				} else {
 					const destNode = this.stack.pop()!;
 					this.stack.push(destNode);
 					this.stack.push(destNode);
@@ -370,6 +369,7 @@ export class EsilParser {
 				return true;
 			case "GOTO":
 				// take previous statement which should be const and add a label
+				{
 				const prev = this.peek(expr.position - 1);
 				if (prev !== null) {
 					// TODO: check stack
@@ -398,6 +398,7 @@ export class EsilParser {
 						}
 					}
 				}
+				}
 				return true;
 			// controlflow
 			case "?{": // ESIL_TOKEN_IF
@@ -406,7 +407,7 @@ export class EsilParser {
 					const i1 = this.stack.pop()!;
 					const nn = new EsilNode(expr, "operation");
 					nn.setSides(i0, i1); // left side can be ignored for now.. but we can express this somehow
-					let trueBlock = this.parseUntil(expr.position);
+					const trueBlock = this.parseUntil(expr.position);
 					let falseBlock = null;
 					// nn.addChildren(trueBlock, falseBlock);
 					if (trueBlock !== null) {
@@ -501,4 +502,3 @@ export class EsilParser {
 		return false;
 	}
 }
-

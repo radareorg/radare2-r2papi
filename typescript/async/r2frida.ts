@@ -62,4 +62,4 @@ export interface TargetDetails {
 	homedir: string;
 	tmpdir: string;
 	bundledir?:any;
-};
+}
