@@ -432,7 +432,11 @@ export class R2PapiAsync {
      * @returns {string} the name of the target architecture.
      */
     async getArch(): Promise<string> {
-        return await this.cmd("-a");
+        return this.cmdTrim("-a");
+    }
+    async cmdTrim(x: string): Promise<string> {
+	    const res = await this.cmd(x);
+	    return res.trim()
     }
     /**
      * Get the name of the selected CPU for the current selected architecture.
@@ -441,7 +445,7 @@ export class R2PapiAsync {
      */
     async getCpu(): Promise<string> {
         // return this.cmd('-c');
-        return this.cmd("-e asm.cpu"); // use arch.cpu
+        return this.cmdTrim("-e asm.cpu"); // use arch.cpu
     }
     // TODO: setEndian, setCpu, ...
     async setArch(arch: string, bits: number | undefined) {

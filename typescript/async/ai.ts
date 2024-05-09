@@ -67,6 +67,7 @@ export class R2AI {
         }
         return false;
     }
+
     /**
      * Set the Model name or path to the GGUF file to use.
      *
