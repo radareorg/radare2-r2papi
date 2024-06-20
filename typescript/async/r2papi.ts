@@ -129,10 +129,10 @@ export class ThreadClass {
     constructor(r2: any) {
         this.api = r2;
     }
-    backtrace() {
+    async backtrace() {
         return r2.call("dbtj");
     }
-    sleep(seconds: number) {
+    async sleep(seconds: number) {
         return r2.call("sleep " + seconds);
     }
 }
@@ -163,7 +163,7 @@ export class ModuleClass {
     constructor(r2: R2PipeAsync) {
         this.api = r2;
     }
-    fileName(): string {
+    fileName(): Promise<string> {
         return this.api.call("dpe").trim();
     }
     name(): string {
@@ -175,29 +175,30 @@ export class ModuleClass {
     getBaseAddress(name: string) {
         return "TODO";
     }
-    getExportByName(name: string) : Promise<NativePointer> {
-        return ptr(r2.call("iE,name/eq/" + name + ",vaddr/cols,:quiet").trim());
+    async getExportByName(name: string) : Promise<NativePointer> {
+        const res = await r2.call("iE,name/eq/" + name + ",vaddr/cols,:quiet");
+        return ptr(res);
     }
-    findExportByName(name: string): Promise<NativePointer> {
+    async findExportByName(name: string): Promise<NativePointer> {
         return this.getExportByName(name);
     }
-    enumerateExports() {
+    async enumerateExports() : Promise<any> {
         // TODO: adjust to be the same output as Frida
         return r2.callj("iEj");
     }
-    enumerateImports() {
+    async enumerateImports() {
         // TODO: adjust to be the same output as Frida
         return r2.callj("iij");
     }
-    enumerateSymbols() {
+    async enumerateSymbols() : Promise<any> {
         // TODO: adjust to be the same output as Frida
         return r2.callj("isj");
     }
-    enumerateEntrypoints() {
+    async enumerateEntrypoints() : Promise<any> {
         // TODO: adjust to be the same output as Frida
         return r2.callj("iej");
     }
-    enumerateRanges() {
+    async enumerateRanges() : Promise<any> {
         // TODO: adjust to be the same output as Frida
         return r2.callj("omj");
     }
@@ -214,8 +215,8 @@ export class ProcessClass {
     enumerateThreads() {
         return r2.callj("dptj");
     }
-    enumerateModules(): any {
-        r2.call("cfg.json.num=string"); // to handle 64bit values properly
+    async enumerateModules(): Promise<any> {
+        await r2.call("cfg.json.num=string"); // to handle 64bit values properly
         if (r2.callj("e cfg.debug")) {
             const modules = r2.callj("dmmj");
             const res = [];
@@ -438,6 +439,10 @@ export class R2PapiAsync {
      */
     async getArch(): Promise<string> {
         return this.cmdTrim("-a");
+    }
+    async callTrim(x: string): Promise<string> {
+	    const res = await this.call(x);
+	    return res.trim()
     }
     async cmdTrim(x: string): Promise<string> {
 	    const res = await this.cmd(x);
@@ -707,8 +712,8 @@ export class R2PapiAsync {
         }
     }
     // TODO: take a BinFile as argument instead of number
-    selectBinary(id: number): void {
-        this.call(`ob ${id}`);
+    async selectBinary(id: number): Promise<void> {
+        await this.call(`ob ${id}`);
     }
     async openFile(name: string): Promise<number | Error> {
         const ofd = await this.call("oqq");
@@ -721,7 +726,7 @@ export class R2PapiAsync {
     }
     async openFileNomap(name: string): Promise<number | Error> {
         const ofd = await this.call("oqq");
-        this.call(`of ${name}`);
+        await this.call(`of ${name}`);
         const nfd = await this.call("oqq");
         if (ofd.trim() === nfd.trim()) {
             return new Error("Cannot open file");
@@ -877,8 +882,8 @@ export class NativePointer {
      * @param {string} name of the symbol name
      * @returns {string} filtered name to be used as a flag
      */
-    filterFlag(name: string) : string {
-        return this.api.call(`fD ${name}`).trim();
+    async filterFlag(name: string) : Promise<string> {
+        return this.api.call(`fD ${name}`)
     }
     /**
      * Set a flag (name) at the offset pointed
@@ -886,15 +891,15 @@ export class NativePointer {
      * @param {string} name of the flag to set
      * @returns {string} base64 decoded string
      */
-    setFlag(name: string) {
-        this.api.call(`f ${name}=${this.addr}`);
+    async setFlag(name: string) {
+        await this.api.call(`f ${name}=${this.addr}`);
     }
     /**
      * Remove the flag in the current offset
      *
      */
-    unsetFlag() {
-        this.api.call(`f-${this.addr}`);
+    async unsetFlag() {
+        await this.api.call(`f-${this.addr}`);
     }
     /**
      * Render an hexadecimal dump of the bytes contained in the range starting
@@ -949,12 +954,12 @@ export class NativePointer {
         this.api.cmd(`wa ${instruction} @ ${this.addr}`);
         return this;
     }
-    writeCString(s: string): NativePointer {
-        this.api.call("w " + s);
+    async writeCString(s: string): Promise<NativePointer> {
+        await this.api.call("w " + s);
         return this;
     }
-    writeWideString(s: string): NativePointer {
-        this.api.call("ww " + s);
+    async writeWideString(s: string): Promise<NativePointer> {
+        await this.api.call("ww " + s);
         return this;
     }
     /**
