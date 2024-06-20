@@ -464,9 +464,15 @@ export class R2PapiAsync {
             this.cmd("-b " + bits);
         }
     }
+
     async setFlagSpace(name: string) {
         await this.cmd("fs " + name);
     }
+
+    async demangleSymbol(lang: string, mangledName: string) : Promise<string> {
+        return this.cmdTrim("iD " + lang + " " + mangledName);
+    }
+
     async setLogLevel(level: number) {
         await this.cmd("e log.level=" + level);
     }
