@@ -36,15 +36,17 @@ export interface Flag {
 }
 
 export type PluginFamily =
-    | "core"
-    | "io"
-    | "arch"
-    | "esil"
-    | "lang"
-    | "bin"
-    | "debug"
     | "anal"
-    | "crypto";
+    | "arch"
+    | "bin"
+    | "core"
+    | "crypto"
+    | "debug"
+    | "egg"
+    | "esil"
+    | "fs"
+    | "io"
+    | "lang";
 
 // XXX not working? export type ThreadState = "waiting" | "running" | "dead" ;
 export interface ThreadContext {
@@ -867,9 +869,18 @@ export class NativePointer {
         this.addr = ("" + s).trim();
     }
     /**
+     * Filter a string to be used as a valid flag name
+     *
+     * @param {string} name of the symbol name
+     * @returns {string} filtered name to be used as a flag
+     */
+    filterFlag(name: string) : string {
+        this.api.call(`fD ${name}`);
+    }
+    /**
      * Set a flag (name) at the offset pointed
      *
-     * @param {string} name name of the flag to set
+     * @param {string} name of the flag to set
      * @returns {string} base64 decoded string
      */
     setFlag(name: string) {
