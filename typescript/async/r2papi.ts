@@ -172,15 +172,14 @@ export class ModuleClass {
     findBaseAddress() {
         return "TODO";
     }
-    findExportByName(name: string): any {
-        // TODO
-        return "TODO";
-    }
     getBaseAddress(name: string) {
         return "TODO";
     }
-    getExportByName(name: string) {
-        return r2.call("iE,name/eq/" + name + ",vaddr/cols,:quiet").trim();
+    getExportByName(name: string) : Promise<NativePointer> {
+        return ptr(r2.call("iE,name/eq/" + name + ",vaddr/cols,:quiet").trim());
+    }
+    findExportByName(name: string): Promise<NativePointer> {
+        return this.getExportByName(name);
     }
     enumerateExports() {
         // TODO: adjust to be the same output as Frida
@@ -190,13 +189,17 @@ export class ModuleClass {
         // TODO: adjust to be the same output as Frida
         return r2.callj("iij");
     }
-    enumerateRanges() {
-        // TODO: adjust to be the same output as Frida
-        return r2.callj("isj");
-    }
     enumerateSymbols() {
         // TODO: adjust to be the same output as Frida
         return r2.callj("isj");
+    }
+    enumerateEntrypoints() {
+        // TODO: adjust to be the same output as Frida
+        return r2.callj("iej");
+    }
+    enumerateRanges() {
+        // TODO: adjust to be the same output as Frida
+        return r2.callj("omj");
     }
 }
 
@@ -875,7 +878,7 @@ export class NativePointer {
      * @returns {string} filtered name to be used as a flag
      */
     filterFlag(name: string) : string {
-        this.api.call(`fD ${name}`);
+        return this.api.call(`fD ${name}`).trim();
     }
     /**
      * Set a flag (name) at the offset pointed
