@@ -1,5 +1,8 @@
-import { r2 } from "r2papi";
-import { R2PipeAsync, newAsyncR2PipeFromSync } from "./r2pipe.js";
+import { R2Pipe, R2PipeAsync, newAsyncR2PipeFromSync } from "./r2pipe.js";
+
+declare global {
+	var r2: R2Pipe;
+}
 
 export class R2Frida {
     isAvailable: boolean;
@@ -26,6 +29,7 @@ export class R2Frida {
     }
 }
 
+/*
 export async function main() {
     console.log("Hello from r2papi-r2frida");
     const r2async = newAsyncR2PipeFromSync(r2);
@@ -35,6 +39,7 @@ export async function main() {
     console.log(pid, arch, cwd);
 }
 main();
+*/
 
 export interface TargetDetails {
     arch: string;

@@ -1,6 +1,6 @@
 {
   "name": "r2papi",
-  "version": "0.4.7",
+  "version": "0.4.9",
   "description": "r2api on top of r2pipe for typescript and js",
   "author": "pancake@nopcode.org",
   "homepage": "http://www.radare.org",
@@ -46,6 +46,9 @@
     "index.js",
     "index.ts",
     "index.d.js",
+    "r2frida.js",
+    "r2frida.ts",
+    "r2frida.d.js",
     "base64.js",
     "base64.ts",
     "base64.d.js",

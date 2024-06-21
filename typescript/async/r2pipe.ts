@@ -3,6 +3,12 @@ export class R2PipeAsyncFromSync {
     constructor(r2p: R2Pipe) {
         this.r2p = r2p;
     }
+    /**
+     * Run a command in the associated instance of radare2 and return the output as a string
+     *
+     * @param {string} command to be executed inside radare2.
+     * @returns {string} The output of the command execution
+     */
     async cmd(command: string): Promise<string> {
         return this.r2p.cmd(command);
     }
@@ -51,7 +57,7 @@ export function newAsyncR2PipeFromSync(r2p: R2Pipe): R2PipeAsync {
  */
 export interface R2Pipe {
     /**
-     * Run a command in the associated instance of radare2
+     * Run a command in the associated instance of radare2 and return the output as a string
      *
      * @param {string} command to be executed inside radare2.
      * @returns {string} The output of the command execution

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "lib": ["es2015", "es2016", "esnext"],
+    "target": "es2020",
+    "lib": ["es2020", "esnext"],
     "module": "commonjs",
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -17,6 +17,7 @@
     "r2pipe.ts",
     "r2papi.ts",
     "esil.ts",
-    "shell.ts"
+    "shell.ts",
+    "r2frida.ts"
   ]
 }
