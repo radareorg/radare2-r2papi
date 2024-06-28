@@ -4,6 +4,13 @@ all build:
 test:
 	make -C test min
 
+doc:
+	rm -rf docs/_build
+	make -C docs html
+	cd docs/_build \
+		&& mv html r2papi-python-docs \
+		&& zip -r ../../r2papi-python-docs.zip r2papi-python-docs
+
 clean:
 	python setup.py clean
 	rm -rf build
