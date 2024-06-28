@@ -93,14 +93,16 @@ node_modules/jsfmt:
 
 MODVER=$(shell node -e 'console.log(JSON.parse(require("fs").readFileSync("package.json"))["version"])')
 
-doc docs: sync
+docs-html: sync
 	npm run adoc
 	npm run sdoc
+
+doc docs: docs-html
 	rm -f docs.zip
 	zip -r docs.zip sync/docs async/docs
 	r2 -qc "open docs/index.html" --
 
-.PHONY: doc docs webdoc
+.PHONY: doc docs docs-html webdoc
 
 webdoc:
 	npm run doc

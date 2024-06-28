@@ -1,0 +1,16 @@
+a, a:visited, a:link, a:active {
+	text-decoration: none !important ;
+	color:#ffb900!important;
+}
+a:hover {
+	text-decoration: underline !important;
+  	text-shadow: 0px 0px 2px black;
+	color: #f0e000!important;
+}
+body {
+	background-color:#151515;
+	font-family:montserrat;
+	color:#f0f0f0;
+	border:0px;
+	padding-bottom:4em;
+}
