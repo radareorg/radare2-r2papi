@@ -7,8 +7,12 @@ venv/
 .pytest_cache
 dist/
 htmlcov/
+python/docs/_build
+typescript/*/docs/
+typescript/docs.zip
 typescript/sync/*.ts
 typescript/sync/*.json
 typescript/node_modules
 typescript/build
 typescript/docs
+webdocs/public/*/
