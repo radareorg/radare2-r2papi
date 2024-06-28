@@ -1,7 +1,8 @@
 import { R2Pipe, R2PipeAsync, newAsyncR2PipeFromSync } from "./r2pipe.js";
 
 declare global {
-	var r2: R2Pipe;
+    // eslint-disable-next-line no-var
+    var r2: R2Pipe;
 }
 
 export class R2Frida {

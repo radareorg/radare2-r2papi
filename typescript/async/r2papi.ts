@@ -441,12 +441,12 @@ export class R2PapiAsync {
         return this.cmdTrim("-a");
     }
     async callTrim(x: string): Promise<string> {
-	    const res = await this.call(x);
-	    return res.trim()
+        const res = await this.call(x);
+        return res.trim()
     }
     async cmdTrim(x: string): Promise<string> {
-	    const res = await this.cmd(x);
-	    return res.trim()
+        const res = await this.cmd(x);
+        return res.trim()
     }
     /**
      * Get the name of the selected CPU for the current selected architecture.
