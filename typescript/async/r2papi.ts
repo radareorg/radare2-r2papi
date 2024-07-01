@@ -861,6 +861,11 @@ export declare function ptr(v: NativePointerValue): NativePointer;
  */
 export type NativePointerValue = string | number | NativePointer;
 
+declare global {
+    // eslint-disable-next-line no-var
+    var R: R2Papi;
+    function print (a:string): void;
+}
 /**
  * Class providing a way to work with 64bit pointers from Javascript, this API mimics the same
  * well-known promitive available in Frida, but it's baked by the current session of r2.
@@ -874,12 +879,7 @@ export class NativePointer {
 
     api: R2Papi;
     constructor(s: NativePointerValue, api?: R2Papi) {
-        if (api === undefined) {
-            this.api = R;
-        } else {
-            this.api = api;
-        }
-        // this.api.r2.log("NP " + s);
+        this.api = api?? R;
         this.addr = ("" + s).trim();
     }
     /**
