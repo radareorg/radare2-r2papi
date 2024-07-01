@@ -3,8 +3,12 @@ PLUGDIR=$(shell r2 -H R2_USER_PLUGINS)
 ESLINT=$(shell pwd)/node_modules/.bin/eslint
 TSI=sh tools/tsi.sh
 
+.PHONY: doc docs docs-html webdoc sync
+# build
+
 all: node_modules
-	$(MAKE) build
+	$(MAKE) one
+#	$(MAKE) build
 
 vs:
 	open -a "Visual Studio Code" async || vscode .
@@ -19,7 +23,8 @@ SYNCREGEX+=-e 's/Promise<\(.*\)>/\1/'
 lint:
 	$(ESLINT) async/*.ts
 
-FILES=r2pipe r2papi opt esil shell base64 ai r2frida index
+# FILES=r2pipe r2papi opt esil shell base64 ai r2frida index
+FILES=shell esil base64 r2pipe ai r2papi
 
 sync:
 	rm -rf sync/*.ts
@@ -27,18 +32,6 @@ sync:
 	for a in sync/*.ts ; do sed $(SYNCREGEX) -i=.bak $$a ; done
 	rm -f sync/*.bak
 	cp async/tsconfig.json sync
-
-abuild: sync
-	rm -rf build
-	mkdir build
-	cp -f async/*.ts build
-	cp -rf async/tsconfig.json build
-	cd build && $(TSC)
-	cd build && $(TSC) --declaration r2papi.ts
-	cd build && \
-		for a in $(FILES); do \
-			echo Compiling $$a.r2.js: ; $(TSC) -m node16 --target es2020 $$a.ts && cp -f $$a.js $$a.r2.js ; \
-		done
 
 build: sync
 	rm -rf build
@@ -52,6 +45,18 @@ build: sync
 		(cd build && $(TSC) -m node16 --target es2020 $$a.ts && cp -f $$a.js $$a.r2.js ) ; \
 	done
 
+abuild: sync
+	rm -rf build
+	mkdir build
+	cp -f async/*.ts build
+	cp -rf async/tsconfig.json build
+	cd build && $(TSC)
+	cd build && $(TSC) --declaration r2papi.ts
+	cd build && \
+		for a in $(FILES); do \
+			echo Compiling $$a.r2.js: ; $(TSC) -m node16 --target es2020 $$a.ts && cp -f $$a.js $$a.r2.js ; \
+		done
+
 buildjs:
 	cd build && $(TSC) -m node16 --target es2020 index.ts && cp -f index.js index.r2.js
 	cd build && $(TSC) -m node16 --target es2020 shell.ts && cp -f shell.js shell.r2.js
@@ -61,8 +66,6 @@ buildjs:
 	cd build && $(TSC) -m node16 --target es2020 r2papi.ts && cp -f r2papi.js index.r2.js
 	cd build && $(TSC) -m node16 --target es2020 r2frida.ts && cp -f r2frida.js r2frida.r2.js
 	cd build && $(TSC) -m node16 --target es2020 base64.ts && cp -f base64.js base64.r2.js
-
-.PHONY: sync build
 
 pdq: node_modules
 	# TODO: use pdq.r2.ts
@@ -76,19 +79,23 @@ install user-install:
 uninstall user-uninstall:
 	rm -f $(PLUGDIR)/pdq.qjs
 
-one:
-	cat shell.r2.js esil.r2.js base64.r2.js r2pipe.r2.js ai.r2.js r2papi.r2.js pdq.r2.js |grep -v require > one.r2.js
-	R2_DEBUG_NOPAPI=1 r2 -i one.r2.js /bin/ls
+one: build
+	cd build ; cat shell.r2.js esil.r2.js base64.r2.js r2pipe.r2.js ai.r2.js r2papi.r2.js  |grep -v require > ../r2papi.r2.js 
+	echo 'var R2Papi=R2PapiSync;' >> r2papi.r2.js
 
-test:
-	R2_DEBUG_NOPAPI=1 r2 -qi index.ts /bin/ls
+#	cat $(addsuffix .r2.js,$(addprefix build/,$(FILES))) | grep -v require > one.r2.js
+#	echo "var R2Papi=R2PapiSync;" >> one.r2.js
+#shell.r2.js esil.r2.js base64.r2.js r2pipe.r2.js ai.r2.js r2papi.r2.js | grep -v require > one.r2.js
+# R2_DEBUG_NOPAPI=1 r2 -i one.r2.js /bin/ls
+
+onetest:
+	R2_PAPI_SCRIPT=$(shell pwd)/r2papi.r2.js r2 -j 'console.log(ptr("entry0").api);' /bin/ls
 
 node_modules:
 	mkdir -p node_modules
 	npm i
 
-node_modules/jsfmt:
-	mkdir -p node_modules
+node_modules/jsfmt: node_modules
 	npm install jsfmt
 
 MODVER=$(shell node -e 'console.log(JSON.parse(require("fs").readFileSync("package.json"))["version"])')
@@ -101,8 +108,6 @@ doc docs: docs-html
 	rm -f docs.zip
 	zip -r docs.zip sync/docs async/docs
 	r2 -qc "open docs/index.html" --
-
-.PHONY: doc docs docs-html webdoc
 
 webdoc:
 	npm run doc
