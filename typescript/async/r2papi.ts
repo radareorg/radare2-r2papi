@@ -883,6 +883,32 @@ export class NativePointer {
         this.addr = ("" + s).trim();
     }
     /**
+     * Copy N bytes from current pointer to the destination
+     *
+     * @param {string|NativePointer|number} destination address
+     * @param {string|number} amount of bytes
+     */
+    async copyTo(addr: string|NativePointer|number, size: string|number) : Promise<void> {
+        this.api.call(`wf ${this.addr} ${size} @ ${addr}`)
+    }
+    /**
+     * Copy N bytes from given address to the current destination
+     *
+     * @param {string|NativePointer|number} source address
+     * @param {string|number} amount of bytes
+     */
+    async copyFrom(addr: string|NativePointer|number, size: string|number) : Promise<void> {
+        this.api.call(`wf ${addr} ${size} @ ${this.addr}`)
+    }
+    /**
+     * Fill N bytes in this address with zero
+     *
+     * @param {string|number} amount of bytes
+     */
+    async zeroFill(size: string|number) : Promise<void> {
+        this.api.call(`w0 ${size} @ ${this.addr}`)
+    }
+    /**
      * Filter a string to be used as a valid flag name
      *
      * @param {string} name of the symbol name
