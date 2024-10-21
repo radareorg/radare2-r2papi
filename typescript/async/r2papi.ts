@@ -408,7 +408,8 @@ export class R2PapiAsync {
      * @returns {NativePointer} address of the base of the binary
      */
     async getBaseAddress(): Promise<NativePointer> {
-        return new NativePointer(await this.cmd("e bin.baddr"));
+        const v = await this.cmd("e bin.baddr");
+        return new NativePointer(v);
     }
     jsonToTypescript(name: string, a: any): string {
         let str = `interface ${name} {\n`;
@@ -740,7 +741,8 @@ export class R2PapiAsync {
         return parseInt(nfd);
     }
     async currentFile(name: string): Promise<string> {
-        return (await this.call("o.")).trim();
+        const v = await this.call("o.");
+        return v.trim ();
     }
     enumeratePlugins(type: PluginFamily): any {
         switch (type) {
@@ -814,22 +816,26 @@ export class R2PapiAsync {
         return this.r2.call(s);
     }
     async callj(s: string): Promise<any> {
-        return JSON.parse(await this.call(s));
+        const v = await this.call(s);
+        return JSON.parse(v);
     }
     async cmd(s: string): Promise<string> {
         return this.r2.cmd(s);
     }
     async cmdj(s: string): Promise<any> {
-        return JSON.parse(await this.cmd(s));
+        const v = await this.cmd(s);
+        return JSON.parse(v);
     }
     async log(s: string) {
         return this.r2.log(s);
     }
     async clippy(msg: string): Promise<void> {
-        this.r2.log(await this.r2.cmd("?E " + msg));
+        const v = await this.r2.cmd("?E " + msg);
+        this.r2.log(v);
     }
     async ascii(msg: string): Promise<void> {
-        this.r2.log(await this.r2.cmd("?ea " + msg));
+        const v = await this.r2.cmd("?ea " + msg);
+        this.r2.log(v);
     }
 }
 
@@ -957,10 +963,12 @@ export class NativePointer {
         return this.api.cmd(`agf@${this.addr}`);
     }
     async readByteArray(len: number): Promise<number[]> {
-        return JSON.parse(await this.api.cmd(`p8j ${len}@${this.addr}`));
+        const v = await this.api.cmd(`p8j ${len}@${this.addr}`);
+        return JSON.parse(v);
     }
     async readHexString(len: number): Promise<string> {
-        return (await this.api.cmd(`p8 ${len}@${this.addr}`)).trim();
+        const v = await this.api.cmd(`p8 ${len}@${this.addr}`);
+        return v.trim ();
     }
     async and(a: number): Promise<NativePointer> {
         const addr = await this.api.call(`?v ${this.addr} & ${a}`);
@@ -1000,7 +1008,8 @@ export class NativePointer {
      * @returns {boolean} true if null
      */
     async isNull(): Promise<boolean> {
-        return (await this.toNumber()) == 0;
+        const v = await this.toNumber();
+        return v === 0;
     }
     /**
      * Compare current pointer with the passed one, and return -1, 0 or 1.
@@ -1032,23 +1041,27 @@ export class NativePointer {
      */
     async pointsToNull(): Promise<boolean> {
         const value = await this.readPointer();
-        return (await value.compare(0)) == 0;
+        const v = await value.compare(0);
+        return v == 0;
     }
     async toJSON(): Promise<string> {
         const output = await this.api.cmd("?vi " + this.addr.trim());
         return output.trim();
     }
     async toString(): Promise<string> {
-        return (await this.api.cmd("?v " + this.addr.trim())).trim();
+        const v = await this.api.cmd("?v " + this.addr.trim());
+        return v.trim ();
     }
     async toNumber(): Promise<number> {
-        return parseInt(await this.toString());
+        const v = await this.toString();
+        return parseInt(v);
     }
     writePointer(p: NativePointer): void {
         this.api.cmd(`wvp ${p}@${this}`); // requires 5.8.2
     }
     async readRelativePointer(): Promise<NativePointer> {
-        return this.add(await this.readS32());
+        const v = await this.readS32();
+        return this.add(v);
     }
     async readPointer(): Promise<NativePointer> {
         const address = await this.api.call("pvp@" + this.addr);
@@ -1056,67 +1069,67 @@ export class NativePointer {
     }
     async readS8(): Promise<number> {
         // requires 5.8.9
-        return parseInt(await this.api.cmd(`pv1d@${this.addr}`));
+        const v = await this.api.cmd(`pv1d@${this.addr}`);
+        return parseInt(v);
     }
     async readU8(): Promise<number> {
-        return parseInt(await this.api.cmd(`pv1u@${this.addr}`));
+        const v = await this.api.cmd(`pv1u@${this.addr}`);
+        return parseInt(v);
     }
     async readU16(): Promise<number> {
-        return parseInt(await this.api.cmd(`pv2d@${this.addr}`));
+        const v = await this.api.cmd(`pv2d@${this.addr}`);
+        return parseInt(v);
     }
     async readU16le(): Promise<number> {
-        return parseInt(
-            await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`)
-        ); // requires 5.8.9
+        const v = await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`);
+        return parseInt(v); // requires 5.8.9
     }
     async readU16be(): Promise<number> {
-        return parseInt(
-            await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`)
-        ); // requires 5.8.9
+        const v = await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`);
+        return parseInt(v); // requires 5.8.9
     }
     async readS16(): Promise<number> {
-        return parseInt(await this.api.cmd(`pv2d@${this.addr}`)); // requires 5.8.9
+        const v = await this.api.cmd(`pv2d@${this.addr}`); // requires 5.8.9
+        return parseInt(v);
     }
     async readS16le(): Promise<number> {
-        return parseInt(
-            await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`)
-        ); // requires 5.8.9
+        const v = await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`);
+        return parseInt(v); // requires 5.8.9
     }
     async readS16be(): Promise<number> {
-        return parseInt(
-            await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`)
-        ); // requires 5.8.9
+        const v = await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`);
+        return parseInt(v); // requires 5.8.9
     }
     async readS32(): Promise<number> {
-        // same as readInt32()
-        return parseInt(await this.api.cmd(`pv4d@${this.addr}`)); // requires 5.8.9
+	// requires r2-5.8.9, await statements must be in separate lines
+        const v = await this.api.cmd(`pv4d@${this.addr}`);
+        return parseInt(v);
     }
     async readU32(): Promise<number> {
-        return parseInt(await this.api.cmd(`pv4u@${this.addr}`)); // requires 5.8.9
+        // requires 5.8.9
+	const v = await this.api.cmd(`pv4u@${this.addr}`);
+        return parseInt(v);
     }
     async readU32le(): Promise<number> {
-        return parseInt(
-            await this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=false`)
-        ); // requires 5.8.9
+        const v = await this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=false`);
+        return parseInt(v); // requires 5.8.9
     }
     async readU32be(): Promise<number> {
-        return parseInt(
-            await this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=true`)
-        ); // requires 5.8.9
+        const v = await this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=true`)
+        return parseInt(v); // requires 5.8.9
     }
     async readU64(): Promise<number> {
         // XXX: use bignum or string here
-        return parseInt(await this.api.cmd(`pv8u@${this.addr}`));
+        const v = await this.api.cmd(`pv8u@${this.addr}`);
+        return parseInt(v);
     }
     async readU64le(): Promise<number> {
-        return parseInt(
-            await this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=false`)
-        ); // requires 5.8.9
+        const v = await this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=false`);
+        return parseInt(v); // requires 5.8.9
     }
     async readU64be(): Promise<number> {
-        return parseInt(
-            await this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=true`)
-        ); // requires 5.8.9
+        const v = await this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=true`)
+        return parseInt(v); // requires 5.8.9
     }
     async writeInt(n: number): Promise<boolean> {
         return this.writeU32(n);
@@ -1199,11 +1212,13 @@ export class NativePointer {
         return this;
     }
     async name(): Promise<string> {
-        return (await this.api.cmd("fd " + this.addr)).trim();
+        const v = await this.api.cmd("fd " + this.addr);
+        return v.trim ();
     }
     async methodName(): Promise<string> {
         // TODO: @ should be optional here, as addr should be passable as argument imho
-        return (await this.api.cmd("ic.@" + this.addr)).trim();
+        const v = await this.api.cmd("ic.@" + this.addr);
+        return v.trim ();
     }
     async symbolName(): Promise<string> {
         // TODO: @ should be optional here, as addr should be passable as argument imho
