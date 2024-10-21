@@ -880,7 +880,7 @@ export class NativePointer {
     api: R2Papi;
     constructor(s: NativePointerValue, api?: R2Papi) {
         this.api = api?? R;
-        this.addr = ("" + s).trim();
+        this.addr = (s == undefined)? "$$": ("" + s).trim();
     }
     /**
      * Copy N bytes from current pointer to the destination
