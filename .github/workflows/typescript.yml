@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install radare2 5.8.0
       run: |
         wget https://github.com/radareorg/radare2/releases/download/5.8.0/radare2_5.8.0_amd64.deb
@@ -33,7 +33,7 @@ jobs:
       run: cd typescript && r2 -qi esil.ts -c 'af;pdq' /bin/ls
     - name: Make Documentation
       run: make -C typescript doc
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: docs.zip
         path: typescript/docs.zip
