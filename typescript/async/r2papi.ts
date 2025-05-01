@@ -17,7 +17,7 @@ export type Permission = "---" | "r--" | "rw-" | "rwx" | "r-x" | "-wx" | "--x";
 export type R2Papi = R2PapiAsync;
 
 export interface SearchResult {
-    offset: number; // TODO: rename to addr
+    addr: number;
     type: string;
     data: string;
 }
@@ -32,7 +32,7 @@ export interface DebugModule {
 export interface Flag {
     name: string;
     size: number;
-    offset: number;
+    addr: number;
 }
 
 export type PluginFamily =
@@ -63,7 +63,7 @@ export interface CallRef {
 }
 
 export interface FunctionDetails {
-    offset: number;
+    addr: number;
     name: string;
     size: number;
     noreturn: boolean;
@@ -924,7 +924,7 @@ export class NativePointer {
         return this.api.call(`fD ${name}`)
     }
     /**
-     * Set a flag (name) at the offset pointed
+     * Set a flag (name) at the address pointed
      *
      * @param {string} name of the flag to set
      * @returns {string} base64 decoded string
@@ -933,7 +933,7 @@ export class NativePointer {
         await this.api.call(`f ${name}=${this.addr}`);
     }
     /**
-     * Remove the flag in the current offset
+     * Remove the flag in the current address
      *
      */
     async unsetFlag() {
@@ -1135,7 +1135,7 @@ export class NativePointer {
         return this.writeU32(n);
     }
     /**
-     * Write a byte in the current offset, the value must be between 0 and 255
+     * Write a byte in the current address, the value must be between 0 and 255
      *
      * @param {string} n number to write in the pointed byte in the current address
      * @returns {boolean} false if the operation failed

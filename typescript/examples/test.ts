@@ -7,8 +7,8 @@ namespace Main {
 	    const nullptr = new NativePointer(0);
 	    console.log(nullptr.add(4).sub(4).isNull());
 	/*
-        const text = new NativePointer(R, result.offset);
-        console.log(result.offset, text); // .readCString());
+        const text = new NativePointer(R, result.addr);
+        console.log(result.addr, text); // .readCString());
 	*/
     }
 }

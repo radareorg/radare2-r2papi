@@ -151,11 +151,11 @@ export class R2Shell {
      * @param {string|number}
      * @returns {number} return code (0 is success)
      */
-    mount(fstype: string, path: string, offset: string | number): boolean {
-        if (!offset) {
-            offset = 0;
+    mount(fstype: string, path: string, addr: string | number): boolean {
+        if (!addr) {
+            addr = 0;
         }
-        this.rp.call(`m ${fstype} ${path} ${offset}`);
+        this.rp.call(`m ${fstype} ${path} ${addr}`);
         return true;
     }
     /**
