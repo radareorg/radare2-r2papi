@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
+import os
+
 import pytest
-
-from r2api.file import File
-from r2api.iomap import IOMap
-
 import r2pipe
+from r2papi.file import File
+from r2papi.iomap import IOMap
 
 
 def get_file():
-    r = r2pipe.open("test_bin")
+    r = r2pipe.open(f"{os.path.dirname(__file__)}/test_bin")
     return File(r, 3)
 
 
@@ -22,9 +22,9 @@ def test_writable():
 
 def test_getFilename():
     f = get_file()
-    assert f.getFilename() == "test_bin"
-    assert f.filename == "test_bin"
-    assert f.uri == "test_bin"
+    assert f.getFilename() == f"{os.path.dirname(__file__)}/test_bin"
+    assert f.filename == f"{os.path.dirname(__file__)}/test_bin"
+    assert f.uri == f"{os.path.dirname(__file__)}/test_bin"
 
 
 def test_getSize():

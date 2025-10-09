@@ -1,7 +1,4 @@
-import sys
-from .base import R2Base, ResultArray
-
-PYTHON_VERSION = sys.version_info[0]
+from r2papi.base import R2Base, ResultArray
 
 
 class Print(R2Base):
@@ -11,7 +8,7 @@ class Print(R2Base):
     """
 
     def __init__(self, r2):
-        super(Print, self).__init__(r2)
+        super().__init__(r2)
         self.hash_types = self._exec("ph").split()
 
     def byte(self):
@@ -39,10 +36,7 @@ class Print(R2Base):
             ret = self._exec("p8j %s%s" % (size, self._tmp_off), json=True)
         else:
             ret = self._exec("p8 %s%s" % (size, self._tmp_off))
-            if PYTHON_VERSION == 3:
-                ret = bytes.fromhex(ret)
-            else:
-                ret = ret.decode("hex")
+            ret = bytes.fromhex(ret)
         self._tmp_off = ""
         return ret
 
@@ -135,7 +129,7 @@ class Print(R2Base):
         Returns:
             str: de Bruijn sequence as hexdump.
         """
-        size = "" if size==0 else size
+        size = "" if size == 0 else size
         ret = self._exec("ppd %s" % size)
         self._tmp_off = ""
         return ret

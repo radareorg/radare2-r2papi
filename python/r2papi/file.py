@@ -1,10 +1,8 @@
-from .utils import r2_is_valid
-from .base import R2Base
-from .iomap import IOMap
+from r2papi.base import R2Base
+from r2papi.iomap import IOMap
 
 
 class File(R2Base):
-
     def __init__(self, r2, fd):
         super(File, self).__init__(r2)
 

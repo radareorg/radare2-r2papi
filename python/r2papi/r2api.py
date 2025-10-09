@@ -1,28 +1,19 @@
 from __future__ import print_function
-import sys
 
-from .base import R2Base, Result, ResultArray
-from .debugger import Debugger
-from .config import Config
-from .file import File
-from .print import Print
-from .write import Write
-from .flags import Flags
-from .esil import Esil
+import r2pipe
 
-try:
-    import r2pipe
-except ImportError:
-    print("r2pipe not found")
-    print("You can install it with pip: pip install r2pipe")
-    raise ImportError("r2pipe not found")
-
-PYTHON_VERSION = sys.version_info[0]
+from r2papi.base import R2Base, Result, ResultArray
+from r2papi.config import Config
+from r2papi.debugger import Debugger
+from r2papi.esil import Esil
+from r2papi.file import File
+from r2papi.flags import Flags
+from r2papi.print import Print
+from r2papi.write import Write
 
 
 class Function(R2Base):
-    """Class representing a function in radare2.
-    """
+    """Class representing a function in radare2."""
 
     def __init__(self, r2, addr):
         """
@@ -30,13 +21,12 @@ class Function(R2Base):
             addr (str): Beginning of the function, it can be an offset,
                 function name...
         """
-        super(Function, self).__init__(r2)
+        super().__init__(r2)
 
         self.offset = addr
 
     def analyze(self):
-        """Analyze the function. It uses the radare2 ``af`` command.
-        """
+        """Analyze the function. It uses the radare2 ``af`` command."""
         self._exec("af %s" % self.offset)
 
     def info(self):
@@ -50,8 +40,7 @@ class Function(R2Base):
         return Result(res)
 
     def rename(self, name):
-        """Uses the radare2 ``afn`` command
-        """
+        """Uses the radare2 ``afn`` command"""
         self._exec("afn %s %s" % (name, self.offset))
 
     def graphImg(self, path=""):
@@ -68,7 +57,7 @@ class Function(R2Base):
             path (str, optional):
                 Path to store the image (including filename).
         """
-        path = '%s-graph.gif' % self.name if path=="" else path
+        path = "%s-graph.gif" % self.name if path == "" else path
         self._exec("e asm.comments=0")
         self._exec("e asm.var=0")
         self._exec("e asm.flags=0")
@@ -88,7 +77,7 @@ class Function(R2Base):
 
 
 class R2Api(R2Base):
-    """Main class in ``r2pipe-api``, it contains all the methods and objects
+    """Main class in ``r2papi``, it contains all the methods and objects
     used.
 
     A ``with`` statement can be used to make sure that the radare2 process is
@@ -126,20 +115,16 @@ class R2Api(R2Base):
                 accepts, so ``'-'`` opens ``malloc://512``.
             r2 (r2pipe.OpenBase): r2pipe object, only used if filename is None.
         """
-        if filename is not None:
-            r2 = r2pipe.open(filename)
-        super(R2Api, self).__init__(r2)
+        if filename:
+            if r2pipe.in_r2():
+                r2 = r2pipe.open()
+            else:
+                r2 = r2pipe.open(filename)
+        super().__init__(r2)
 
         self.debugger = Debugger(r2)
 
-        # Using 'print' in python2 raises a syntax error if print function
-        # is not imported, print2 can be used as an alternative.
-        if PYTHON_VERSION == 2:
-            self.print2 = Print(r2)
-        else:
-            self.print = Print(r2)
-            # Make code compatible
-            self.print2 = self.print
+        self.print = Print(r2)
 
         self.write = Write(r2)
         self.config = Config(r2)
@@ -157,9 +142,7 @@ class R2Api(R2Base):
         self.refsTo = lambda: ResultArray(self._exec("axfj", json=True))
         self.opInfo = lambda: ResultArray(
             self._exec("aoj %s" % self._tmp_off, json=True)
-        )[
-            0
-        ]
+        )[0]
         self.seek = lambda x: self._exec("s %s" % (x))
 
     def __enter__(self):
@@ -175,7 +158,7 @@ class R2Api(R2Base):
     @property
     def files(self):
         """
-            list: returns a list of :class:`r2api.file.File` objects.
+        list: returns a list of :class:`r2api.file.File` objects.
         """
         files = self._exec("oj", json=True)
         return [File(self.r2, f["fd"]) for f in files]
@@ -217,7 +200,9 @@ class R2Api(R2Base):
             all the functions in the binary.
         """
         res = self._exec("aflj", json=True)
-        return [Function(self.r2, f["offset"]) for f in res] if res else []
+        if not res:
+            res = self._exec("isj", json=True)
+        return [Function(self.r2, f["addr"]) for f in res] if res else []
 
     def functionByName(self, name):
         """
@@ -226,15 +211,13 @@ class R2Api(R2Base):
         Returns:
             :class:`r2api.r2api.Function`: Function or None.
         """
-        # Use list for python3 compatibility
-        res = list(filter(lambda x: x.name == name, self.functions()))
-        if len(res) == 0:
+        res = [func for func in self.functions() if func.name == name]
+        if not res:
             return None
-        elif len(res) == 1:
+        if len(res) == 1:
             return res[0]
-        else:
-            # TODO: Is this possible?
-            raise ValueError("One name returned more than one function")
+        # TODO: Is this possible?
+        raise ValueError("One name returned more than one function")
 
     def read(self, n):
         """Get ``n`` bytes as a binary string from the current offset.
@@ -247,10 +230,7 @@ class R2Api(R2Base):
         """
         res = self._exec("p8 %s%s|" % (n, self._tmp_off))
         self._tmp_off = ""
-        if PYTHON_VERSION == 3:
-            return bytes.fromhex(res)
-        else:
-            return res.decode("hex")
+        return bytes.fromhex(res)
 
     def __getitem__(self, k):
         if type(k) == slice:
@@ -267,15 +247,13 @@ class R2Api(R2Base):
         else:
             read_len = 1
             at_addr = k
-        if PYTHON_VERSION == 2:
-            return self.print2.at(at_addr).bytes(read_len)
-        return self.print.at(at_addr).bytes(read_len)
+        return self.print.at(str(at_addr)).bytes(read_len)
 
     def __setitem__(self, k, v):
         return self.write.at(k).bytes(v)
 
     def quit(self):
-        """Closes the radare2 process.
-        """
-        self.r2.quit()
+        """Closes the radare2 process."""
+        if self.r2:
+            self.r2.quit()
         self.r2 = None

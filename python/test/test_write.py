@@ -1,14 +1,15 @@
 # -*- coding:utf-8 -*-
 from __future__ import print_function
+
+import os
+
 import pytest
-
-from r2api.write import Write
-
 import r2pipe
+from r2papi.write import Write
 
 
 def get_write():
-    r = r2pipe.open("test_bin")
+    r = r2pipe.open(f"{os.path.dirname(__file__)}/test_bin")
     r.cmd("e io.cache=true")
     return Write(r)
 
@@ -29,7 +30,31 @@ def test_string():
     w.r2.quit()
 
 
-# TODO: Base64
+def test_bytes():
+    w = get_write()
+    w.at("entry0").bytes(b"test")
+    assert w._exec("p8 4 @ entry0") == "74657374"
+    w.at("entry0").bytes("test")
+    assert w._exec("p8 4 @ entry0") == "74657374"
+    with pytest.raises(TypeError):
+        w.at("entry0").bytes(123)
+    w.r2.quit()
+
+
+def test_random():
+    w = get_write()
+    w.at("entry0").random(4)
+    assert len(w._exec("p8 4 @ entry0")) == 8
+    w.r2.quit()
+
+
+def test_base64():
+    w = get_write()
+    w.at("entry0").base64("dGVzdA==", encode=False)
+    assert w._exec("ps 4 @ entry0") == "test"
+    w.at("entry0").base64("test", encode=True)
+    assert w._exec("ps 8 @ entry0") == "dGVzdA=="
+    w.r2.quit()
 
 
 def test_assemble():

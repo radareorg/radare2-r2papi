@@ -1,13 +1,9 @@
-from .base import R2Base, Result
-import sys
-
-PYTHON_VERSION = sys.version_info[0]
+from r2papi.base import R2Base, Result
 
 
 class EsilCPU(R2Base):
-
-    def __init_(self, r2):
-        super(CPU, self).__init__(r2)
+    def __init__(self, r2):
+        super().__init__(r2)
 
     def registers(self):
         return self._exec("aerj", json=True)
@@ -23,10 +19,7 @@ class EsilCPU(R2Base):
 
     def __str__(self):
         regs = self.registers()
-        if PYTHON_VERSION == 3:
-            items = regs.items()
-        else:
-            items = regs.iteritems()
+        items = regs.items()
 
         ret_str = ""
         for r, v in items:
@@ -46,9 +39,8 @@ class EsilCPU(R2Base):
 
 
 class EsilVM(R2Base):
-
     def __init__(self, r2):
-        super(EsilVM, self).__init__(r2)
+        super().__init__(r2)
         self.cpu = EsilCPU(r2)
 
         self.contUntilAddr = None
@@ -59,10 +51,10 @@ class EsilVM(R2Base):
         self.stack_size = None
         self.stack_name = None
 
-    def init(self, stack_form=0x100000, stack_size=0xf0000, name=""):
+    def init(self, stack_form=0x100000, stack_size=0xF0000, name=""):
         self._exec("aei")
         self._exec("aeip")
-        self._exec("aeim %s %s %s" % (stack_form, stack_size, name))
+        self._exec(f"aeim {stack_form} {stack_size} {name}")
         self.stack_from = stack_form
         self.stack_size = stack_size
         self.stack_name = name
@@ -104,19 +96,21 @@ class EsilVM(R2Base):
 
     def emulateInstr(self, num=1, offset=None):
         if offset is None:
-            if self._tmp_off == "":
-                # Remove '@ '
-                offset = self._tmp_off[2:]
+            if self._tmp_off != "":
+                offset = self._tmp_off
+                if not offset.startswith("@ 0x"):
+                    offset = self.curr_seek_addr()
+                elif offset.startswith("@ "):
+                    offset = self._tmp_off[2:]
             else:
                 # XXX: Check if this is correct
                 offset = "$$"
-        self._exec("aesp %s %s" % (offset, num))
+        self._exec(f"aesp {offset} {num}")
 
 
 class Esil(R2Base):
-
     def __init__(self, r2):
-        super(Esil, self).__init__(r2)
+        super().__init__(r2)
         self.vm = EsilVM(r2)
 
     def eval(self, esil_str):

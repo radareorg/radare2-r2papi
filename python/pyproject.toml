@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "r2papi"
+version = "0.1.5"
+description = "High level API on top of r2pipe"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["r2pipe"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Natural Language :: English",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: General",
+    "Topic :: Utilities",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://www.radare.org"
+Source = "https://github.com/radareorg/radare2-r2papi/tree/master/python"
+
+[tool.setuptools]
+packages = ["r2papi"]
+
+[project.optional-dependencies]
+dev = ["r2pipe", "pytest-cov", "build>=1.2.1"]
+docs = ["sphinx", "sphinx-rtd-theme"]
+
+[tool.pytest.ini_options]
+minversion = "7.4.3"
+testpaths = ["test"]
