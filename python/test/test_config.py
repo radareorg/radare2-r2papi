@@ -1,13 +1,13 @@
 # -*- coding:utf-8 -*-
+import os
+
 import pytest
-
-from r2api.config import Config
-
 import r2pipe
+from r2papi.config import Config
 
 
 def get_config():
-    r = r2pipe.open("test_bin")
+    r = r2pipe.open(f"{os.path.dirname(__file__)}/test_bin")
     return Config(r)
 
 

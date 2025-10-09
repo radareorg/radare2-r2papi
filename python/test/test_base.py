@@ -1,11 +1,13 @@
 # -*- coding:utf-8 -*-
+import os
+
 import pytest
 import r2pipe
-from r2api.base import R2Base, Result
+from r2papi.base import R2Base, Result
 
 
 def get_r2base():
-    r2 = r2pipe.open("test_bin")
+    r2 = r2pipe.open(f"{os.path.dirname(__file__)}/test_bin")
     return R2Base(r2)
 
 
@@ -37,4 +39,6 @@ def test_result():
 
 def test_sym_to_addr():
     r = get_r2base()
-    assert r.sym_to_addr("entry0") == 0x100000f20
+    assert r.sym_to_addr("entry0") == 0x100000F20
+    with pytest.raises(TypeError, match="Symbol type must be string"):
+        r.sym_to_addr(0x100)

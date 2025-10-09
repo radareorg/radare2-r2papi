@@ -1,127 +1,86 @@
-from . import utils as r2_utils
-import sys
-
-PYTHON_VERSION = sys.version_info[0]
-
-
 def ResultArray(o):
-    self = []
+    """
+    Convert an iterable of raw JSON objects into a list of ``Result`` instances.
+    """
+    results: list[Result] = []
     if o:
         for a in o:
-            self.append(Result(a))
-    return self
+            results.append(Result(a))
+    return results
 
 
 class Result:
-    """Class to encapsulate the results of a json response.
+    """Encapsulate a JSON response from radare2.
 
-    .. todo::
-
-        Document this, implement this in a more elegant way?
+    The object's attributes mirror the keys of the provided dict, and a
+    private ``_dict`` attribute holds the raw mapping for easy introspection.
     """
 
-    def __init__(self, o):
-        self._dict = {}
+    def __init__(self, o: dict):
+        self._dict: dict = {}
+        # Prefer the ``bin`` sub‑dictionary if present
         try:
-            for a in o["bin"]:
-                setattr(self, a, o["bin"][a])
-                self._dict[a] = o["bin"][a]
-        except:
-            for a in o:
-                setattr(self, a, o[a])
-                self._dict[a] = o[a]
+            bin_dict = o["bin"]
+        except KeyError:
+            bin_dict = o
 
-    def pprint(self):
-        ret_str = ""
-        if PYTHON_VERSION == 3:
-            items = self._dict.items()
-        else:
-            items = self._dict.iteritems()
+        for key, value in bin_dict.items():
+            setattr(self, key, value)
+            self._dict[key] = value
 
-        for k, v in items:
-            ret_str += "{:<10}{}\n".format(k, v)
-            # Don't return last newline
-        return ret_str[:-1]
+    def pprint(self) -> str:
+        """Pretty‑print the stored dictionary in a column‑aligned format."""
+        lines = [f"{k:<10}{v}" for k, v in self._dict.items()]
+        # Join without trailing newline
+        return "\n".join(lines)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.pprint()
 
 
-class R2Base(object):
-    """Base class that have the essential functionality required by almost all
-    subclasses of r2pipe-api. It accepts a r2pipe object and checks if it's
-    valid, if not it raises a ValueError.
-    """
+class R2Base:
+    """Base class providing common radare2‑pipe utilities."""
 
     def __init__(self, r2):
         """
         Args:
-            r2 (r2pipe.OpenBase):
-                r2pipe object, this is what ``r2pipe.open`` returns.
+            r2 (r2pipe.OpenBase): An opened r2pipe instance.
         """
-        if not r2_utils.r2_is_valid(r2):
-            raise ValueError("Invalid r2pipe object")
-
         self.r2 = r2
         self._tmp_off = ""
 
-    def _exec(self, cmd, json=False, rstrip=True):
+    def _exec(self, cmd: str, json: bool = False, rstrip: bool = True):
         """Execute a radare2 command.
 
         Args:
-            cmd (str):
-                Command to be executed
-            json (bool, optional):
-                If True, it interprets the output as json, and returns a Python
-                native object.
-            rstrip (bool, optional):
-                If True (default), it calls python rstrip function before
-                returning the output. Not used in json mode.
+            cmd: Command string.
+            json: If ``True`` parse output as JSON.
+            rstrip: Strip trailing whitespace from non‑JSON output.
 
         Returns:
-            object:
-                The result of the r2 command as a string, or as a python native
-                object if the json parameter was True.
+            Either a Python object (when ``json=True``) or a stripped string.
         """
         if json:
             return self.r2.cmdj(cmd)
-        else:
-            res = self.r2.cmd(cmd)
-            return res if not rstrip else res.rstrip()
+        res = self.r2.cmd(cmd)
+        return res.rstrip() if rstrip else res
 
-    def curr_seek_addr(self):
+    def curr_seek_addr(self) -> int:
+        """Return the current address after a temporary seek."""
         try:
-            res = int(self._exec("?vi $$ %s" % self._tmp_off))
-            return res
-        except:
-            err_str = "Invalid address %s" % self._tmp_off
-            raise ValueError(err_str)
+            return int(self._exec(f"?vi $$ {self._tmp_off}"))
+        except ValueError as exc:
+            raise ValueError(f"Invalid address {self._tmp_off}") from exc
         finally:
             self._tmp_off = ""
 
-    def sym_to_addr(self, sym):
-        if type(sym) != str:
+    def sym_to_addr(self, sym: str) -> int:
+        """Resolve a symbol name to its address."""
+        if not isinstance(sym, str):
             raise TypeError("Symbol type must be string")
         return self.at(sym).curr_seek_addr()
 
-    def at(self, seek):
-        """Temporal seek, it'll execute the next command at the specified
-        seek, and then return to the current seek. It have the same effect as
-        the ``@`` radare command.
-
-        .. code-block:: python
-
-            # current offset = 0x100
-            R2Base.at('0x200')._exec('p8 1') # Prints 1 bytes at 0x200
-            # current offset = 0x100
-
-        Args:
-            seek (str):
-                Anything that radare accepts as an offset, function names, hex
-                offset string, integers, flags...
-
-        Returns:
-            R2Base: Returns self, to be able to use other methods easily.
-        """
-        self._tmp_off = "@ %s" % (seek)
+    def at(self, seek: str):
+        """Temporarily seek to ``seek`` for the next command, then restore."""
+        self._tmp_off = f"@ {seek}"
         return self

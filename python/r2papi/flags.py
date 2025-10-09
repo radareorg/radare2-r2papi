@@ -1,10 +1,9 @@
-from .base import R2Base, ResultArray
+from r2papi.base import R2Base, ResultArray
 
 
 class Flags(R2Base):
-
     def __init__(self, r2):
-        super(Flags, self).__init__(r2)
+        super().__init__(r2)
 
     def all(self):
         return ResultArray(self._exec("fj", json=True))
@@ -15,9 +14,10 @@ class Flags(R2Base):
         return res == 1
 
     def new(self, name, offset=None):
-        if offset is None:
+        if not offset:
+            print(self._tmp_off)
             offset = self._tmp_off
-        self._exec("f %s %s" % (name, offset))
+        self._exec(f"f {name} {offset}")
         self._tmp_off = ""
 
     def delete(self, name="", offset=None):

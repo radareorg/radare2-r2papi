@@ -1,8 +1,7 @@
-from .base import R2Base, ResultArray
+from r2papi.base import R2Base
 
 
 class ConfigType(R2Base):
-
     def __init__(self, r2, var_type):
         super(ConfigType, self).__init__(r2)
 
@@ -43,7 +42,6 @@ class ConfigType(R2Base):
 
 
 class Config(R2Base):
-
     def __init__(self, r2):
         super(Config, self).__init__(r2)
 

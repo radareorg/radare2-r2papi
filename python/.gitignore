@@ -1,0 +1,9 @@
+venv/
+.venv/
+build/
+_build/
+dist/
+*.zip
+__*cache__/
+test/test_exe
+a.dot

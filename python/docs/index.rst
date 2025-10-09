@@ -1,4 +1,4 @@
-Welcome to r2pipe-api's documentation!
+Welcome to r2papi's documentation!
 ======================================
 
 High level API on top of r2pipe. An intuitive and easy way to use and
@@ -31,12 +31,12 @@ to deal with commands and other CLI stuff that sometimes scares people.
 The code is hosted in `github`_.
 
 .. _radare2: https://github.com/radare/radare2
-.. _github: https://github.com/radare/radare2-r2pipe-api
+.. _github: https://github.com/radareorg/radare2-r2papi
 
 Install
 =======
 
-The installation process is really simple, it's not in PyPI yet, but i'll be at
+The installation process is really simple, it's not in PyPI yet, but it'll be at
 some point.
 
 Create a new virtual environment **(optional)**:
@@ -59,9 +59,9 @@ Install ``radare2`` from git:
 
 .. code-block:: shell
 
-    $ git clone https://github.com/radare/radare2-r2pipe-api
-    $ cd radare2-r2pipe-api/python
-    $ pip install -e .
+    $ git clone https://github.com/radareorg/radare2-r2papi
+    $ cd radare2-r2papi/python
+    $ pip install .
 
 To test if it was intalled, the following code must be executed without errors:
 

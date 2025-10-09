@@ -1,33 +1,37 @@
 # -*- coding:utf-8 -*-
-import pytest
-import sys
+import os
 
-from r2api.iomap import IOMap
+import pytest
 import r2pipe
+from r2papi.iomap import IOMap
 
 
 def get_iomap():
-    r = r2pipe.open("test_bin")
+    r = r2pipe.open(f"{os.path.dirname(__file__)}/test_bin")
     return IOMap(r, 1)
 
 
 def test_name():
     m = get_iomap()
     m.name = "foo"
-    if sys.version_info[0] == 2:
-        assert type(m.name) == unicode
-    else:
-        assert type(m.name) == str
-    assert m.name == u"foo"
+    assert type(m.name) == str
+    assert m.name == "foo"
 
 
 def test_flags():
     m = get_iomap()
+    print(m.flags)
     m.flags = "rwx"
-    assert m.flags == u"rwx"
+    assert m.flags == "rwx"
 
 
 def test_relocate():
     m = get_iomap()
-    m.offset = 0x100
-    assert m.offset == 0x100
+    m.addr = 0x100
+    assert m.addr == 0x100
+
+
+def test_remove():
+    m = get_iomap()
+    m.remove()
+    assert m._mapObj() is None

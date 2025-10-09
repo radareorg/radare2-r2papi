@@ -1,32 +1,32 @@
 API Reference
 =============
 
-r2api.r2api.R2Api
-.................
+r2papi.R2Api
+............
 
-.. autoclass:: r2api.r2api.R2Api
+.. autoclass:: r2papi.R2Api
    :members:
    :show-inheritance:
    :inherited-members:
 
-r2api.r2api.Function
-....................
+r2papi.r2api.Function
+.....................
 
-.. autoclass:: r2api.r2api.Function
+.. autoclass:: r2papi.r2api.Function
    :members:
    :show-inheritance:
 
-r2api.print.Print
-....................
+r2papi.print.Print
+..................
 
-.. autoclass:: r2api.print.Print
+.. autoclass:: r2papi.print.Print
    :members:
    :show-inheritance:
 
-r2api.base
-..........
+r2papi.r2api.R2Base
+...................
 
 Used for developers, if you're a user this class is not interesting for you.
 
-.. autoclass:: r2api.base.R2Base
+.. autoclass:: r2papi.r2api.R2Base
    :members:

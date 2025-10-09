@@ -1,13 +1,9 @@
-import sys
-from .base import R2Base, Result, ResultArray
-
-PYTHON_VERSION = sys.version_info[0]
+from r2papi.base import R2Base, ResultArray
 
 
 class CPU(R2Base):
-
     def __init__(self, r2):
-        super(CPU, self).__init__(r2)
+        super().__init__(r2)
 
     def readRegister(self, reg_name):
         res = self._exec("drj", json=True)
@@ -26,10 +22,7 @@ class CPU(R2Base):
 
     def __str__(self):
         regs = self.registers()
-        if PYTHON_VERSION == 3:
-            items = regs.items()
-        else:
-            items = regs.iteritems()
+        items = regs.items()
 
         ret_str = ""
         for r, v in items:
@@ -52,7 +45,6 @@ class CPU(R2Base):
 
 
 class Debugger(R2Base):
-
     def __init__(self, r2):
         super(Debugger, self).__init__(r2)
 
