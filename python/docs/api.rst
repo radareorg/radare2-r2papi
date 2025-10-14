@@ -16,10 +16,38 @@ r2papi.r2api.Function
    :members:
    :show-inheritance:
 
+r2papi.file.File
+..................
+
+.. autoclass:: r2papi.file.File
+   :members:
+   :show-inheritance:
+
 r2papi.print.Print
 ..................
 
 .. autoclass:: r2papi.print.Print
+   :members:
+   :show-inheritance:
+
+r2papi.search.Search
+....................
+
+.. autoclass:: r2papi.search.Search
+   :members:
+   :show-inheritance:
+
+r2papi.debugger.Debugger
+........................
+
+.. autoclass:: r2papi.debugger.Debugger
+   :members:
+   :show-inheritance:
+
+r2papi.write.Write
+..................
+
+.. autoclass:: r2papi.write.Write
    :members:
    :show-inheritance:
 

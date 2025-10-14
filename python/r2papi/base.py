@@ -27,6 +27,12 @@ class Result:
         for key, value in bin_dict.items():
             setattr(self, key, value)
             self._dict[key] = value
+    
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def __contains__(self, key):
+        return key in self._dict
 
     def pprint(self) -> str:
         """Pretty‑print the stored dictionary in a column‑aligned format."""
