@@ -6,7 +6,18 @@ from r2papi.base import R2Base
 
 class Write(R2Base):
     def __init__(self, r2):
-        super(Write, self).__init__(r2)
+        super().__init__(r2)
+    
+    def reopen(self, mode = ""):
+        """
+        Reopen the file in write/cache mode.
+        If mode is "ow", it will overwrite the file i.e, reopen it in 'rw' mode.
+        Default is 'cache' mode.
+        """
+        cmd = "e io.cache=1"
+        if mode == "ow": # overwrite
+            cmd = "oo+"
+        super()._exec(cmd)
 
     def bytes(self, buf):
         if type(buf) == str:

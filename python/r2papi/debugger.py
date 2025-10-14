@@ -46,7 +46,7 @@ class CPU(R2Base):
 
 class Debugger(R2Base):
     def __init__(self, r2):
-        super(Debugger, self).__init__(r2)
+        super().__init__(r2)
 
         self.cpu = CPU(r2)
 
