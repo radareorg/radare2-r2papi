@@ -12,17 +12,19 @@ from r2papi.write import Write
 PYTHON_VERSION = sys.version_info[0]
 
 
-def get_search():
+@pytest.fixture
+def s():
     r = r2pipe.open(f"{os.path.dirname(__file__)}/test_bin")
-    return Search(r)
+    search = Search(r)
+    yield search
+    search.r2.quit()
 
 
 def _writer(search_obj):
     return Write(search_obj.r2)
 
 
-def test_string_and_json():
-    s = get_search()
+def test_string_and_json(s):
     w = _writer(s)
     w.reopen()
     w.hex("666f6f00")
@@ -30,22 +32,18 @@ def test_string_and_json():
     json_res = s.at(0x200).string_json("foo")
     assert isinstance(json_res, list)
     assert "foo" in json_res[0].data
-    s.r2.quit()
 
 
-def test_inverse_searches():
-    s = get_search()
+def test_inverse_searches(s):
     w = _writer(s)
     w.reopen()
     w.hex("000000ff")
     res = s.at(0x300).inverse_hex("00")
     assert isinstance(res, list)
     assert "11" in res[0].data
-    s.r2.quit()
 
 
-def test_base_and_deltified():
-    s = get_search()
+def test_base_and_deltified(s):
     assert isinstance(s.base_address(), str)
     assert s.base_address() == "0x08000000"
     w = _writer(search_obj=s)
@@ -54,11 +52,9 @@ def test_base_and_deltified():
     res = s.at(0x400).deltified("010101")
     assert isinstance(res, list)
     assert "10111213" in res[0].data
-    s.r2.quit()
 
 
-def test_file_search(tmp_path):
-    s = get_search()
+def test_file_search(s, tmp_path):
     w = _writer(s)
     w.reopen()
 
@@ -68,14 +64,12 @@ def test_file_search(tmp_path):
 
     jes = s.file(str(tmp_file), int(0x00000000), 2)
     assert isinstance(jes, list)
-    jes[0].data == "6465"
-    jes[1].data == "6465"
-    jes[2].data == "6465"
-    s.r2.quit()
+    assert jes[0].data == "6465"
+    assert jes[1].data == "6465"
+    assert jes[2].data == "6465"
 
 
-def test_case_insensitive_and_rabin_karp():
-    s = get_search()
+def test_case_insensitive_and_rabin_karp(s):
     w = _writer(s)
     w.reopen()
     w.hex("466F4F00")
@@ -85,12 +79,9 @@ def test_case_insensitive_and_rabin_karp():
     res = s.at(0x700).rabin_karp("FoO")
     assert isinstance(res, list)
     assert "FoO" in res[0].data
-    s.r2.quit()
 
 
-def test_entropy():
-    s = get_search()
-
+def test_entropy(s):
     result_no_thr = s.entropy()
     assert isinstance(result_no_thr, list), "entropy() must return ResultArray"
     for entry in result_no_thr:
@@ -108,21 +99,16 @@ def test_entropy():
         assert "end" in entry
         assert "entropy" in entry
 
-    s.r2.quit()
 
-
-def test_wide_string_plain():
-    s = get_search()
+def test_wide_string_plain(s):
     w = _writer(s)
     w.reopen()
     w.hex("620061007200")
     assert s.at(0x800).wide_string("bar")[0].data == "620061007200"
     assert s.at(0x800).wide_string_ci("BaR")[0].data == "620061007200"
-    s.r2.quit()
 
 
-def test_wide_string_json():
-    s = get_search()
+def test_wide_string_json(s):
     w = _writer(s)
     w.reopen()
     w.hex("620061007200")
@@ -130,11 +116,9 @@ def test_wide_string_json():
     assert len(res) == 1
     assert res[0]["type"] == "hexpair"
     assert res[0]["data"] == "620061007200"
-    s.r2.quit()
 
 
-def test_wide_string_ci_json():
-    s = get_search()
+def test_wide_string_ci_json(s):
     w = _writer(s)
     w.reopen()
     w.hex("620061007200")
@@ -142,13 +126,10 @@ def test_wide_string_ci_json():
     assert len(res) == 1
     assert res[0]["type"] == "hexpair"
     assert res[0]["data"] == "620061007200"
-    s.r2.quit()
 
 
-def test_size_range():
-    s = get_search()
+def test_size_range(s):
     res = s.size_range(5, 5)
     assert isinstance(res, list)
     assert len(res) == 7
     assert "guard" in res[0].data
-    s.r2.quit()

@@ -7,12 +7,14 @@ from r2papi.file import File
 from r2papi.r2api import Function, R2Api
 
 
-def get_r2api():
-    return R2Api(f"{os.path.dirname(__file__)}/test_bin")
+@pytest.fixture
+def r():
+    r = R2Api(f"{os.path.dirname(__file__)}/test_bin")
+    yield r
+    r.quit()
 
 
-def test_quit():
-    r = get_r2api()
+def test_quit(r):
     r.quit()
     with pytest.raises(AttributeError):
         r._exec("px 1")
@@ -25,73 +27,59 @@ def test_context():
         r._exec("px 1")
 
 
-def test_info():
-    r = get_r2api()
+def test_info(r):
     info = r.info()
     # This may change (?)
-    assert info.stripped == False
+    assert info.stripped is False
     assert info.endian == "little"
-    r.quit()
 
 
-def test_files():
-    r = get_r2api()
+def test_files(r):
     files = r.files
     print(files)
     assert len(files) == 2
-    assert type(files[0]) == File
+    assert type(files[0]) is File
     assert files[0].fd == 3
-    r.quit()
 
 
-def test_functions():
-    r = get_r2api()
+def test_functions(r):
     r.analyzeAll()
     functions = r.functions()
-    assert type(functions[0]) == Function
+    assert type(functions[0]) is Function
     assert len(functions) == 7
-    r.quit()
 
 
-def test_functionByName():
-    r = get_r2api()
+def test_functionByName(r):
     r.analyzeAll()
     f = r.functionByName("sym._func1")
-    assert type(f) == Function
+    assert type(f) is Function
     assert f.name == "sym._func1"
-    r.quit()
 
 
-def test_functionRename():
-    r = get_r2api()
+def test_functionRename(r):
     r.analyzeAll()
     f = r.functionByName("sym._func1")
-    assert type(f) == Function
+    assert type(f) is Function
     assert f.name == "sym._func1"
     f.name = "foo"
     assert f.name == "foo"
-    r.quit()
 
 
-def test_function():
-    r = get_r2api()
+def test_function(r):
     r.analyzeAll()
     r._exec("s sym._func1")
     r._exec("s +1")
     f = r.function()
-    assert type(f) == Function
+    assert type(f) is Function
     assert f.name == "sym._func1"
 
     f = r.at(f.offset + 1).function()
-    assert type(f) == Function
+    assert type(f) is Function
     assert f.name == "sym._func1"
     f.analyze()
 
-    r.quit()
 
-
-def test_functionGraphImg():
-    r = get_r2api()
+def test_functionGraphImg(r):
     r.analyzeAll()
     f = r.functionByName("sym._func1")
 
@@ -110,23 +98,18 @@ def test_functionGraphImg():
         os.remove(custom)
     except Exception:
         # Graphviz may not be installed
-        print(f"Skipping graph image tests")
-
-    r.quit()
+        print("Skipping graph image tests")
 
 
-def test_read():
-    r = get_r2api()
+def test_read(r):
     r.analyzeAll()
     offset = r.functionByName("main").offset
     # Assume x86
     assert r[offset] == b"\x55"
     assert r.at(offset).read(1) == b"\x55"
-    r.quit()
 
 
-def test_writeBytes():
-    r = get_r2api()
+def test_writeBytes(r):
     r._exec("e io.cache = true")
     r.analyzeAll()
     offset = r.functionByName("main").offset
@@ -136,4 +119,3 @@ def test_writeBytes():
         # UTF-8 write
         r[offset] = "ñ"
         assert r[offset : offset + 2] == b"\xc3\xb1"
-    r.quit()
