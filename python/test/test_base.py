@@ -6,22 +6,21 @@ import r2pipe
 from r2papi.base import R2Base, Result
 
 
-def get_r2base():
+@pytest.fixture
+def r():
     r2 = r2pipe.open(f"{os.path.dirname(__file__)}/test_bin")
     return R2Base(r2)
 
 
-def test_exec():
-    r = get_r2base()
+def test_exec(r):
     ret = r._exec("?e foo")
     assert ret == "foo"
     ret_json = r._exec("pxj 1", json=True)
-    assert type(ret_json) == list
+    assert type(ret_json) is list
     assert len(ret_json) == 1
 
 
-def test_at():
-    r = get_r2base()
+def test_at(r):
     r.at(0x100)
     assert r._tmp_off == "@ 256"
     r.at("main")
@@ -37,8 +36,7 @@ def test_result():
     assert len(str(r).split("\n")) == 1
 
 
-def test_sym_to_addr():
-    r = get_r2base()
+def test_sym_to_addr(r):
     assert r.sym_to_addr("entry0") == 0x100000F20
     with pytest.raises(TypeError, match="Symbol type must be string"):
         r.sym_to_addr(0x100)

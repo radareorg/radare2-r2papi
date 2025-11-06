@@ -6,9 +6,12 @@ import r2pipe
 from r2papi.flags import Flags
 
 
-def get_flags():
+@pytest.fixture
+def f():
     r = r2pipe.open(f"{os.path.dirname(__file__)}/test_bin")
-    return Flags(r)
+    flags = Flags(r)
+    yield flags
+    flags.r2.quit()
 
 
 def get_flag_from_offset(flags, offset):
@@ -18,19 +21,16 @@ def get_flag_from_offset(flags, offset):
     raise ValueError("Flag not found")
 
 
-def test_new():
-    f = get_flags()
+def test_new(f):
     f.at(0x100).delete()
     f.at(0x100).new("foo")
     nflag = get_flag_from_offset(f.all(), 0x100)
     assert nflag.name == "foo"
     assert nflag.addr == 0x100
     assert nflag.size == 1
-    f.r2.quit()
 
 
-def test_delete():
-    f = get_flags()
+def test_delete(f):
     flag = f.all()[-1]
     f.delete(name=flag.name)
     assert not f.exists(flag.name)
@@ -39,12 +39,8 @@ def test_delete():
     f.at(flag.addr).delete()
     assert not f.exists(flag.name)
 
-    f.r2.quit()
 
-
-def test_rename():
-    f = get_flags()
+def test_rename(f):
     flag = f.all()[-1]
     f.rename(flag.name, "foo")
     assert f.all()[-1].name == "foo"
-    f.r2.quit()

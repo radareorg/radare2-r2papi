@@ -7,21 +7,21 @@ from r2papi.file import File
 from r2papi.iomap import IOMap
 
 
-def get_file():
+@pytest.fixture
+def f():
     r = r2pipe.open(f"{os.path.dirname(__file__)}/test_bin")
-    return File(r, 3)
+    file = File(r, 3)
+    yield file
+    file.r2.quit()
 
 
-def test_writable():
-    f = get_file()
-    assert f.writable == False
+def test_writable(f):
+    assert f.writable is False
     f.writable = True
-    assert f.writable == True
-    f.r2.quit()
+    assert f.writable is True
 
 
-def test_getFilename():
-    f = get_file()
+def test_getFilename(f):
     assert f.getFilename() == f"{os.path.dirname(__file__)}/test_bin"
     assert f.filename == f"{os.path.dirname(__file__)}/test_bin"
     assert f.uri == f"{os.path.dirname(__file__)}/test_bin"
@@ -32,23 +32,20 @@ def test_getSize():
     pass
 
 
-def test_getFrom():
-    f = get_file()
+def test_getFrom(f):
     assert f.getFrom() == 0
     assert f.offset == 0
 
 
-def test_iomaps():
-    f = get_file()
+def test_iomaps(f):
     iomaps = f.iomaps
     firstmap = f._exec("omj", json=True)[0]
-    assert type(iomaps) == list
-    assert type(iomaps[0]) == IOMap
+    assert type(iomaps) is list
+    assert type(iomaps[0]) is IOMap
     assert iomaps[0].name == firstmap["name"]
 
 
-def test_close():
-    f = get_file()
+def test_close(f):
     f.close()
-    assert f.uri == None
-    assert f.fd == None
+    assert f.uri is None
+    assert f.fd is None

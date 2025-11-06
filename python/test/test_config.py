@@ -6,27 +6,24 @@ import r2pipe
 from r2papi.config import Config
 
 
-def get_config():
+@pytest.fixture
+def c():
     r = r2pipe.open(f"{os.path.dirname(__file__)}/test_bin")
-    return Config(r)
+    c = Config(r)
+    yield c
+    c.r2.quit()
 
 
-def test_set_variable():
-    c = get_config()
+def test_set_variable(c):
     assert c.asm.bits == 64
     c.asm.bits = 32
     assert c.asm.bits == 32
-    c.r2.quit()
 
 
-def test_get_variable_str():
-    c = get_config()
+def test_get_variable_str(c):
     assert c.asm.arch == "x86"
-    c.r2.quit()
 
 
-def test_get_variable_bool():
-    c = get_config()
+def test_get_variable_bool(c):
     c._exec("e io.cache = true")
     assert c.io.cache
-    c.r2.quit()
