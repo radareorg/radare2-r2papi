@@ -409,7 +409,7 @@ export class R2PapiAsync {
      */
     async getBaseAddress(): Promise<NativePointer> {
         const v = await this.cmd("e bin.baddr");
-        return new NativePointer(v);
+        return new NativePointer(v, this);
     }
     jsonToTypescript(name: string, a: any): string {
         let str = `interface ${name} {\n`;
@@ -492,8 +492,8 @@ export class R2PapiAsync {
         this.cmd(`om ${fd} ${vaddr} ${size} ${paddr} ${perm} ${name}`);
     }
 
-    at(a: string): NativePointer {
-        return new NativePointer(a);
+    at(a: NativePointerValue): NativePointer {
+        return new NativePointer(a, this);
     }
     getShell(): R2Shell {
         return new R2Shell(this);
@@ -577,7 +577,7 @@ export class R2PapiAsync {
         return this;
     }
     currentSeek(): NativePointer {
-        return new NativePointer("$$");
+        return new NativePointer("$$", this);
     }
     seekToRelativeOpcode(nth: number): NativePointer {
         this.cmd(`so ${nth}`);
@@ -809,7 +809,7 @@ export class R2PapiAsync {
     skip() {
         this.r2.cmd("dss");
     }
-    ptr(s: string | number): NativePointer {
+    ptr(s: NativePointerValue): NativePointer {
         return new NativePointer(s, this);
     }
     async call(s: string): Promise<string> {
@@ -865,7 +865,182 @@ export declare function ptr(v: NativePointerValue): NativePointer;
  *
  * @type NativePointerValue
  */
-export type NativePointerValue = string | number | NativePointer;
+export type NativePointerValue = string | number | bigint | NativePointer;
+
+function clampByte(n: number): number {
+    return n & 0xff;
+}
+
+function byteToHex(n: number): string {
+    return clampByte(n).toString(16).padStart(2, "0");
+}
+
+function byteArrayToHex(data: ArrayLike<number>): string {
+    let hex = "";
+    for (let i = 0; i < data.length; i++) {
+        hex += byteToHex(data[i]);
+    }
+    return hex;
+}
+
+function normalizeHexString(hex: string): string {
+    const normalized = hex.replace(/0x/gi, "").replace(/\s+/g, "");
+    if (normalized.length % 2 !== 0) {
+        throw new Error("Hex string must contain an even number of digits");
+    }
+    return normalized.toLowerCase();
+}
+
+function bytesToUnsignedBigInt(bytes: number[], littleEndian: boolean): bigint {
+    const ordered = littleEndian ? [...bytes].reverse() : bytes;
+    let value = 0n;
+    for (const byte of ordered) {
+        value = (value << 8n) | BigInt(clampByte(byte));
+    }
+    return value;
+}
+
+function bytesToSignedBigInt(bytes: number[], littleEndian: boolean): bigint {
+    const unsigned = bytesToUnsignedBigInt(bytes, littleEndian);
+    const bits = BigInt(bytes.length * 8);
+    const signBit = 1n << (bits - 1n);
+    if ((unsigned & signBit) !== 0n) {
+        return unsigned - (1n << bits);
+    }
+    return unsigned;
+}
+
+function unsignedBigIntToBytes(
+    value: bigint,
+    byteLength: number,
+    littleEndian: boolean
+): number[] {
+    const bits = BigInt(byteLength * 8);
+    const max = 1n << bits;
+    if (value < 0n || value >= max) {
+        throw new RangeError(`Value ${value} does not fit in ${byteLength * 8} bits`);
+    }
+    const bytes = new Array<number>(byteLength).fill(0);
+    let current = value;
+    for (let i = byteLength - 1; i >= 0; i--) {
+        bytes[i] = Number(current & 0xffn);
+        current >>= 8n;
+    }
+    return littleEndian ? bytes.reverse() : bytes;
+}
+
+function signedBigIntToBytes(
+    value: bigint,
+    byteLength: number,
+    littleEndian: boolean
+): number[] {
+    const bits = BigInt(byteLength * 8);
+    const min = -(1n << (bits - 1n));
+    const max = (1n << (bits - 1n)) - 1n;
+    if (value < min || value > max) {
+        throw new RangeError(`Value ${value} does not fit in ${byteLength * 8} signed bits`);
+    }
+    const normalized = value < 0n ? value + (1n << bits) : value;
+    return unsignedBigIntToBytes(normalized, byteLength, littleEndian);
+}
+
+function parseInteger(value: number | string | bigint): bigint {
+    if (typeof value === "bigint") {
+        return value;
+    }
+    if (typeof value === "number") {
+        if (!Number.isFinite(value) || !Number.isInteger(value)) {
+            throw new TypeError("Expected an integer number");
+        }
+        return BigInt(value);
+    }
+    const trimmed = value.trim();
+    if (trimmed === "") {
+        throw new TypeError("Expected a non-empty integer string");
+    }
+    return BigInt(trimmed);
+}
+
+function bigintToSafeNumber(value: bigint, methodName: string): number {
+    const numberValue = Number(value);
+    if (!Number.isSafeInteger(numberValue)) {
+        throw new RangeError(
+            `${methodName} exceeds Number.MAX_SAFE_INTEGER; use a bigint or string helper instead`
+        );
+    }
+    return numberValue;
+}
+
+function encodeUtf8String(text: string, zeroTerminated: boolean): number[] {
+    const encoded = encodeURIComponent(text);
+    const bytes: number[] = [];
+    for (let i = 0; i < encoded.length; i++) {
+        const ch = encoded[i];
+        if (ch === "%") {
+            bytes.push(parseInt(encoded.slice(i + 1, i + 3), 16));
+            i += 2;
+        } else {
+            bytes.push(ch.charCodeAt(0));
+        }
+    }
+    if (zeroTerminated) {
+        bytes.push(0);
+    }
+    return bytes;
+}
+
+function decodeUtf8Bytes(bytes: number[]): string {
+    let encoded = "";
+    for (const byte of bytes) {
+        encoded += "%" + byteToHex(byte);
+    }
+    try {
+        return decodeURIComponent(encoded);
+    } catch (e: any) {
+        let text = "";
+        for (const byte of bytes) {
+            text += String.fromCharCode(clampByte(byte));
+        }
+        return text;
+    }
+}
+
+function encodeUtf16String(
+    text: string,
+    littleEndian: boolean,
+    zeroTerminated: boolean
+): number[] {
+    const bytes: number[] = [];
+    for (let i = 0; i < text.length; i++) {
+        const code = text.charCodeAt(i);
+        const hi = (code >> 8) & 0xff;
+        const lo = code & 0xff;
+        if (littleEndian) {
+            bytes.push(lo, hi);
+        } else {
+            bytes.push(hi, lo);
+        }
+    }
+    if (zeroTerminated) {
+        bytes.push(0, 0);
+    }
+    return bytes;
+}
+
+function decodeUtf16Bytes(bytes: number[], littleEndian: boolean): string {
+    const evenLength = bytes.length - (bytes.length % 2);
+    let text = "";
+    for (let i = 0; i < evenLength; i += 2) {
+        const code = littleEndian
+            ? clampByte(bytes[i]) | (clampByte(bytes[i + 1]) << 8)
+            : (clampByte(bytes[i]) << 8) | clampByte(bytes[i + 1]);
+        if (code === 0) {
+            break;
+        }
+        text += String.fromCharCode(code);
+    }
+    return text;
+}
 
 declare global {
     // eslint-disable-next-line no-var
@@ -885,8 +1060,56 @@ export class NativePointer {
 
     api: R2Papi;
     constructor(s: NativePointerValue, api?: R2Papi) {
-        this.api = api?? R;
-        this.addr = (s == undefined)? "$$": ("" + s).trim();
+        const sourceApi = s instanceof NativePointer ? s.api : undefined;
+        this.api = api ?? sourceApi ?? R;
+        this.addr =
+            s === undefined
+                ? "$$"
+                : s instanceof NativePointer
+                  ? s.addr.trim()
+                  : ("" + s).trim();
+    }
+    private formatPointer(value: NativePointerValue): string {
+        return value instanceof NativePointer ? value.addr.trim() : ("" + value).trim();
+    }
+    private newPointer(value: NativePointerValue): NativePointer {
+        return new NativePointer(value, this.api);
+    }
+    private formatInteger(value: number | string | bigint): string {
+        return typeof value === "bigint" ? value.toString() : ("" + value).trim();
+    }
+    private async isBigEndian(): Promise<boolean> {
+        const output = await this.api.call("e cfg.bigendian");
+        return output.trim() === "true";
+    }
+    private async readInteger(
+        byteLength: number,
+        signed: boolean,
+        littleEndian?: boolean
+    ): Promise<bigint> {
+        const data = await this.readByteArray(byteLength);
+        const useLittleEndian = littleEndian ?? !(await this.isBigEndian());
+        return signed
+            ? bytesToSignedBigInt(data, useLittleEndian)
+            : bytesToUnsignedBigInt(data, useLittleEndian);
+    }
+    private async writeInteger(
+        value: number | string | bigint,
+        byteLength: number,
+        signed: boolean,
+        littleEndian?: boolean
+    ): Promise<boolean> {
+        const useLittleEndian = littleEndian ?? !(await this.isBigEndian());
+        const bigintValue = parseInteger(value);
+        const bytes = signed
+            ? signedBigIntToBytes(bigintValue, byteLength, useLittleEndian)
+            : unsignedBigIntToBytes(bigintValue, byteLength, useLittleEndian);
+        await this.writeByteArray(bytes);
+        return true;
+    }
+    private async pointerSize(): Promise<number> {
+        const output = await this.api.cmd("e asm.bits");
+        return Math.max(1, parseInt(output.trim(), 10) / 8);
     }
     /**
      * Copy N bytes from current pointer to the destination
@@ -894,8 +1117,8 @@ export class NativePointer {
      * @param {string|NativePointer|number} destination address
      * @param {string|number} amount of bytes
      */
-    async copyTo(addr: string|NativePointer|number, size: string|number) : Promise<void> {
-        this.api.call(`wf ${this.addr} ${size} @ ${addr}`)
+    async copyTo(addr: NativePointerValue, size: string | number): Promise<void> {
+        await this.api.cmd(`wf ${this.addr} ${size} @ ${this.formatPointer(addr)}`);
     }
     /**
      * Copy N bytes from given address to the current destination
@@ -903,16 +1126,16 @@ export class NativePointer {
      * @param {string|NativePointer|number} source address
      * @param {string|number} amount of bytes
      */
-    async copyFrom(addr: string|NativePointer|number, size: string|number) : Promise<void> {
-        this.api.call(`wf ${addr} ${size} @ ${this.addr}`)
+    async copyFrom(addr: NativePointerValue, size: string | number): Promise<void> {
+        await this.api.cmd(`wf ${this.formatPointer(addr)} ${size} @ ${this.addr}`);
     }
     /**
      * Fill N bytes in this address with zero
      *
      * @param {string|number} amount of bytes
      */
-    async zeroFill(size: string|number) : Promise<void> {
-        this.api.call(`w0 ${size} @ ${this.addr}`)
+    async zeroFill(size: string | number): Promise<void> {
+        await this.api.cmd(`w0 ${size} @ ${this.addr}`);
     }
     /**
      * Filter a string to be used as a valid flag name
@@ -920,8 +1143,8 @@ export class NativePointer {
      * @param {string} name of the symbol name
      * @returns {string} filtered name to be used as a flag
      */
-    async filterFlag(name: string) : Promise<string> {
-        return this.api.call(`fD ${name}`)
+    async filterFlag(name: string): Promise<string> {
+        return this.api.call(`fD ${name}`);
     }
     /**
      * Set a flag (name) at the address pointed
@@ -963,44 +1186,118 @@ export class NativePointer {
         return this.api.cmd(`agf@${this.addr}`);
     }
     async readByteArray(len: number): Promise<number[]> {
-        const v = await this.api.cmd(`p8j ${len}@${this.addr}`);
-        return JSON.parse(v);
+        if (len <= 0) {
+            return [];
+        }
+        return this.api.cmdj(`p8j ${len}@${this.addr}`);
     }
     async readHexString(len: number): Promise<string> {
-        const v = await this.api.cmd(`p8 ${len}@${this.addr}`);
-        return v.trim ();
+        if (len <= 0) {
+            return "";
+        }
+        const output = await this.api.cmd(`p8 ${len}@${this.addr}`);
+        return output.trim();
     }
-    async and(a: number): Promise<NativePointer> {
-        const addr = await this.api.call(`?v ${this.addr} & ${a}`);
-        return new NativePointer(addr.trim());
+    async slice(length: number): Promise<number[]> {
+        return this.readByteArray(length);
     }
-    async or(a: number): Promise<NativePointer> {
-        const addr = await this.api.call(`?v ${this.addr} | ${a}`);
-        return new NativePointer(addr.trim());
-    }
-    async add(a: number): Promise<NativePointer> {
-        const addr = await this.api.call(`?v ${this.addr}+${a}`);
-        return new NativePointer(addr);
-    }
-    async sub(a: number): Promise<NativePointer> {
-        const addr = await this.api.call(`?v ${this.addr}-${a}`);
-        return new NativePointer(addr);
-    }
-    async writeByteArray(data: number[]): Promise<NativePointer> {
-        await this.api.cmd("wx " + data.join(""));
+    async writeHexString(hex: string): Promise<NativePointer> {
+        const normalized = normalizeHexString(hex);
+        if (normalized !== "") {
+            await this.api.cmd(`wx ${normalized} @ ${this.addr}`);
+        }
         return this;
     }
-    writeAssembly(instruction: string): NativePointer {
-        this.api.cmd(`wa ${instruction} @ ${this.addr}`);
+    async and(a: number | string | bigint): Promise<NativePointer> {
+        const addr = await this.api.call(`?v ${this.addr} & ${this.formatInteger(a)}`);
+        return this.newPointer(addr.trim());
+    }
+    async or(a: number | string | bigint): Promise<NativePointer> {
+        const addr = await this.api.call(`?v ${this.addr} | ${this.formatInteger(a)}`);
+        return this.newPointer(addr.trim());
+    }
+    async add(a: number | string | bigint): Promise<NativePointer> {
+        const addr = await this.api.call(`?v ${this.addr} + ${this.formatInteger(a)}`);
+        return this.newPointer(addr.trim());
+    }
+    async sub(a: number | string | bigint): Promise<NativePointer> {
+        const addr = await this.api.call(`?v ${this.addr} - ${this.formatInteger(a)}`);
+        return this.newPointer(addr.trim());
+    }
+    async distance(a: NativePointerValue): Promise<bigint> {
+        return (await this.toBigInt()) - (await this.newPointer(a).toBigInt());
+    }
+    async writeByteArray(data: ArrayLike<number>): Promise<NativePointer> {
+        const hex = byteArrayToHex(data);
+        if (hex !== "") {
+            await this.api.cmd(`wx ${hex} @ ${this.addr}`);
+        }
         return this;
+    }
+    async patchByteArray(data: ArrayLike<number>): Promise<NativePointer> {
+        return this.writeByteArray(data);
+    }
+    async patchHexString(hex: string): Promise<NativePointer> {
+        return this.writeHexString(hex);
+    }
+    async writeAssembly(instruction: string): Promise<NativePointer> {
+        await this.api.cmd(`wa ${instruction} @ ${this.addr}`);
+        return this;
+    }
+    async patchInstruction(instruction: string): Promise<NativePointer> {
+        return this.writeAssembly(instruction);
+    }
+    async writeString(s: string): Promise<NativePointer> {
+        return this.writeUtf8String(s, false);
+    }
+    async writeUtf8String(s: string, zeroTerminated: boolean = false): Promise<NativePointer> {
+        return this.writeByteArray(encodeUtf8String(s, zeroTerminated));
     }
     async writeCString(s: string): Promise<NativePointer> {
-        await this.api.call("w " + s);
-        return this;
+        return this.writeUtf8String(s, true);
+    }
+    async writeUtf16String(
+        s: string,
+        zeroTerminated: boolean = false,
+        littleEndian?: boolean
+    ): Promise<NativePointer> {
+        const useLittleEndian = littleEndian ?? !(await this.isBigEndian());
+        return this.writeByteArray(encodeUtf16String(s, useLittleEndian, zeroTerminated));
     }
     async writeWideString(s: string): Promise<NativePointer> {
-        await this.api.call("ww " + s);
-        return this;
+        return this.writeUtf16String(s, true);
+    }
+    async patchCString(s: string): Promise<NativePointer> {
+        return this.writeCString(s);
+    }
+    async patchWideString(s: string): Promise<NativePointer> {
+        return this.writeWideString(s);
+    }
+    async patchData(data: ArrayLike<number> | string): Promise<NativePointer> {
+        if (typeof data === "string") {
+            return this.writeHexString(data);
+        }
+        return this.writeByteArray(data);
+    }
+    async readString(length?: number): Promise<string> {
+        if (length === undefined) {
+            return this.readCString();
+        }
+        return this.readUtf8String(length);
+    }
+    async readUtf8String(length?: number): Promise<string> {
+        if (length === undefined) {
+            const output = await this.api.cmdj(`pszj@${this.addr}`);
+            return output.string;
+        }
+        return decodeUtf8Bytes(await this.readByteArray(length));
+    }
+    async readUtf16String(length?: number, littleEndian?: boolean): Promise<string> {
+        if (length === undefined) {
+            return this.readWideString();
+        }
+        const useLittleEndian = littleEndian ?? !(await this.isBigEndian());
+        return decodeUtf16Bytes(await this.readByteArray(length), useLittleEndian);
     }
     /**
      * Check if it's a pointer to the address zero. Also known as null pointer.
@@ -1008,8 +1305,7 @@ export class NativePointer {
      * @returns {boolean} true if null
      */
     async isNull(): Promise<boolean> {
-        const v = await this.toNumber();
-        return v === 0;
+        return (await this.toBigInt()) === 0n;
     }
     /**
      * Compare current pointer with the passed one, and return -1, 0 or 1.
@@ -1020,19 +1316,25 @@ export class NativePointer {
      *
      * @returns {number} returns -1, 0 or 1 depending on the comparison of the pointers
      */
-    compare(a: NativePointerValue): number {
-        const bv: NativePointer =
-            typeof a === "string" || typeof a === "number"
-                ? new NativePointer(a)
-                : a;
-        const dist = r2.call(`?vi ${this.addr} - ${bv.addr}`);
-        if (dist[0] === "-") {
+    async compare(a: NativePointerValue): Promise<number> {
+        const lhs = await this.toBigInt();
+        const rhs = await this.newPointer(a).toBigInt();
+        if (lhs < rhs) {
             return -1;
         }
-        if (dist[0] === "0") {
-            return 0;
+        if (lhs > rhs) {
+            return 1;
         }
-        return 1;
+        return 0;
+    }
+    async equals(a: NativePointerValue): Promise<boolean> {
+        return (await this.compare(a)) === 0;
+    }
+    async isBelow(a: NativePointerValue): Promise<boolean> {
+        return (await this.compare(a)) < 0;
+    }
+    async isAbove(a: NativePointerValue): Promise<boolean> {
+        return (await this.compare(a)) > 0;
     }
     /**
      * Check if it's a pointer to the address zero. Also known as null pointer.
@@ -1041,98 +1343,139 @@ export class NativePointer {
      */
     async pointsToNull(): Promise<boolean> {
         const value = await this.readPointer();
-        const v = await value.compare(0);
-        return v == 0;
+        return value.isNull();
     }
     async toJSON(): Promise<string> {
         const output = await this.api.cmd("?vi " + this.addr.trim());
         return output.trim();
     }
     async toString(): Promise<string> {
-        const v = await this.api.cmd("?v " + this.addr.trim());
-        return v.trim ();
+        const output = await this.api.cmd("?v " + this.addr.trim());
+        return output.trim();
+    }
+    async toBigInt(): Promise<bigint> {
+        return BigInt(await this.toJSON());
     }
     async toNumber(): Promise<number> {
-        const v = await this.toString();
-        return parseInt(v);
+        return bigintToSafeNumber(await this.toBigInt(), "NativePointer.toNumber");
     }
-    writePointer(p: NativePointer): void {
-        this.api.cmd(`wvp ${p}@${this}`); // requires 5.8.2
+    async writePointer(p: NativePointerValue): Promise<boolean> {
+        await this.api.cmd(`wvp ${this.formatPointer(p)} @ ${this.addr}`);
+        return true;
     }
     async readRelativePointer(): Promise<NativePointer> {
-        const v = await this.readS32();
-        return this.add(v);
+        return this.add(await this.readS32());
     }
     async readPointer(): Promise<NativePointer> {
-        const address = await this.api.call("pvp@" + this.addr);
-        return new NativePointer(address);
+        const address = await this.api.cmd(`pvp@${this.addr}`);
+        return this.newPointer(address.trim());
+    }
+    async follow(levels: number = 1): Promise<NativePointer> {
+        let current: NativePointer = this;
+        for (let i = 0; i < levels; i++) {
+            current = await current.readPointer();
+        }
+        return current;
+    }
+    async readPointers(count: number): Promise<NativePointer[]> {
+        const pointers: NativePointer[] = [];
+        const step = await this.pointerSize();
+        let current: NativePointer = this;
+        for (let i = 0; i < count; i++) {
+            pointers.push(await current.readPointer());
+            current = await current.add(step);
+        }
+        return pointers;
     }
     async readS8(): Promise<number> {
-        // requires 5.8.9
-        const v = await this.api.cmd(`pv1d@${this.addr}`);
-        return parseInt(v);
+        return bigintToSafeNumber(await this.readInteger(1, true), "readS8");
     }
     async readU8(): Promise<number> {
-        const v = await this.api.cmd(`pv1u@${this.addr}`);
-        return parseInt(v);
+        return bigintToSafeNumber(await this.readInteger(1, false), "readU8");
     }
     async readU16(): Promise<number> {
-        const v = await this.api.cmd(`pv2d@${this.addr}`);
-        return parseInt(v);
+        return bigintToSafeNumber(await this.readInteger(2, false), "readU16");
     }
     async readU16le(): Promise<number> {
-        const v = await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`);
-        return parseInt(v); // requires 5.8.9
+        return bigintToSafeNumber(await this.readInteger(2, false, true), "readU16le");
     }
     async readU16be(): Promise<number> {
-        const v = await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`);
-        return parseInt(v); // requires 5.8.9
+        return bigintToSafeNumber(await this.readInteger(2, false, false), "readU16be");
     }
     async readS16(): Promise<number> {
-        const v = await this.api.cmd(`pv2d@${this.addr}`); // requires 5.8.9
-        return parseInt(v);
+        return bigintToSafeNumber(await this.readInteger(2, true), "readS16");
     }
     async readS16le(): Promise<number> {
-        const v = await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=false`);
-        return parseInt(v); // requires 5.8.9
+        return bigintToSafeNumber(await this.readInteger(2, true, true), "readS16le");
     }
     async readS16be(): Promise<number> {
-        const v = await this.api.cmd(`pv2d@${this.addr}@e:cfg.bigendian=true`);
-        return parseInt(v); // requires 5.8.9
+        return bigintToSafeNumber(await this.readInteger(2, true, false), "readS16be");
     }
     async readS32(): Promise<number> {
-	// requires r2-5.8.9, await statements must be in separate lines
-        const v = await this.api.cmd(`pv4d@${this.addr}`);
-        return parseInt(v);
+        return bigintToSafeNumber(await this.readInteger(4, true), "readS32");
+    }
+    async readS32le(): Promise<number> {
+        return bigintToSafeNumber(await this.readInteger(4, true, true), "readS32le");
+    }
+    async readS32be(): Promise<number> {
+        return bigintToSafeNumber(await this.readInteger(4, true, false), "readS32be");
     }
     async readU32(): Promise<number> {
-        // requires 5.8.9
-	const v = await this.api.cmd(`pv4u@${this.addr}`);
-        return parseInt(v);
+        return bigintToSafeNumber(await this.readInteger(4, false), "readU32");
     }
     async readU32le(): Promise<number> {
-        const v = await this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=false`);
-        return parseInt(v); // requires 5.8.9
+        return bigintToSafeNumber(await this.readInteger(4, false, true), "readU32le");
     }
     async readU32be(): Promise<number> {
-        const v = await this.api.cmd(`pv4u@${this.addr}@e:cfg.bigendian=true`)
-        return parseInt(v); // requires 5.8.9
+        return bigintToSafeNumber(await this.readInteger(4, false, false), "readU32be");
+    }
+    async readU64BigInt(): Promise<bigint> {
+        return this.readInteger(8, false);
+    }
+    async readU64leBigInt(): Promise<bigint> {
+        return this.readInteger(8, false, true);
+    }
+    async readU64beBigInt(): Promise<bigint> {
+        return this.readInteger(8, false, false);
     }
     async readU64(): Promise<number> {
-        // XXX: use bignum or string here
-        const v = await this.api.cmd(`pv8u@${this.addr}`);
-        return parseInt(v);
+        return bigintToSafeNumber(await this.readU64BigInt(), "readU64");
     }
     async readU64le(): Promise<number> {
-        const v = await this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=false`);
-        return parseInt(v); // requires 5.8.9
+        return bigintToSafeNumber(await this.readU64leBigInt(), "readU64le");
     }
     async readU64be(): Promise<number> {
-        const v = await this.api.cmd(`pv8u@${this.addr}@e:cfg.bigendian=true`)
-        return parseInt(v); // requires 5.8.9
+        return bigintToSafeNumber(await this.readU64beBigInt(), "readU64be");
     }
-    async writeInt(n: number): Promise<boolean> {
-        return this.writeU32(n);
+    async readU64String(): Promise<string> {
+        return (await this.readU64BigInt()).toString();
+    }
+    async readU64leString(): Promise<string> {
+        return (await this.readU64leBigInt()).toString();
+    }
+    async readU64beString(): Promise<string> {
+        return (await this.readU64beBigInt()).toString();
+    }
+    async readS64(): Promise<bigint> {
+        return this.readInteger(8, true);
+    }
+    async readS64le(): Promise<bigint> {
+        return this.readInteger(8, true, true);
+    }
+    async readS64be(): Promise<bigint> {
+        return this.readInteger(8, true, false);
+    }
+    async readS64String(): Promise<string> {
+        return (await this.readS64()).toString();
+    }
+    async readS64leString(): Promise<string> {
+        return (await this.readS64le()).toString();
+    }
+    async readS64beString(): Promise<string> {
+        return (await this.readS64be()).toString();
+    }
+    async writeInt(n: number | string | bigint): Promise<boolean> {
+        return this.writeS32(n);
     }
     /**
      * Write a byte in the current address, the value must be between 0 and 255
@@ -1140,60 +1483,80 @@ export class NativePointer {
      * @param {string} n number to write in the pointed byte in the current address
      * @returns {boolean} false if the operation failed
      */
-    async writeU8(n: number): Promise<boolean> {
-        this.api.cmd(`wv1 ${n}@${this.addr}`);
-        return true;
+    async writeU8(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 1, false);
     }
-    async writeU16(n: number): Promise<boolean> {
-        this.api.cmd(`wv2 ${n}@${this.addr}`);
-        return true;
+    async writeS8(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 1, true);
     }
-    async writeU16be(n: number): Promise<boolean> {
-        this.api.cmd(`wv2 ${n}@${this.addr}@e:cfg.bigendian=true`);
-        return true;
+    async writeU16(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 2, false);
     }
-    async writeU16le(n: number): Promise<boolean> {
-        this.api.cmd(`wv2 ${n}@${this.addr}@e:cfg.bigendian=false`);
-        return true;
+    async writeU16be(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 2, false, false);
     }
-    async writeU32(n: number): Promise<boolean> {
-        await this.api.cmd(`wv4 ${n}@${this.addr}`);
-        return true;
+    async writeU16le(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 2, false, true);
     }
-    async writeU32be(n: number): Promise<boolean> {
-        await this.api.cmd(`wv4 ${n}@${this.addr}@e:cfg.bigendian=true`);
-        return true;
+    async writeS16(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 2, true);
     }
-    async writeU32le(n: number): Promise<boolean> {
-        await this.api.cmd(`wv4 ${n}@${this.addr}@e:cfg.bigendian=false`);
-        return true;
+    async writeS16be(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 2, true, false);
     }
-    async writeU64(n: number): Promise<boolean> {
-        await this.api.cmd(`wv8 ${n}@${this.addr}`);
-        return true;
+    async writeS16le(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 2, true, true);
     }
-    async writeU64be(n: number): Promise<boolean> {
-        await this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=true`);
-        return true;
+    async writeU32(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 4, false);
     }
-    async writeU64le(n: number): Promise<boolean> {
-        await this.api.cmd(`wv8 ${n}@${this.addr}@e:cfg.bigendian=false`);
-        return true;
+    async writeU32be(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 4, false, false);
+    }
+    async writeU32le(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 4, false, true);
+    }
+    async writeS32(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 4, true);
+    }
+    async writeS32be(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 4, true, false);
+    }
+    async writeS32le(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 4, true, true);
+    }
+    async writeU64(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 8, false);
+    }
+    async writeU64be(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 8, false, false);
+    }
+    async writeU64le(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 8, false, true);
+    }
+    async writeS64(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 8, true);
+    }
+    async writeS64be(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 8, true, false);
+    }
+    async writeS64le(n: number | string | bigint): Promise<boolean> {
+        return this.writeInteger(n, 8, true, true);
     }
     async readInt32(): Promise<number> {
-        return this.readU32();
+        return this.readS32();
     }
     async readCString(): Promise<string> {
-        const output = await this.api.cmd(`pszj@${this.addr}`);
-        return JSON.parse(output).string;
+        const output = await this.api.cmdj(`pszj@${this.addr}`);
+        return output.string;
     }
     async readWideString(): Promise<string> {
-        const output = await this.api.cmd(`pswj@${this.addr}`);
-        return JSON.parse(output).string;
+        const output = await this.api.cmdj(`pswj@${this.addr}`);
+        return output.string;
     }
     async readPascalString(): Promise<string> {
-        const output = await this.api.cmd(`pspj@${this.addr}`);
-        return JSON.parse(output).string;
+        const output = await this.api.cmdj(`pspj@${this.addr}`);
+        return output.string;
     }
     async instruction(): Promise<Instruction> {
         const output = await this.api.cmdj(`aoj@${this.addr}`);
