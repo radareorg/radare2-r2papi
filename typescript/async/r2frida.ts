@@ -1,4 +1,5 @@
 import { R2Pipe, R2PipeAsync, newAsyncR2PipeFromSync } from "./r2pipe.js";
+import { NativePointer } from "./index.js";
 
 declare global {
     // eslint-disable-next-line no-var
@@ -28,6 +29,46 @@ export class R2Frida {
     async targetDetails(): Promise<TargetDetails> {
         return r2.cmdj(":ij") as TargetDetails;
     }
+    async continue(): Promise<void> {
+        r2.cmd(":dc");
+    }
+    async enumerateClasses(): Promise<string[]> {
+        return r2.callj(":icj");
+    }
+    async enumerateMethods(className: string): Promise<Map<string, NativePointer>> {
+        return r2.callj(`:icj ${className}`);
+    }
+    async enumerateApplicationClasses(): Promise<string[]> {
+        const applicationName = (await r2.callj(":icj")).name;
+        return r2.callj(`:icj~${applicationName}`).map((res: string) => res.split(" ")[1]);
+    }
+    async enumerateExports(): Promise<ExportSymbol[]> {
+        return r2.callj(":iEj");
+    }
+    async enumerateImports(): Promise<ImportSymbol[]> {
+        return r2.callj(":iij");
+    }
+    async enumerateSymbols() : Promise<Symbol[]> {
+        return r2.callj(":isj");
+    }
+    async enumerateEntrypoints() : Promise<EntryPoint[]> {
+        return r2.callj(":iej");
+    }
+    async enumerateMemoryRegions() : Promise<MemoryRegion[]> {
+        return r2.callj(":dmj");
+    }
+    async enumerateMemoryRanges() : Promise<MemoryRange[]> {
+        return r2.callj(":dmmj");
+    }
+    // async interceptObjCMethod(className: string, methodName: string): Promise<any> {
+    //     return r2.cmdj(":dt") as TargetDetails;
+    // }
+    // async interceptJavaMethod(className: string, methodName: string): Promise<TargetDetails> {
+    //     return r2.cmdj(":ij") as TargetDetails;
+    // }
+    // async interceptFunction(pointer: NativePointer): Promise<TargetDetails> {
+    //     return r2.cmdj(":ij") as TargetDetails;
+    // }
 }
 
 /*
@@ -68,4 +109,59 @@ export interface TargetDetails {
     homedir: string;
     tmpdir: string;
     bundledir?: any;
+}
+
+export interface ExportSymbol {
+    type: "variable" | "function";
+    name: string;
+    address: NativePointer;
+}
+
+export interface ImportSymbol {
+    type: "variable" | "function";
+    name: string;
+    module: string;
+    address: NativePointer;
+    slot: NativePointer;
+    index: number;
+    targetModuleName: string | null;
+}
+
+export interface Symbol {
+    isGlobal: boolean;
+    type: "section" | "variable" | "function" | "undefined";
+    name: string;
+    address: NativePointer;
+    section?: SectionDetails
+}
+
+export interface SectionDetails {
+    id: string;
+    protection: string;
+}
+
+export interface EntryPoint {
+    type: "function";
+    name: string;
+    address: NativePointer;
+    moduleName: string;
+}
+
+export interface MemoryRegion {
+    base: NativePointer;
+    size: number;
+    protection: string;
+}
+
+export interface MemoryRange {
+    base: NativePointer;
+    size: number;
+    protection: string;
+    file: RangeMap;
+}
+
+export interface RangeMap {
+    path: string;
+    offset: number;
+    size: number;
 }
