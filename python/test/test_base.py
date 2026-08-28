@@ -40,3 +40,15 @@ def test_sym_to_addr(r):
     assert r.sym_to_addr("entry0") == 0x100000F20
     with pytest.raises(TypeError, match="Symbol type must be string"):
         r.sym_to_addr(0x100)
+
+
+def test_exec_raises_on_parse_error(r):
+    from r2papi.base import R2CommandError
+    with pytest.raises(R2CommandError) as exc_info:
+        r._exec("px @ invalid_address")
+    assert "px @ invalid_address" in str(exc_info.value)
+
+
+def test_exec_quiet(r):
+    ret = r._exec_quiet("px @ invalid_address")
+    assert ret is None

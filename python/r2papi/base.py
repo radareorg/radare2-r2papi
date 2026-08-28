@@ -51,13 +51,19 @@ class Result:
 
 
 class R2CommandError(Exception):
-    """Raised when a radare2 command fails or returns a non-zero value."""
+    """Raised when a radare2 command reports an error."""
 
-    def __init__(self, cmd: str, value: int, logs: list | None = None):
+    def __init__(self, cmd: str, value: int, output: str, logs: list | None = None):
         self.cmd = cmd
         self.value = value
+        self.output = output
         self.logs = logs or []
-        super().__init__(f"Command {cmd!r} failed with value {value}")
+        msgs = [f"Command {cmd!r} failed with value {value}"]
+        for log in self.logs:
+            msg = log.get("message")
+            if msg:
+                msgs.append(f"  {log.get('origin', 'r2')}: {msg}")
+        super().__init__("\n".join(msgs))
 
 
 class R2Base:
@@ -89,7 +95,8 @@ class R2Base:
         res = self.r2.cmd2(full_cmd)
         self._tmp_off = tmp_off
         if res.error:
-            raise R2CommandError(full_cmd, res.value, _logs(res.logs))
+            logs = _logs(getattr(res, "logs", None))
+            raise R2CommandError(full_cmd, res.value, getattr(res, "res", ""), logs)
         if json:
             out = res.res.strip()
             if not out:
@@ -122,6 +129,28 @@ class R2Base:
             return f"{cmd} {tmp_off}", ""
         return cmd, ""
 
+    def curr_seek_addr(self) -> int:
+        """Return the current address after a temporary seek."""
+        try:
+            res = self.r2.cmd2("?vi $$")
+            self._tmp_off = ""
+            if res.error:
+                raise R2CommandError("?vi $$", res.value, res.res, _logs(res.logs))
+            return int(res.res)
+        except ValueError as exc:
+            raise ValueError("Invalid address") from exc
+
+    def sym_to_addr(self, sym: str) -> int:
+        """Resolve a symbol name to its address."""
+        if not isinstance(sym, str):
+            raise TypeError("Symbol type must be string")
+        return self.at(sym).curr_seek_addr()
+
+    def at(self, seek: str):
+        """Temporarily seek to ``seek`` for the next command, then restore."""
+        self._tmp_off = f"@ {seek}"
+        return self
+
     def _cmd_arg(self, cmd: str, arg) -> str:
         """Build a command with an argument that should not be evaluated.
 
@@ -138,6 +167,7 @@ class R2Base:
 
         escaped = "".join(_escape(c) for c in str(arg))
         return f'"{cmd} {escaped}"'
+
 
     def curr_seek_addr(self) -> int:
         """Return the current address after a temporary seek."""
