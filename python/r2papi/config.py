@@ -3,20 +3,19 @@ from r2papi.base import R2Base
 
 class ConfigType(R2Base):
     def __init__(self, r2, var_type):
-        super(ConfigType, self).__init__(r2)
+        super().__init__(r2)
 
         valid_vars = []
-        for v in self._exec("e??j %s" % var_type, json=True):
+        for v in self._exec(f"e??j {var_type}", json=True):
             valid_vars.append(v["name"].split(".")[1])
 
-            # Update directly from __dict__ to avoid __setattr__ and
-            # __getattr__
+        # Update directly from __dict__ to avoid __setattr__ and __getattr__
         self.__dict__["valid_vars"] = valid_vars
         self.__dict__["var_type"] = var_type
 
     def __getattr__(self, attr):
         if attr in self.valid_vars:
-            ret = self._exec("e %s.%s" % (self.var_type, attr))
+            ret = self._exec(f"e {self.var_type}.{attr}")
             if ret.isdigit():
                 ret = int(ret)
             elif ret == "true":
@@ -24,8 +23,7 @@ class ConfigType(R2Base):
             elif ret == "false":
                 ret = False
             return ret
-        else:
-            raise AttributeError()
+        raise AttributeError()
 
     def __setattr__(self, attr, val):
         # Dirty way to avoid infinite recursion
@@ -36,14 +34,14 @@ class ConfigType(R2Base):
                 val = "true"
             elif val is False:
                 val = "false"
-            self._exec(f"e {self.var_type}.{attr} = {val}")
+            self._exec(f"e {self.var_type}.{attr}={val}")
         else:
             raise AttributeError()
 
 
 class Config(R2Base):
     def __init__(self, r2):
-        super(Config, self).__init__(r2)
+        super().__init__(r2)
 
         # anal, scr, asm, io...
         self.vars_types = []

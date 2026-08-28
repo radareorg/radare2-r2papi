@@ -6,24 +6,28 @@ class EsilCPU(R2Base):
         super().__init__(r2)
 
     def registers(self):
-        return self._exec("aerj", json=True)
+        return self._exec_quiet("aerj", json=True) or {}
 
     def readRegister(self, register):
-        return int(self._exec("aer %s" % register), 16)
+        return int(self._exec(f"aer {register}"), 16)
 
     def writeRegister(self, register, value):
-        self._exec("aer %s=%s" % (register, value))
+        self._exec(f"aer {register}={value}")
 
     def changePC(self, new_pc):
-        self._exec("aepc %s" % new_pc)
+        self._exec(f"aepc {new_pc}")
 
     def __str__(self):
         regs = self.registers()
-        items = regs.items()
+        if not regs:
+            return ""
 
         ret_str = ""
-        for r, v in items:
-            ret_str += "{:<10}{:#016x}\n".format(r, v)
+        for r, v in regs.items():
+            if isinstance(v, int):
+                ret_str += f"{r:<10}{v:#016x}\n"
+            else:
+                ret_str += f"{r:<10}{v}\n"
         return ret_str
 
     def __getattr__(self, attr):
@@ -35,6 +39,8 @@ class EsilCPU(R2Base):
             self.__dict__[attr] = val
         elif attr in self.registers().keys():
             self.writeRegister(attr, val)
+        else:
+            self.__dict__[attr] = val
 
 
 class EsilVM(R2Base):
@@ -77,7 +83,7 @@ class EsilVM(R2Base):
             self._exec(f"aecu {self.contUntilAddr}")
             self.contUntilAddr = None
         elif self.contUntilExpr:
-            self._exec(f"aecue {self.contUntilExpr}")
+            self._exec(self._cmd_arg("aecue", self.contUntilExpr))
             self.contUntilExpr = None
         elif self.contUntilSyscall:
             self._exec(f"aecs {self.contUntilSyscall}")
@@ -95,14 +101,14 @@ class EsilVM(R2Base):
 
     def emulateInstr(self, num=1, offset=None):
         if offset is None:
-            if self._tmp_off != "":
-                offset = self._tmp_off
-                if not offset.startswith("@ 0x"):
-                    offset = self.curr_seek_addr()
-                elif offset.startswith("@ "):
+            if self._tmp_off:
+                # If the temporary seek is a symbol name, resolve it to a
+                # numeric address because ``aesp`` does not accept symbols.
+                if self._tmp_off.startswith("@ 0x"):
                     offset = self._tmp_off[2:]
+                else:
+                    offset = self.curr_seek_addr()
             else:
-                # XXX: Check if this is correct
                 offset = "$$"
         self._exec(f"aesp {offset} {num}")
 
@@ -113,9 +119,8 @@ class Esil(R2Base):
         self.vm = EsilVM(r2)
 
     def eval(self, esil_str):
-        return int(self._exec(f'"ae {esil_str}"'), 16)
+        return int(self._exec(self._cmd_arg("ae", esil_str)), 16)
 
     def regsUsed(self, num_instructions=1):
         res = self._exec(f"aeaj {num_instructions} {self._tmp_off}", json=True)
-        self._tmp_off = ""
         return Result(res)

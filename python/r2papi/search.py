@@ -23,13 +23,13 @@ class Search(R2Base):
         """
         Search for a null‑terminated string ``pattern``.
         """
-        return self._exec(f"/ {pattern}")
+        return self._exec(self._cmd_arg("/", pattern))
 
     def string_json(self, pattern: str):
         """
         JSON version of :meth:`string`.
         """
-        ret = self._exec(f"/j {pattern}", json=True)
+        ret = self._exec(self._cmd_arg("/j", pattern), json=True)
         return ResultArray(ret)
 
     def _parse_hits(self, raw: str):
@@ -76,22 +76,22 @@ class Search(R2Base):
         """
         Search the contents of a file with offset and size.
         """
-        cmd = f"/F {filename}"
+        parts = ["/F", filename]
         if offset is not None:
-            cmd += f" {offset}"
+            parts.append(str(offset))
         if size is not None:
-            cmd += f" {size}"
-        raw = self._exec(cmd)
+            parts.append(str(size))
+        raw = self._exec(" ".join(parts))
         return self._parse_hits(raw)
 
     def case_insensitive(self, pattern: str):
         """Case‑insensitive string search – ``/i <pattern>``."""
-        raw = self._exec(f"/i {pattern}")
+        raw = self._exec(self._cmd_arg("/i", pattern))
         return self._parse_hits(raw)
 
     def rabin_karp(self, pattern: str):
         """Search using the Rabin‑Karp algorithm – ``/k <pattern>``."""
-        raw = self._exec(f"/k {pattern}")
+        raw = self._exec(self._cmd_arg("/k", pattern))
         return self._parse_hits(raw)
 
     def entropy(self, threshold: int = None):
@@ -128,22 +128,22 @@ class Search(R2Base):
 
     def wide_string(self, pattern: str):
         """Wide string search – ``/w <pattern>``."""
-        raw = self._exec(f"/w {pattern}")
+        raw = self._exec(self._cmd_arg("/w", pattern))
         return self._parse_hits(raw)
 
     def wide_string_json(self, pattern: str):
         """Wide string search – JSON output – ``/wj <pattern>``."""
-        ret = self._exec(f"/wj {pattern}", json=True)
+        ret = self._exec(self._cmd_arg("/wj", pattern), json=True)
         return ResultArray(ret)
 
     def wide_string_ci(self, pattern: str):
         """Case‑insensitive wide‑string search – ``/wi <pattern>``."""
-        raw = self._exec(f"/wi {pattern}")
+        raw = self._exec(self._cmd_arg("/wi", pattern))
         return self._parse_hits(raw)
 
     def wide_string_ci_json(self, pattern: str):
         """Case‑insensitive wide‑string search – JSON output – ``/wij <pattern>``."""
-        ret = self._exec(f"/wij {pattern}", json=True)
+        ret = self._exec(self._cmd_arg("/wij", pattern), json=True)
         return ResultArray(ret)
 
     def size_range(self, min_len: int, max_len: int):

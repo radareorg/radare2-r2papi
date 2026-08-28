@@ -26,7 +26,7 @@ class Function(R2Base):
 
     def analyze(self):
         """Analyze the function. It uses the radare2 ``af`` command."""
-        self._exec(f"af {self.offset}")
+        self._exec(self._cmd_arg("af", self.offset))
 
     def info(self):
         """Get the function information, using the radare2 ``afi`` command.
@@ -40,7 +40,7 @@ class Function(R2Base):
 
     def rename(self, name):
         """Uses the radare2 ``afn`` command"""
-        self._exec(f"afn {name} {self.offset}")
+        self._exec(self._cmd_arg("afn", f"{name} {self.offset}"))
 
     def graphImg(self, path=""):
         """
@@ -134,11 +134,11 @@ class R2Api(R2Base):
         self.analyzeCalls = lambda: self._exec("aac")
         self.basicBlocks = lambda: ResultArray(self._exec("afbj", json=True))
         self.xrefsAt = lambda: ResultArray(
-            self._exec(f"axtj {self._tmp_off}", json=True)
+            self._exec("axtj", json=True)
         )
         self.refsTo = lambda: ResultArray(self._exec("axfj", json=True))
         self.opInfo = lambda: ResultArray(
-            self._exec(f"aoj {self._tmp_off}", json=True)
+            self._exec("aoj", json=True)
         )[0]
         self.seek = lambda x: self._exec(f"s {x}")
 
@@ -147,18 +147,6 @@ class R2Api(R2Base):
 
     def __exit__(self, e_type, e_val, tb):
         self.quit()
-
-    def open(self, filename, at="", perms=""):
-        # See o?
-        self._exec(f"o {filename} {at} {perms}")
-
-    @property
-    def files(self):
-        """
-        list: returns a list of :class:`r2api.file.File` objects.
-        """
-        files = self._exec("oj", json=True)
-        return [File(self.r2, f["fd"]) for f in files]
 
     def open(self, filename, at="", perms=""):
         # See o?
@@ -194,8 +182,7 @@ class R2Api(R2Base):
         Returns:
             :class:`r2api.r2api.Function`: Function found or None.
         """
-        function_name = self._exec(f"afn. {self._tmp_off}")
-        self._tmp_off = ""
+        function_name = self._exec("afn.")
         return self.functionByName(function_name)
 
     def functions(self):
@@ -237,8 +224,7 @@ class R2Api(R2Base):
             bytes: Binary string containing the data in python2, ``bytes``
                 object in python3.
         """
-        res = self._exec(f"p8 {n}{self._tmp_off}|")
-        self._tmp_off = ""
+        res = self._exec(f"p8 {n}|")
         return bytes.fromhex(res)
 
     def __getitem__(self, k):

@@ -26,8 +26,6 @@ class Flags(R2Base):
             self._exec(f"f-{name}")
         elif self._tmp_off:
             self._exec(f"f-{self._tmp_off}")
-        self._tmp_off = ""
 
     def rename(self, old, new=""):
         self._exec(f"fr {old} {new} {self._tmp_off}")
-        self._tmp_off = ""

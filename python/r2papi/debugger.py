@@ -88,16 +88,16 @@ class Debugger(R2Base):
         self._untilUnknownCall = True
         return self
 
+    def _tmp_addr(self):
+        """Return the temporary seek target and clear it."""
+        if self._tmp_off:
+            return self._tmp_off[2:]
+        return ""
+
     def setBreakpoint(self, addr=0):
-        if self._tmp_off != "":
-            # '@ foo' -> 'foo'
-            addr = self._tmp_off[2:]
+        addr = self._tmp_addr() or addr
         self._exec(f"db {addr}")
-        self._tmp_off = ""
 
     def deleteBreakpoint(self, addr=0):
-        if self._tmp_off != "":
-            # '@ foo' -> 'foo'
-            addr = self._tmp_off[2:]
+        addr = self._tmp_addr() or addr
         self._exec(f"db- {addr}")
-        self._tmp_off = ""

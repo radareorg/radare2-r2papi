@@ -58,15 +58,16 @@ class File(R2Base):
         return obj["from"] if obj else None
 
     def __getattr__(self, attr):
-        if attr == "uri" or attr == "filename":
+        if attr in ("uri", "filename"):
             return self.getFilename()
-        elif attr == "size":
+        if attr == "size":
             return self.getSize()
-            # Offset instead of from because from is a reserved word
-        elif attr == "offset":
+        # Offset instead of from because from is a reserved word
+        if attr == "offset":
             return self.getFrom()
-        elif attr == "iomaps" or attr == "IOmaps":
+        if attr in ("iomaps", "IOmaps"):
             return self.getIOMaps()
+        return None
 
     def close(self):
         self._exec(f"o-{self.fd}")

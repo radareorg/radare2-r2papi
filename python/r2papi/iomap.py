@@ -14,7 +14,7 @@ class IOMap(R2Base):
         return None
 
     def setName(self, name):
-        return self._exec(f"omni {self.num} {name}")
+        return self._exec(self._cmd_arg("omni", f"{self.num} {name}"))
 
     def setFlags(self, flags):
         """Change the user (perm) permissions of this map."""
