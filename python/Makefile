@@ -1,33 +1,42 @@
-all build:
-	python -m pip install -e .[dev]
-	python -m build
+VENV := .venv
+PYTHON := $(VENV)/bin/python
+PIP := $(PYTHON) -m pip
 
-test: clean
-	python -m pip install -e .[dev]
+$(VENV)/stamp:
+	python3 -m venv $(VENV)
+	$(PIP) install --upgrade pip
+	@touch $@
+
+all build: $(VENV)/stamp
+	$(PIP) install -e .[dev]
+	$(PYTHON) -m build
+
+test: clean $(VENV)/stamp
+	$(PIP) install -e .[dev]
 	gcc -o test/test_exe test/test.c
-	pytest --cov=r2papi --cov-report=html
+	$(PYTHON) -m pytest --cov=r2papi --cov-report=html
 
-doc:
+doc: $(VENV)/stamp
 	rm -rf docs/_build
-	python -m pip install -e .[docs]
-	make -C docs html
+	$(PIP) install -e .[docs]
+	$(PYTHON) -m sphinx.cmd.build -M html docs docs/_build
 	cd docs/_build \
 		&& mv html r2papi-python-docs \
 		&& zip -r ../../r2papi-python-docs.zip r2papi-python-docs
 
 clean:
-	rm -rf build dist r2papi.egg-info ./htmlcov .coverage
+	rm -rf .venv build dist r2papi.egg-info ./htmlcov .coverage
 
-install:
-	python -m pip install .
+install: $(VENV)/stamp
+	$(PIP) install .
 
 pub publish: all
 #	python3 -m twine upload -u __token__ --repository testpypi dist/*
 #	python3 -m twine upload --repository https://pypi.python.org dist/*
 	twine upload -u __token__ --repository-url https://upload.pypi.org/legacy/ --verbose dist/*
 
-twine:
-	sudo pip install -U twine
+twine: $(VENV)/stamp
+	$(PIP) install -U twine
 
-.PHONY: all test clean install twine
+.PHONY: all build test doc clean install pub publish twine
 
