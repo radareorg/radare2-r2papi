@@ -14,33 +14,55 @@ class IOMap(R2Base):
         return None
 
     def setName(self, name):
-        return self._exec("omni %s %s" % (self.num, name))
+        return self._exec(f"omni {self.num} {name}")
 
     def setFlags(self, flags):
-        return self._exec("omp %s %s" % (self.num, flags))
+        """Change the user (perm) permissions of this map."""
+        if not isinstance(flags, str) or len(flags) > 3:
+            raise ValueError("flags must be a permission string like 'rwx'")
+        self._exec(f"omp {self.num} {flags}")
+        return self
 
     def relocateTo(self, addr):
-        return self._exec("omv %s %s" % (self.num, addr))
+        return self._exec(f"omv {self.num} {addr}")
 
     def remove(self):
-        return self._exec("om-%s" % self.num)
+        return self._exec(f"om-{self.num}")
+
+    @property
+    def flags(self):
+        obj = self._mapObj()
+        if obj is None:
+            return None
+        # radare2 stores the effective permission in `perm` and the
+        # requested/suggested permission in `sperm`.  `omp` updates `sperm`,
+        # but `omj` returns both; expose the requested one because that is
+        # what callers set with this property.
+        return obj.get("sperm") if "sperm" in obj else obj.get("perm")
+
+    @flags.setter
+    def flags(self, value):
+        if isinstance(value, str) and len(value) <= 3:
+            self.setFlags(value)
 
     def __getattr__(self, attr):
         obj = self._mapObj()
+        if obj is None:
+            return None
         # Using IOMap.form will cause a syntax error, so we use IOMap.offset
         attr = "from" if attr == "addr" else attr
-        # Flags are now called "perm"
-        attr = "perm" if attr == "flags" else attr
 
-        if attr in obj.keys():
+        if attr in obj:
             return obj[attr]
         return None
 
     def __setattr__(self, attr, value):
-        if attr == "name":
+        if attr in ("r2", "_tmp_off", "num"):
+            self.__dict__[attr] = value
+        elif attr == "name":
             self.setName(value)
         elif attr == "flags":
-            if type(value) == str and len(value) <= 3:
+            if isinstance(value, str) and len(value) <= 3:
                 self.setFlags(value)
         elif attr == "addr":
             self.relocateTo(value)

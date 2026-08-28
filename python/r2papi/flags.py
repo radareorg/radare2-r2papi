@@ -9,23 +9,25 @@ class Flags(R2Base):
         return ResultArray(self._exec("fj", json=True))
 
     def exists(self, name):
-        self._exec("f?%s" % name)
-        res = int(self._exec("??"))
-        return res == 1
+        flags = self._exec("fj", json=True) or []
+        return any(f.get("name") == name for f in flags)
 
     def new(self, name, offset=None):
-        if not offset:
-            print(self._tmp_off)
-            offset = self._tmp_off
-        self._exec(f"f {name} {offset}")
-        self._tmp_off = ""
+        if offset is None:
+            offset = self.curr_seek_addr()
+        else:
+            self._tmp_off = ""
+        self._exec(f"f {name} @ {offset}")
 
     def delete(self, name="", offset=None):
-        if offset is None:
-            offset = self._tmp_off
-        self._exec("f-%s%s" % (name, offset))
+        if offset is not None:
+            self._exec(f"f-{name}@{offset}")
+        elif name:
+            self._exec(f"f-{name}")
+        elif self._tmp_off:
+            self._exec(f"f-{self._tmp_off}")
         self._tmp_off = ""
 
     def rename(self, old, new=""):
-        self._exec("fr %s %s %s" % (old, new, self._tmp_off))
+        self._exec(f"fr {old} {new} {self._tmp_off}")
         self._tmp_off = ""

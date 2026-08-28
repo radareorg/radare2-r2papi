@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import r2pipe
 
 from r2papi.base import R2Base, Result, ResultArray
@@ -9,6 +7,7 @@ from r2papi.esil import Esil
 from r2papi.file import File
 from r2papi.flags import Flags
 from r2papi.print import Print
+from r2papi.search import Search
 from r2papi.write import Write
 
 
@@ -27,7 +26,7 @@ class Function(R2Base):
 
     def analyze(self):
         """Analyze the function. It uses the radare2 ``af`` command."""
-        self._exec("af %s" % self.offset)
+        self._exec(f"af {self.offset}")
 
     def info(self):
         """Get the function information, using the radare2 ``afi`` command.
@@ -36,12 +35,12 @@ class Function(R2Base):
             :class:`r2api.base.Result`: Function information
         """
         # XXX: Is this [0] always correct?
-        res = self._exec("afij @ %s" % self.offset, json=True)[0]
+        res = self._exec(f"afij @ {self.offset}", json=True)[0]
         return Result(res)
 
     def rename(self, name):
         """Uses the radare2 ``afn`` command"""
-        self._exec("afn %s %s" % (name, self.offset))
+        self._exec(f"afn {name} {self.offset}")
 
     def graphImg(self, path=""):
         """
@@ -57,11 +56,11 @@ class Function(R2Base):
             path (str, optional):
                 Path to store the image (including filename).
         """
-        path = "%s-graph.gif" % self.name if path == "" else path
+        path = f"{self.name}-graph.gif" if path == "" else path
         self._exec("e asm.comments=0")
         self._exec("e asm.var=0")
         self._exec("e asm.flags=0")
-        self._exec("agfw %s @ %s" % (path, self.offset))
+        self._exec(f"agfw {path} @ {self.offset}")
 
     @property
     def name(self):
@@ -89,13 +88,10 @@ class R2Api(R2Base):
             r.print.hexdump()
 
     Attributes:
-        print (:class:`r2pipe.print.Print`): Used only in Python3.
+        print (:class:`r2papi.print.Print`): Used in Python3.
             All kind of things related with the print command in ``radare2``,
             this includes from getting an hexdump to get the dissasembly of a
             function.
-        print2 (:class:`r2pipe.print.Print`): Used only in Python2 because
-            ``print`` is a reserved keyword. see the previous attribute for
-            further description.
         write (:class:`r2pipe.write.Write`): Write related operations, write
             binary data, strings, assembly...
         config (:class:`r2pipe.config.Config`): Configure radare2, like the
@@ -130,20 +126,21 @@ class R2Api(R2Base):
         self.config = Config(r2)
         self.flags = Flags(r2)
         self.esil = Esil(r2)
+        self.search = Search(r2)
 
         self.info = lambda: Result(self._exec("ij", json=True))
-        self.searchIn = lambda x: self._exec("e search.in=%s" % (x))
+        self.searchIn = lambda x: self._exec(f"e search.in={x}")
         self.analyzeAll = lambda: self._exec("aaa")
         self.analyzeCalls = lambda: self._exec("aac")
         self.basicBlocks = lambda: ResultArray(self._exec("afbj", json=True))
         self.xrefsAt = lambda: ResultArray(
-            self._exec("axtj %s" % self._tmp_off, json=True)
+            self._exec(f"axtj {self._tmp_off}", json=True)
         )
         self.refsTo = lambda: ResultArray(self._exec("axfj", json=True))
         self.opInfo = lambda: ResultArray(
-            self._exec("aoj %s" % self._tmp_off, json=True)
+            self._exec(f"aoj {self._tmp_off}", json=True)
         )[0]
-        self.seek = lambda x: self._exec("s %s" % (x))
+        self.seek = lambda x: self._exec(f"s {x}")
 
     def __enter__(self):
         return self
@@ -153,7 +150,19 @@ class R2Api(R2Base):
 
     def open(self, filename, at="", perms=""):
         # See o?
-        self._exec("o %s %s %s" % (filename, at, perms))
+        self._exec(f"o {filename} {at} {perms}")
+
+    @property
+    def files(self):
+        """
+        list: returns a list of :class:`r2api.file.File` objects.
+        """
+        files = self._exec("oj", json=True)
+        return [File(self.r2, f["fd"]) for f in files]
+
+    def open(self, filename, at="", perms=""):
+        # See o?
+        self._exec(f"o {filename} {at} {perms}")
 
     @property
     def files(self):
@@ -185,7 +194,7 @@ class R2Api(R2Base):
         Returns:
             :class:`r2api.r2api.Function`: Function found or None.
         """
-        function_name = self._exec("afn. %s" % self._tmp_off)
+        function_name = self._exec(f"afn. {self._tmp_off}")
         self._tmp_off = ""
         return self.functionByName(function_name)
 
@@ -228,18 +237,18 @@ class R2Api(R2Base):
             bytes: Binary string containing the data in python2, ``bytes``
                 object in python3.
         """
-        res = self._exec("p8 %s%s|" % (n, self._tmp_off))
+        res = self._exec(f"p8 {n}{self._tmp_off}|")
         self._tmp_off = ""
         return bytes.fromhex(res)
 
     def __getitem__(self, k):
-        if type(k) == slice:
+        if isinstance(k, slice):
             _from = k.start
-            if type(k.start) == str:
+            if isinstance(k.start, str):
                 _from = self.sym_to_addr(k.start)
 
             _to = k.stop
-            if type(k.stop) == str:
+            if isinstance(k.stop, str):
                 _to = self.sym_to_addr(k.stop)
 
             read_len = _to - _from

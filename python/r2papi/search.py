@@ -32,16 +32,9 @@ class Search(R2Base):
         ret = self._exec(f"/j {pattern}", json=True)
         return ResultArray(ret)
 
-    def inverse_hex(self, hexbytes: str):
-        """
-        Inverse hex‑search (find first byte *different* from ``hexbytes``).
-        Returns a ``ResultArray`` where each ``Result`` has ``offset``, ``hit`` and ``data`` fields.
-        """
-        raw = self._exec(f"/!x {hexbytes}")
-
-        # Split output into separate lines – the command may return many hits.
+    def _parse_hits(self, raw: str):
+        """Parse ``offset hit data`` lines into a ResultArray."""
         lines = self._clean_output(raw)
-
         results = []
         for line in lines:
             try:
@@ -58,6 +51,14 @@ class Search(R2Base):
             results.append({"offset": offset, "hit": hit, "data": data})
 
         return ResultArray(results)
+
+    def inverse_hex(self, hexbytes: str):
+        """
+        Inverse hex‑search (find first byte *different* from ``hexbytes``).
+        Returns a ``ResultArray`` where each ``Result`` has ``offset``, ``hit`` and ``data`` fields.
+        """
+        raw = self._exec(f"/!x {hexbytes}")
+        return self._parse_hits(raw)
 
     def base_address(self):
         """Search for a possible base address – ``/B``."""
@@ -69,25 +70,7 @@ class Search(R2Base):
         ``/d <hexseq>``.
         """
         raw = self._exec(f"/d {hexseq}")
-
-        lines = self._clean_output(raw)
-
-        results = []
-        for line in lines:
-            try:
-                offset_str, hit, data = line.split(maxsplit=2)
-            except ValueError:
-                results.append({"error": "unexpected line format", "raw": line})
-                continue
-
-            try:
-                offset = int(offset_str, 16)
-            except ValueError:
-                offset = offset_str
-
-            results.append({"offset": offset, "hit": hit, "data": data})
-
-        return ResultArray(results)
+        return self._parse_hits(raw)
 
     def file(self, filename: str, offset: int = None, size: int = None):
         """
@@ -99,71 +82,17 @@ class Search(R2Base):
         if size is not None:
             cmd += f" {size}"
         raw = self._exec(cmd)
-
-        lines = self._clean_output(raw)
-
-        results = []
-        for line in lines:
-            try:
-                offset_str, hit, data = line.split(maxsplit=2)
-            except ValueError:
-                results.append({"error": "unexpected line format", "raw": line})
-                continue
-
-            try:
-                offset_val = int(offset_str, 16)
-            except ValueError:
-                offset_val = offset_str
-
-            results.append({"offset": offset_val, "hit": hit, "data": data})
-
-        return ResultArray(results)
+        return self._parse_hits(raw)
 
     def case_insensitive(self, pattern: str):
         """Case‑insensitive string search – ``/i <pattern>``."""
         raw = self._exec(f"/i {pattern}")
-
-        lines = self._clean_output(raw)
-
-        results = []
-        for line in lines:
-            try:
-                offset_str, hit, data = line.split(maxsplit=2)
-            except ValueError:
-                results.append({"error": "unexpected line format", "raw": line})
-                continue
-
-            try:
-                offset = int(offset_str, 16)
-            except ValueError:
-                offset = offset_str
-
-            results.append({"offset": offset, "hit": hit, "data": data})
-
-        return ResultArray(results)
+        return self._parse_hits(raw)
 
     def rabin_karp(self, pattern: str):
         """Search using the Rabin‑Karp algorithm – ``/k <pattern>``."""
         raw = self._exec(f"/k {pattern}")
-
-        lines = self._clean_output(raw)
-
-        results = []
-        for line in lines:
-            try:
-                offset_str, hit, data = line.split(maxsplit=2)
-            except ValueError:
-                results.append({"error": "unexpected line format", "raw": line})
-                continue
-
-            try:
-                offset = int(offset_str, 16)
-            except ValueError:
-                offset = offset_str
-
-            results.append({"offset": offset, "hit": hit, "data": data})
-
-        return ResultArray(results)
+        return self._parse_hits(raw)
 
     def entropy(self, threshold: int = None):
         """
@@ -200,25 +129,7 @@ class Search(R2Base):
     def wide_string(self, pattern: str):
         """Wide string search – ``/w <pattern>``."""
         raw = self._exec(f"/w {pattern}")
-
-        lines = self._clean_output(raw)
-
-        results = []
-        for line in lines:
-            try:
-                offset_str, hit, data = line.split(maxsplit=2)
-            except ValueError:
-                results.append({"error": "unexpected line format", "raw": line})
-                continue
-
-            try:
-                offset = int(offset_str, 16)
-            except ValueError:
-                offset = offset_str
-
-            results.append({"offset": offset, "hit": hit, "data": data})
-
-        return ResultArray(results)
+        return self._parse_hits(raw)
 
     def wide_string_json(self, pattern: str):
         """Wide string search – JSON output – ``/wj <pattern>``."""
@@ -228,25 +139,7 @@ class Search(R2Base):
     def wide_string_ci(self, pattern: str):
         """Case‑insensitive wide‑string search – ``/wi <pattern>``."""
         raw = self._exec(f"/wi {pattern}")
-
-        lines = self._clean_output(raw)
-
-        results = []
-        for line in lines:
-            try:
-                offset_str, hit, data = line.split(maxsplit=2)
-            except ValueError:
-                results.append({"error": "unexpected line format", "raw": line})
-                continue
-
-            try:
-                offset = int(offset_str, 16)
-            except ValueError:
-                offset = offset_str
-
-            results.append({"offset": offset, "hit": hit, "data": data})
-
-        return ResultArray(results)
+        return self._parse_hits(raw)
 
     def wide_string_ci_json(self, pattern: str):
         """Case‑insensitive wide‑string search – JSON output – ``/wij <pattern>``."""
@@ -259,22 +152,4 @@ class Search(R2Base):
         ``/z <min> <max>``.
         """
         raw = self._exec(f"/z {min_len} {max_len}")
-
-        lines = self._clean_output(raw)
-
-        results = []
-        for line in lines:
-            try:
-                offset_str, hit, data = line.split(maxsplit=2)
-            except ValueError:
-                results.append({"error": "unexpected line format", "raw": line})
-                continue
-
-            try:
-                offset = int(offset_str, 16)
-            except ValueError:
-                offset = offset_str
-
-            results.append({"offset": offset, "hit": hit, "data": data})
-
-        return ResultArray(results)
+        return self._parse_hits(raw)

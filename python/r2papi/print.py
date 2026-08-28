@@ -11,31 +11,33 @@ class Print(R2Base):
         super().__init__(r2)
         self.hash_types = self._exec("ph").split()
 
-    def byte(self):
+    def byte(self, *, as_list=False):
         """
         Returns:
             int: One byte at current (or temporal) offset.
         """
-        return self.bytes(1, asList=True)[0]
+        return self.bytes(1, as_list=as_list)[0]
 
-    def bytes(self, size=0, asList=False):
+    def bytes(self, size=0, as_list=False, asList=None):
         """
         Args:
             size (int, optional):
                 Number of bytes to return.
-            asList (bool, optional):
+            as_list (bool, optional):
                 If True, a list is returned containing a byte on each element.
-                If False, a bytes (python3) or str (python2) object is returned.
+                If False, a bytes object is returned.
 
         Returns:
-            bytes | str | list: Bytes object in python3, `str` in python2. If
-            asList is set to true, a list of integers is returned.
+            bytes | list: Bytes object. If as_list is set to true, a list of
+            integers is returned.
         """
-        size = "" if size == 0 else size
-        if asList:
-            ret = self._exec("p8j %s%s" % (size, self._tmp_off), json=True)
+        if asList is not None:
+            as_list = asList
+        size_str = "" if size == 0 else str(size)
+        if as_list:
+            ret = self._exec(f"p8j {size_str}{self._tmp_off}", json=True)
         else:
-            ret = self._exec("p8 %s%s" % (size, self._tmp_off))
+            ret = self._exec(f"p8 {size_str}{self._tmp_off}")
             ret = bytes.fromhex(ret)
         self._tmp_off = ""
         return ret
@@ -46,8 +48,7 @@ class Print(R2Base):
             str: Zero terminated string at current seek. Seek can be temporary
             changed with the :meth:`r2api.r2api.R2Api.at` method.
         """
-        # [:-1] to remove newline, probably r2pipe should be changed
-        res = self._exec("psz %s" % self._tmp_off, rstrip=False)[:-1]
+        res = self._exec(f"psz {self._tmp_off}", rstrip=True)
         self._tmp_off = ""
         return res
 
@@ -60,8 +61,8 @@ class Print(R2Base):
         Returns:
             str: Specified number of bits from current (or temporary) offset.
         """
-        size = "" if size == 0 else size
-        ret = self._exec("pb %s%s" % (size, self._tmp_off))
+        size_str = "" if size == 0 else str(size)
+        ret = self._exec(f"pb {size_str}{self._tmp_off}")
         self._tmp_off = ""
         return ret
 
@@ -75,8 +76,8 @@ class Print(R2Base):
             list: List of :class:`r2api.base.Result` with the specified number
             of instructions from current (or temporary) offset.
         """
-        size = "" if size == 0 else size
-        ret = self._exec("pdj %s%s" % (size, self._tmp_off), json=True)
+        size_str = "" if size == 0 else str(size)
+        ret = self._exec(f"pdj {size_str}{self._tmp_off}", json=True)
         self._tmp_off = ""
         return ResultArray(ret)
 
@@ -90,8 +91,8 @@ class Print(R2Base):
             list: List of :class:`r2api.base.Result` containing the
             instructions.
         """
-        size = "" if size == 0 else size
-        ret = self._exec("pDj %s%s" % (size, self._tmp_off), json=True)
+        size_str = "" if size == 0 else str(size)
+        ret = self._exec(f"pDj {size_str}{self._tmp_off}", json=True)
         self._tmp_off = ""
         return ResultArray(ret)
 
@@ -103,8 +104,8 @@ class Print(R2Base):
         Returns:
             str: Hexdump of ``size`` bytes as string.
         """
-        size = "" if size == 0 else size
-        ret = self._exec("p8 %s%s" % (size, self._tmp_off))
+        size_str = "" if size == 0 else str(size)
+        ret = self._exec(f"p8 {size_str}{self._tmp_off}")
         self._tmp_off = ""
         return ret
 
@@ -116,8 +117,8 @@ class Print(R2Base):
         """
         if h_type not in self.hash_types:
             raise ValueError("Hash function not supported")
-        size = "" if size == 0 else size
-        ret = self._exec("ph %s %s%s" % (h_type, size, self._tmp_off))
+        size_str = "" if size == 0 else str(size)
+        ret = self._exec(f"ph {h_type} {size_str}{self._tmp_off}")
         self._tmp_off = ""
         return ret
 
@@ -129,8 +130,8 @@ class Print(R2Base):
         Returns:
             str: de Bruijn sequence as hexdump.
         """
-        size = "" if size == 0 else size
-        ret = self._exec("ppd %s" % size)
+        size_str = "" if size == 0 else str(size)
+        ret = self._exec(f"ppd {size_str}")
         self._tmp_off = ""
         return ret
 

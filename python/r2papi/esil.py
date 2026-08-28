@@ -31,8 +31,7 @@ class EsilCPU(R2Base):
             return self.readRegister(attr)
 
     def __setattr__(self, attr, val):
-        if attr == "r2":
-            # Hack to avoid infite recursion, maybe there's a better solution
+        if attr in ("r2", "_tmp_off"):
             self.__dict__[attr] = val
         elif attr in self.registers().keys():
             self.writeRegister(attr, val)
@@ -73,19 +72,19 @@ class EsilVM(R2Base):
 
     def cont(self, untilAddr=None):
         if untilAddr:
-            self._exec("aecu %s" % (untilAddr))
+            self._exec(f"aecu {untilAddr}")
         elif self.contUntilAddr:
-            self._exec("aecu %s" % (self.contUntilAddr))
+            self._exec(f"aecu {self.contUntilAddr}")
             self.contUntilAddr = None
         elif self.contUntilExpr:
-            self._exec("aecue %s" % self.contUntilExpr)
+            self._exec(f"aecue {self.contUntilExpr}")
             self.contUntilExpr = None
         elif self.contUntilSyscall:
-            self._exec("aecs %s" % self.contUntilSyscall)
+            self._exec(f"aecs {self.contUntilSyscall}")
             self.contUntilSyscall = None
 
     def step(self, num=1):
-        self._exec("%daes" % num)
+        self._exec(f"{num}aes")
 
     def stepOver(self):
         self._exec("aeso")
@@ -114,9 +113,9 @@ class Esil(R2Base):
         self.vm = EsilVM(r2)
 
     def eval(self, esil_str):
-        return int(self._exec('"ae %s"' % esil_str), 16)
+        return int(self._exec(f'"ae {esil_str}"'), 16)
 
     def regsUsed(self, num_instructions=1):
-        res = self._exec("aeaj %d %s" % (num_instructions, self._tmp_off), json=True)
+        res = self._exec(f"aeaj {num_instructions} {self._tmp_off}", json=True)
         self._tmp_off = ""
         return Result(res)

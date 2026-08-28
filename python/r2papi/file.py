@@ -9,7 +9,7 @@ class File(R2Base):
         self.fd = fd
 
         if not self.fd:
-            raise IOError("File not found")
+            raise OSError("File not found")
 
     def _getCurrObject(self):
         files = self._exec("oj", json=True)
@@ -26,11 +26,11 @@ class File(R2Base):
 
     @writable.setter
     def writable(self, value):
-        if type(value) == bool:
+        if isinstance(value, bool):
             if value:
                 # TODO: this reopens in rw-, so if the file was loaded with
                 # r-x we lose the x
-                self._exec("oo+ %s" % self.fd)
+                self._exec(f"oo+ {self.fd}")
             else:
                 # TODO: How to set -w ?
                 pass
@@ -69,5 +69,5 @@ class File(R2Base):
             return self.getIOMaps()
 
     def close(self):
-        self._exec("o-%s" % self.fd)
+        self._exec(f"o-{self.fd}")
         self.fd = None

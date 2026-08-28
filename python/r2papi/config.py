@@ -29,14 +29,14 @@ class ConfigType(R2Base):
 
     def __setattr__(self, attr, val):
         # Dirty way to avoid infinite recursion
-        if attr == "r2" or attr == "_tmp_off":
+        if attr in ("r2", "_tmp_off"):
             self.__dict__[attr] = val
         elif attr in self.valid_vars:
-            if attr == True:
-                attr = "true"
-            if attr == False:
-                attr = "false"
-            self._exec("e %s.%s = %s" % (self.var_type, attr, val))
+            if val is True:
+                val = "true"
+            elif val is False:
+                val = "false"
+            self._exec(f"e {self.var_type}.{attr} = {val}")
         else:
             raise AttributeError()
 

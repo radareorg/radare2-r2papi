@@ -7,26 +7,29 @@ class CPU(R2Base):
 
     def readRegister(self, reg_name):
         res = self._exec("drj", json=True)
-        try:
-            return res[reg_name]
-        except:
+        if res is None:
             return None
+        return res.get(reg_name)
 
     def writeRegister(self, reg_name, value):
-        res = self._exec("dr %s=%s" % (reg_name, value))
+        res = self._exec(f"dr {reg_name}={value}")
         if res == "":
-            raise ValueError("Ivalid register %s" % reg_name)
+            raise ValueError(f"Invalid register {reg_name}")
 
     def registers(self):
         return self._exec("drj", json=True)
 
     def __str__(self):
         regs = self.registers()
-        items = regs.items()
+        if not regs:
+            return ""
 
         ret_str = ""
-        for r, v in items:
-            ret_str += "{:<10}{:#016x}\n".format(r, v)
+        for r, v in regs.items():
+            if isinstance(v, int):
+                ret_str += f"{r:<10}{v:#016x}\n"
+            else:
+                ret_str += f"{r:<10}{v}\n"
         return ret_str
 
     def __getattr__(self, attr):
@@ -34,14 +37,12 @@ class CPU(R2Base):
             return self.readRegister(attr)
 
     def __setattr__(self, attr, value):
-        if attr == "r2":
-            # Hack to avoid infite recursion, maybe there's a better solution
+        if attr in ("r2", "_tmp_off"):
             self.__dict__[attr] = value
+        elif attr in self.registers().keys():
+            self.writeRegister(attr, value)
         else:
-            if attr in self.registers().keys():
-                self.writeRegister(attr, value)
-            else:
-                self.__dict__[attr] = value
+            self.__dict__[attr] = value
 
 
 class Debugger(R2Base):
@@ -91,12 +92,12 @@ class Debugger(R2Base):
         if self._tmp_off != "":
             # '@ foo' -> 'foo'
             addr = self._tmp_off[2:]
-        self._exec("db %s" % addr)
+        self._exec(f"db {addr}")
         self._tmp_off = ""
 
     def deleteBreakpoint(self, addr=0):
         if self._tmp_off != "":
             # '@ foo' -> 'foo'
             addr = self._tmp_off[2:]
-        self._exec("db- %s" % addr)
+        self._exec(f"db- {addr}")
         self._tmp_off = ""
