@@ -1,3 +1,9 @@
+from __future__ import annotations
+
+import json as _json
+from types import SimpleNamespace
+
+
 def ResultArray(o):
     """
     Convert an iterable of raw JSON objects into a list of ``Result`` instances.
@@ -44,6 +50,16 @@ class Result:
         return self.pprint()
 
 
+class R2CommandError(Exception):
+    """Raised when a radare2 command fails or returns a non-zero value."""
+
+    def __init__(self, cmd: str, value: int, logs: list | None = None):
+        self.cmd = cmd
+        self.value = value
+        self.logs = logs or []
+        super().__init__(f"Command {cmd!r} failed with value {value}")
+
+
 class R2Base:
     """Base class providing common radare2‑pipe utilities."""
 
@@ -65,16 +81,68 @@ class R2Base:
 
         Returns:
             Either a Python object (when ``json=True``) or a stripped string.
+
+        Raises:
+            R2CommandError: If radare2 reports the command as failed.
         """
+        full_cmd, tmp_off = self._build_cmd(cmd)
+        res = self.r2.cmd2(full_cmd)
+        self._tmp_off = tmp_off
+        if res.error:
+            raise R2CommandError(full_cmd, res.value, _logs(res.logs))
         if json:
-            return self.r2.cmdj(cmd)
-        res = self.r2.cmd(cmd)
-        return res.rstrip() if rstrip else res
+            out = res.res.strip()
+            if not out:
+                return None
+            return _json.loads(out)
+        out = res.res
+        return out.rstrip() if rstrip else out
+
+    def _exec_quiet(self, cmd: str, json: bool = False, rstrip: bool = True):
+        """Execute a radare2 command and return ``None`` on failure.
+
+        This is a transitional helper for commands where failure is expected
+        or where callers currently rely on silent ``None`` returns. New code
+        should prefer :meth:`_exec` and handle :exc:`R2CommandError`.
+        """
+        try:
+            return self._exec(cmd, json=json, rstrip=rstrip)
+        except R2CommandError:
+            return None
+
+    def _build_cmd(self, cmd: str) -> tuple[str, str]:
+        """Combine ``cmd`` with the temporary seek stored in ``_tmp_off``.
+
+        Returns a tuple ``(full_cmd, remaining_tmp_off)``.  The temporary
+        seek is appended at the end so radare2 restores the original offset
+        automatically, and the remaining temporary seek is cleared.
+        """
+        tmp_off = self._tmp_off
+        if tmp_off:
+            return f"{cmd} {tmp_off}", ""
+        return cmd, ""
+
+    def _cmd_arg(self, cmd: str, arg) -> str:
+        """Build a command with an argument that should not be evaluated.
+
+        The whole command+argument block is wrapped in double quotes so
+        radare2 treats it as a single command string.  This preserves
+        ``;`` or spaces inside the argument while still allowing ``@``
+        temporary seeks appended outside the quotes.  Non-printable
+        bytes are hex-escaped so they survive the radare2 parser.
+        """
+        def _escape(c):
+            if 32 <= ord(c) < 127 and c not in ('"', '\\'):
+                return c
+            return f"\\x{ord(c):02x}"
+
+        escaped = "".join(_escape(c) for c in str(arg))
+        return f'"{cmd} {escaped}"'
 
     def curr_seek_addr(self) -> int:
         """Return the current address after a temporary seek."""
         try:
-            return int(self._exec(f"?vi $$ {self._tmp_off}"))
+            return int(self._exec("?vi $$"))
         except ValueError as exc:
             raise ValueError(f"Invalid address {self._tmp_off}") from exc
         finally:
@@ -90,3 +158,14 @@ class R2Base:
         """Temporarily seek to ``seek`` for the next command, then restore."""
         self._tmp_off = f"@ {seek}"
         return self
+
+
+def _logs(logs):
+    if logs is None:
+        return []
+    return [
+        {"type": getattr(l, "type", None), "origin": getattr(l, "origin", None),
+         "message": getattr(l, "message", None)}
+        for l in logs
+    ]
+

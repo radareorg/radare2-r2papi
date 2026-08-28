@@ -26,46 +26,25 @@ class Write(R2Base):
         else:
             raise TypeError("You must write a string or bytes")
 
-        res = self._exec(f"wx {hex_data}{self._tmp_off}|")
-        self._tmp_off = ""
-        return res
+        return self._exec(f"wx {hex_data}|")
 
     def hex(self, hex_string):
-        ret = self._exec(f"wx {hex_string}{self._tmp_off}")
-        self._tmp_off = ""
-        return ret
+        return self._exec(f"wx {hex_string}")
 
     def string(self, string, final_nullbyte=False):
         if final_nullbyte:
             string = string + "\x00"
-        escaped = self._escaped_string(string)
-        ret = self._exec(f'"w {escaped}" {self._tmp_off}')
-        self._tmp_off = ""
-        return ret
-
-    def _escaped_string(self, string):
-        """Escape a string for safe use inside a radare2 `w` command."""
-        return "".join(f"\\x{ord(c):02x}" if not (32 <= ord(c) < 127) else c for c in string)
+        return self._exec(self._cmd_arg("w", string))
 
     def base64(self, string, encode=True):
-        if encode:
-            ret = self._exec(f"w6e {string} {self._tmp_off}")
-        else:
-            ret = self._exec(f"w6d {string} {self._tmp_off}")
-        self._tmp_off = ""
-        return ret
+        subcmd = "w6e" if encode else "w6d"
+        return self._exec(f"{subcmd} {string}")
 
     def assembly(self, asm_str):
-        ret = self._exec(f'"wa {asm_str}" {self._tmp_off}')
-        self._tmp_off = ""
-        return ret
+        return self._exec(self._cmd_arg("wa", asm_str))
 
     def random(self, size=0):
-        ret = self._exec(f"wr {size}{self._tmp_off}")
-        self._tmp_off = ""
-        return ret
+        return self._exec(f"wr {size}")
 
     def nop(self):
-        ret = self._exec(f"wao nop {self._tmp_off}")
-        self._tmp_off = ""
-        return ret
+        return self._exec("wao nop")

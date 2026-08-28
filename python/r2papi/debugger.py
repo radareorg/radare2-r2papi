@@ -6,18 +6,18 @@ class CPU(R2Base):
         super().__init__(r2)
 
     def readRegister(self, reg_name):
-        res = self._exec("drj", json=True)
+        res = self._exec_quiet("drj", json=True)
         if res is None:
             return None
         return res.get(reg_name)
 
     def writeRegister(self, reg_name, value):
-        res = self._exec(f"dr {reg_name}={value}")
-        if res == "":
+        res = self._exec_quiet(f"dr {reg_name}={value}")
+        if res is None or res == "":
             raise ValueError(f"Invalid register {reg_name}")
 
     def registers(self):
-        return self._exec("drj", json=True)
+        return self._exec_quiet("drj", json=True) or {}
 
     def __str__(self):
         regs = self.registers()

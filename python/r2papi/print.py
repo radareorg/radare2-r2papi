@@ -35,11 +35,10 @@ class Print(R2Base):
             as_list = asList
         size_str = "" if size == 0 else str(size)
         if as_list:
-            ret = self._exec(f"p8j {size_str}{self._tmp_off}", json=True)
+            ret = self._exec(f"p8j {size_str}", json=True)
         else:
-            ret = self._exec(f"p8 {size_str}{self._tmp_off}")
+            ret = self._exec(f"p8 {size_str}")
             ret = bytes.fromhex(ret)
-        self._tmp_off = ""
         return ret
 
     def string(self):
@@ -48,9 +47,7 @@ class Print(R2Base):
             str: Zero terminated string at current seek. Seek can be temporary
             changed with the :meth:`r2api.r2api.R2Api.at` method.
         """
-        res = self._exec(f"psz {self._tmp_off}", rstrip=True)
-        self._tmp_off = ""
-        return res
+        return self._exec("psz", rstrip=True)
 
     def bits(self, size=0):
         """
@@ -62,9 +59,7 @@ class Print(R2Base):
             str: Specified number of bits from current (or temporary) offset.
         """
         size_str = "" if size == 0 else str(size)
-        ret = self._exec(f"pb {size_str}{self._tmp_off}")
-        self._tmp_off = ""
-        return ret
+        return self._exec(f"pb {size_str}")
 
     def disassemble(self, size=0):
         """
@@ -77,8 +72,7 @@ class Print(R2Base):
             of instructions from current (or temporary) offset.
         """
         size_str = "" if size == 0 else str(size)
-        ret = self._exec(f"pdj {size_str}{self._tmp_off}", json=True)
-        self._tmp_off = ""
+        ret = self._exec(f"pdj {size_str}", json=True)
         return ResultArray(ret)
 
     def disasmBytes(self, size=0):
@@ -92,8 +86,7 @@ class Print(R2Base):
             instructions.
         """
         size_str = "" if size == 0 else str(size)
-        ret = self._exec(f"pDj {size_str}{self._tmp_off}", json=True)
-        self._tmp_off = ""
+        ret = self._exec(f"pDj {size_str}", json=True)
         return ResultArray(ret)
 
     def hexdump(self, size=0):
@@ -105,9 +98,7 @@ class Print(R2Base):
             str: Hexdump of ``size`` bytes as string.
         """
         size_str = "" if size == 0 else str(size)
-        ret = self._exec(f"p8 {size_str}{self._tmp_off}")
-        self._tmp_off = ""
-        return ret
+        return self._exec(f"p8 {size_str}")
 
     def hash(self, h_type, size=0):
         """
@@ -118,9 +109,7 @@ class Print(R2Base):
         if h_type not in self.hash_types:
             raise ValueError("Hash function not supported")
         size_str = "" if size == 0 else str(size)
-        ret = self._exec(f"ph {h_type} {size_str}{self._tmp_off}")
-        self._tmp_off = ""
-        return ret
+        return self._exec(f"ph {h_type} {size_str}")
 
     def debruijn(self, size=0):
         """
@@ -131,9 +120,7 @@ class Print(R2Base):
             str: de Bruijn sequence as hexdump.
         """
         size_str = "" if size == 0 else str(size)
-        ret = self._exec(f"ppd {size_str}")
-        self._tmp_off = ""
-        return ret
+        return self._exec(f"ppd {size_str}")
 
     @property
     def pwd(self):

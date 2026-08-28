@@ -65,8 +65,11 @@ def test_debruijn(p):
     )
     assert p.debruijn(16) == "41414142414143414144414145414146"
 
-    # Make sure it clear temporary offset
-    p.at("foo").debruijn()
+    # Make sure it clears the temporary offset even when the seek fails
+    try:
+        p.at("foo").debruijn()
+    except Exception:
+        pass
     assert p._tmp_off == ""
 
 
