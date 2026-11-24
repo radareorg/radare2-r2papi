@@ -52,8 +52,10 @@ Use these when relevant:
 - `npm run smoke` — drives the async API against a real r2 on /bin/ls
   (`tools/smoke.mjs`); skips cleanly when r2 is not installed
 
-There is no automated test suite yet — don't overclaim verification. Typecheck + lint +
-manual smoke is the current bar.
+`npm test` = lint + abuild + smoke (tools/smoke.mjs drives the async API against a real
+r2 on /bin/ls; skips cleanly if r2 is absent, requires r2 >= 6.2.0). Supported floors:
+node >= 22, radare2 >= 6.2.0. The sed-based sync build is kept deliberately (needed for the
+qjs runtime); CI enforces `make sync` produces no diff. When in doubt, run `npm test`.
 
 ## API Rule
 

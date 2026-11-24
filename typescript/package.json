@@ -54,6 +54,6 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }

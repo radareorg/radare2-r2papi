@@ -6,7 +6,12 @@ The constructor of the `R2Papi` class takes an actual r2pipe instance, which onl
 
 The whole r2papi module is documented and integrates well with any editor with LSP support (like Visual Studio Code or NeoVIM)
 
-R2Papi relies on commands and functionalities that were implemented around r2-5.8.x, so take this into account and update your software!
+## Requirements
+
+- **radare2 >= 6.2.0** (the API surface and command outputs used here are tested against 6.2.x)
+- **Node.js >= 22** for development and for the async API in Node
+- When loaded inside r2 (`r2papi.r2.js`), the bundled QuickJS only needs r2 6.2.0+
+
 
 Note that TypeScript usually transpiles to Javascript, and as long as r2 ships it's own javascript runtime (based on QuickJS, which is ES6) it is possible to run the resulting r2papi scripts without any extra dependency in your system.
 

@@ -17,12 +17,23 @@ const require = createRequire(import.meta.url);
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const target = process.argv[2] || '/bin/ls';
 
+const MIN_R2 = [6, 2, 0];
+let r2version = null;
 try {
-  execFileSync(process.env.R2_BIN || 'r2', ['-v'], { stdio: 'ignore' });
+  const out = execFileSync(process.env.R2_BIN || 'r2', ['-v'], { encoding: 'utf8' });
+  const m = out.match(/(\d+)\.(\d+)\.(\d+)/);
+  if (m) r2version = [Number(m[1]), Number(m[2]), Number(m[3])];
 } catch {
   console.log('SKIP: r2 not found on PATH (set R2_BIN to override)');
   process.exit(0);
 }
+if (!r2version || r2version[0] < MIN_R2[0] ||
+    (r2version[0] === MIN_R2[0] && (r2version[1] < MIN_R2[1] ||
+      (r2version[1] === MIN_R2[1] && r2version[2] < MIN_R2[2])))) {
+  console.error(`FAIL: radare2 >= ${MIN_R2.join('.')} required, found ${r2version ? r2version.join('.') : 'unknown'}`);
+  process.exit(1);
+}
+console.log(`r2 ${r2version.join('.')} detected (>= ${MIN_R2.join('.')} required)`);
 
 const r2papiPath = join(root, 'async', 'r2papi.js');
 if (!existsSync(r2papiPath)) {

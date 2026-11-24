@@ -142,6 +142,10 @@ Until then: always eyeball `make sync` output.
       from the repo root can't ship an empty tarball again.
 - [ ] Pick one canonical package (recommend: `r2papi-async`, mark sync deprecated) or drop
       the sync flavor at 1.0. Decide before tagging.
+- [x] CI installs r2 6.2.6 (deb from radare2 releases), node 22, `npm ci`, lint, `npm test`
+      (lint + abuild + r2 smoke), r2 bundle build, pack dry-run guard, docs.
+- [x] `r2 >= 6.2.0`, `node >= 22` floors encoded in `README.md`, `package.json` engines,
+      and enforced by `tools/smoke.mjs`.
 - [ ] Add `LICENSE` (repo claims MIT, file doesn't exist).
 - [ ] `CHANGELOG.md`; tag releases; document versioning.
 
@@ -170,20 +174,25 @@ Until then: always eyeball `make sync` output.
 - [ ] `tools/smoke.mjs` driving `/bin/ls` through the async API, asserting
       sections/imports/maps > 0 (guards the whole stack against r2 upgrades).
 - [ ] Type-level tests (`tsd` or `expectTypeOf`) on the public surface.
-- [ ] CI: lint → tsc → pack dry-run → smoke (r2 installed via setup action or container).
-      Repo currently has **no CI at all**.
+- [x] CI exists (`.github/workflows/typescript.yml`): r2 6.2.6 + node 22, lint, `npm test`,
+      bundle build, pack dry-run guard, typedoc artifact. Old job installed r2 5.8.0 and never
+      ran the tests — replaced 2026-11.
 
 ### P7 — docs
 - TypeDoc is wired (`npm run doc`); regenerate on release.
 - README: "use from node" walkthrough, "use inside r2" (R2_PAPI_SCRIPT), sync vs async.
 - AGENTS.md updated with build/test/smoke commands.
 
-## 4. Open questions for the maintainer
-1. Keep the sed-based sync build, or drop the sync flavor before 1.0? (Recommended: drop.)
-2. Node floor: 18+? r2 floor: 6.x only, or also support 5.x? (`cfg.json.num` behavior differs.)
-3. One package with `exports` subpaths (`r2papi`, `r2papi/r2`) or keep two names?
-4. `NativePointer.readPointer()` on 32-bit (`wvp`) — anyone testing that path?
-5. Frida API parity: goal or inspiration only? Affects naming forever.
+## 4. Resolved (2026-11, maintainer decisions)
+1. Keep the sed-based sync build — it is required for the r2 qjs runtime, where async is
+   pointless. Mitigate instead: CI gate `make sync && git diff --exit-code sync/` and keep
+   `async/` free of constructs the sed can't handle (multiline generics, etc.).
+2. Node floor is 22 (or 24); r2 floor is **6.2.0** (APIs and command outputs are only
+   verified there; CI installs 6.2.6). No 5.x support.
+3. Two packages stay separate: `r2papi` (sync, for r2) and `r2papi-async` (node/etc.).
+   No subpath-exports unification.
+4. Open: `NativePointer.readPointer()` on 32-bit (`wvp`) — untested path.
+5. Open: Frida API parity — goal or inspiration? (affects naming forever)
 
 ## 5. Execution order
-P0 finish → P6 (smoke+CI; protects everything after) → P1 → P2 → P3 → P4 → P5 → P7.
+P0 finish → P6 (smoke is wired into `npm test`; CI updated 2026-11) → P1 → P2 → P3 → P4 → P5 → P7.
