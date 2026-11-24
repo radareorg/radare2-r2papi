@@ -24,3 +24,27 @@ typescript/sync/*.js
 typescript/sync/*.d.ts
 typescript/r2papi.r2.js
 typescript/build-async
+
+# --- repo-wide hygiene ---
+node_modules/
+.DS_Store
+
+# python
+python/htmlcov/
+python/*.egg-info/
+python/r2papi-python-docs.zip
+python/docs/_build/
+
+# purescript (spago output)
+purescript/output/
+
+# pascal: downloaded pas2js toolchain, vendored FPC packages and build output
+pascal/pas2js-macos-2.2.0/
+pascal/pas2js-macos-2.2.0.zip
+pascal/packages/
+pascal/demo/
+pascal/bin/
+pascal/*.o
+pascal/*.res
+# vendored third-party checkout (clone https://gitlab.com/luplab/rvcodecjs)
+typescript/examples/asm/rvcodecjs/

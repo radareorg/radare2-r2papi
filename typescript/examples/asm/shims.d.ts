@@ -1,0 +1,2 @@
+declare public class Instruction {
+}

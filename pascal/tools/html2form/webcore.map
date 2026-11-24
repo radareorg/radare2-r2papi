@@ -1,0 +1,79 @@
+[
+  { 
+    "tag" : "input",
+    "attrs" : { "type" : "text" },
+    "class" : "TWebEdit"
+  },
+  { 
+    "tag" : "input",
+    "attrs" : { "type" : "checkbox" },
+    "class" : "TWebCheckBox"
+  },
+  { 
+    "tag" : "input",
+    "attrs" : { "type" : "radio" },
+    "class" : "TWebRadioButton"
+  },
+  { 
+    "tag" : "input",
+    "attrs" : { "type" : "submit" },
+    "class" : "TWebButton"
+  },
+  { 
+    "tag" : "input",
+    "attrs" : { "type" : "reset" },
+    "class" : "TWebButton"
+  },
+  { 
+    "tag" : "input",
+    "attrs" : { "type" : "image" },
+    "class" : "TWebButton"
+  },
+  { 
+    "tag" : "input",
+    "attrs" : { "type" : "button" },
+    "class" : "TWebButton"
+  },
+  { 
+    "tag" : "input",
+    "class" : "TWebEdit"
+  },
+  { 
+    "tag" : "textarea",
+    "class" : "TWebMemo"
+  },
+  { 
+    "tag" : "select",
+    "attrs" : { "multiple" : "" },
+    "class" : "TWebComboBox"
+  },
+  { 
+    "tag" : "select",
+    "class" : "TWebComboBox"
+  },
+  { 
+    "tag" : "div",
+    "class" : "TWebHTMLDiv"
+  },
+  { 
+    "tag" : "span",
+    "class" : "TWebHTMLSpan"
+  },
+  { 
+    "tag" : "a",
+    "class" : "TWebHTMLAnchor"
+  },
+  { 
+    "tag" : "form",
+    "class" : "TWebHTMLForm"
+  },
+  { 
+    "tag" : "button",
+    "class" : "TWebButton"
+  },
+  { 
+    "tag" : "small",
+    "class" : ""
+  }
+  
+]

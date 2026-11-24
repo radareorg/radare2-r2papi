@@ -1,0 +1,4 @@
+📦
+166 /main.js
+✄
+var o;console.log("main"),o=function(o,l){console.log(Object.keys(l));const c=o.cmd("x");console.log("Hello World",c)},console.log("pre"),o(r2,[]),console.log("pos");

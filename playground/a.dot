@@ -1,0 +1,148 @@
+digraph code {
+rankdir=T;
+outputorder=edgesfirst
+graph [bgcolor=azure];
+edge [arrowhead=normal, color="#3030c0" style=bold weight=2];
+node [fillcolor=white, style=filled shape=box fontname="Courier" fontsize="8"];
+"cmd_w" [URL="cmd_w", color="lightgray", label="cmd_w\nREAD cmd_write.c:1438
+FREE cmd_write.c:1438
+"]
+"wrap_calloc+0x9c" [URL="wrap_calloc+0x9c", color="lightgray", label="wrap_calloc+0x9c\nALLOC (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x3f074)
+"]
+"r_core_cmd_subst" [URL="r_core_cmd_subst", color="lightgray", label="r_core_cmd_subst\nREAD cmd.c:3631
+FREE cmd.c:3631
+"]
+"r_main_radare2" [URL="r_main_radare2", color="lightgray", label="r_main_radare2\nREAD radare2.c:1682
+ALLOC radare2.c:1371
+"]
+"r_io_desc_read" [URL="r_io_desc_read", color="lightgray", label="r_io_desc_read\nFREE io_desc.c:204
+"]
+"binload" [URL="binload", color="lightgray", label="binload\nALLOC radare2.c:467
+"]
+"cmd_write" [URL="cmd_write", color="lightgray", label="cmd_write\nREAD cmd_write.c:2255
+FREE cmd_write.c:2255
+"]
+"internal_r_io_read_at" [URL="internal_r_io_read_at", color="lightgray", label="internal_r_io_read_at\nREAD io.c:234
+FREE io.c:234
+"]
+"r_core_cmdf" [URL="r_core_cmdf", color="lightgray", label="r_core_cmdf\nFREE cmd.c:5930
+"]
+"wrap_free+0x98" [URL="wrap_free+0x98", color="lightgray", label="wrap_free+0x98\nFREE (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x3ede4)
+"]
+"r_cmd_call" [URL="r_cmd_call", color="lightgray", label="r_cmd_call\nREAD cmd_api.c:519
+FREE cmd_api.c:519
+"]
+"r_io_map_add" [URL="r_io_map_add", color="lightgray", label="r_io_map_add\nALLOC io_map.c:172
+"]
+"cmd_open_map" [URL="cmd_open_map", color="lightgray", label="cmd_open_map\nFREE cmd_open.c:959
+"]
+"r_io_vread_at" [URL="r_io_vread_at", color="lightgray", label="r_io_vread_at\nREAD io.c:213
+FREE io.c:213
+"]
+"_delete_submaps_from_bank_tree" [URL="_delete_submaps_from_bank_tree", color="lightgray", label="_delete_submaps_from_bank_tree\nFREE io_bank.c:407
+"]
+"__read" [URL="__read", color="lightgray", label="__read\nFREE io_socket.c:51
+"]
+"r_io_desc_read_at" [URL="r_io_desc_read_at", color="lightgray", label="r_io_desc_read_at\nFREE io_desc.c:334
+"]
+"r_io_read_at" [URL="r_io_read_at", color="lightgray", label="r_io_read_at\nREAD io.c:269
+FREE io.c:269
+"]
+"r_crbtree_delete" [URL="r_crbtree_delete", color="lightgray", label="r_crbtree_delete\nFREE new_rbtree.c:382
+"]
+"r_core_bin_load" [URL="r_core_bin_load", color="lightgray", label="r_core_bin_load\nALLOC cfile.c:679
+"]
+"r_core_prompt_exec" [URL="r_core_prompt_exec", color="lightgray", label="r_core_prompt_exec\nREAD core.c:3573
+"]
+"r_io_bank_update_map_boundaries" [URL="r_io_bank_update_map_boundaries", color="lightgray", label="r_io_bank_update_map_boundaries\nFREE io_bank.c:572
+"]
+"r_io_bank_map_add_top" [URL="r_io_bank_map_add_top", color="lightgray", label="r_io_bank_map_add_top\nALLOC io_bank.c:181
+"]
+"r_io_plugin_read" [URL="r_io_plugin_read", color="lightgray", label="r_io_plugin_read\nFREE io_plugin.c:154
+"]
+"r_io_map_resize" [URL="r_io_map_resize", color="lightgray", label="r_io_map_resize\nFREE io_map.c:476
+"]
+"r_io_fd_read_at" [URL="r_io_fd_read_at", color="lightgray", label="r_io_fd_read_at\nFREE io_fd.c:67
+"]
+"r_crbtree_take" [URL="r_crbtree_take", color="lightgray", label="r_crbtree_take\nFREE new_rbtree.c:362
+"]
+"r_rbnode_next" [URL="r_rbnode_next", color="lightgray", label="r_rbnode_next\nREAD new_rbtree.c:417
+"]
+"cmd_open" [URL="cmd_open", color="lightgray", label="cmd_open\nFREE cmd_open.c:2199
+"]
+"r_core_cmd_subst_i" [URL="r_core_cmd_subst_i", color="lightgray", label="r_core_cmd_subst_i\nREAD cmd.c:4797
+FREE cmd.c:4797
+"]
+"r_io_bank_read_at" [URL="r_io_bank_read_at", color="lightgray", label="r_io_bank_read_at\nREAD io_bank.c:796
+FREE io_bank.c:793
+"]
+"r_core_prompt_loop" [URL="r_core_prompt_loop", color="lightgray", label="r_core_prompt_loop\nREAD core.c:3391
+"]
+"_node_new" [URL="_node_new", color="lightgray", label="_node_new\nALLOC new_rbtree.c:104
+"]
+"run_cmd_depth" [URL="run_cmd_depth", color="lightgray", label="run_cmd_depth\nREAD cmd.c:5696
+FREE cmd.c:5696
+"]
+"r_core_cmd" [URL="r_core_cmd", color="lightgray", label="r_core_cmd\nREAD cmd.c:5780
+FREE cmd.c:5780
+"]
+"main" [URL="main", color="lightgray", label="main\nREAD radare2.c:104
+ALLOC radare2.c:104
+"]
+"r_crbtree_insert" [URL="r_crbtree_insert", color="lightgray", label="r_crbtree_insert\nALLOC new_rbtree.c:142
+"]
+"cmd_w" -> "r_io_read_at"
+"cmd_w" -> "r_io_read_at"
+"wrap_calloc+0x9c" -> "r_core_cmd"
+"r_core_cmd_subst" -> "r_core_cmd_subst_i"
+"r_core_cmd_subst" -> "r_core_cmd_subst_i"
+"r_core_cmd_subst" -> "r_core_cmd_subst_i"
+"r_main_radare2" -> "r_core_prompt_loop"
+"r_main_radare2" -> "binload"
+"r_io_desc_read" -> "r_io_plugin_read"
+"binload" -> "r_core_bin_load"
+"cmd_write" -> "cmd_w"
+"cmd_write" -> "cmd_w"
+"internal_r_io_read_at" -> "r_io_vread_at"
+"internal_r_io_read_at" -> "r_io_vread_at"
+"r_core_cmdf" -> "r_core_cmd"
+"r_cmd_call" -> "cmd_write"
+"r_cmd_call" -> "cmd_open"
+"r_cmd_call" -> "cmd_write"
+"r_io_map_add" -> "r_io_bank_map_add_top"
+"cmd_open_map" -> "r_io_map_resize"
+"r_io_vread_at" -> "r_io_bank_read_at"
+"r_io_vread_at" -> "r_io_bank_read_at"
+"_delete_submaps_from_bank_tree" -> "r_crbtree_delete"
+"__read" -> "r_core_cmdf"
+"r_io_desc_read_at" -> "r_io_desc_read"
+"r_io_read_at" -> "internal_r_io_read_at"
+"r_io_read_at" -> "internal_r_io_read_at"
+"r_crbtree_delete" -> "r_crbtree_take"
+"r_core_bin_load" -> "r_io_map_add"
+"r_core_prompt_exec" -> "r_core_cmd"
+"r_io_bank_update_map_boundaries" -> "_delete_submaps_from_bank_tree"
+"r_io_bank_map_add_top" -> "r_crbtree_insert"
+"r_io_plugin_read" -> "__read"
+"r_io_map_resize" -> "r_io_bank_update_map_boundaries"
+"r_io_fd_read_at" -> "r_io_desc_read_at"
+"r_crbtree_take" -> "wrap_free+0x98"
+"cmd_open" -> "cmd_open_map"
+"r_core_cmd_subst_i" -> "r_cmd_call"
+"r_core_cmd_subst_i" -> "r_cmd_call"
+"r_core_cmd_subst_i" -> "r_cmd_call"
+"r_io_bank_read_at" -> "r_rbnode_next"
+"r_io_bank_read_at" -> "r_io_fd_read_at"
+"r_core_prompt_loop" -> "r_core_prompt_exec"
+"_node_new" -> "wrap_calloc+0x9c"
+"run_cmd_depth" -> "r_core_cmd_subst"
+"run_cmd_depth" -> "r_core_cmd_subst"
+"run_cmd_depth" -> "r_core_cmd_subst"
+"r_core_cmd" -> "run_cmd_depth"
+"r_core_cmd" -> "run_cmd_depth"
+"r_core_cmd" -> "run_cmd_depth"
+"main" -> "r_main_radare2"
+"main" -> "r_main_radare2"
+"r_crbtree_insert" -> "_node_new"
+}
+
