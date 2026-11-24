@@ -184,3 +184,95 @@ export interface DebugThread {
     path?: string;
     [key: string]: unknown;
 }
+
+/** `:ij` — r2frida target details. Platform-specific fields are optional. */
+export interface TargetDetails {
+    arch: string;
+    bits: number;
+    os: string;
+    pid: number;
+    uid: number;
+    runtime: string;
+    objc: boolean;
+    java: boolean;
+    swift: boolean;
+    mainLoop: boolean;
+    pageSize: number;
+    pointerSize: number;
+    codeSigningPolicy: string;
+    isDebuggerAttached: boolean;
+    cwd: string;
+    modulename: string;
+    modulebase: string;
+    bundle?: string;
+    exename?: string;
+    appname?: string;
+    appversion?: string;
+    appnumversion?: string;
+    minOS?: string;
+    homedir?: string;
+    tmpdir?: string;
+    bundledir?: string;
+    packageName?: string;
+}
+
+/** `:icj <class>` — ObjC method-address object or Java member signatures.
+ * Addresses in r2frida JSON are strings, not NativePointer instances.
+ */
+export type FridaClassMembers = Record<string, string> | string[];
+
+/** `:iEj` — r2frida exports. */
+export interface FridaExport {
+    type: "variable" | "function";
+    name: string;
+    address: string;
+}
+
+/** `:iij` — r2frida imports; unresolved imports may lack an address. */
+export interface FridaImport {
+    type?: "variable" | "function";
+    name: string;
+    module?: string;
+    address?: string;
+    slot?: string;
+    index: number;
+    targetModuleName: string | null;
+}
+
+/** `:isj` — r2frida native symbols (types depend on the platform). */
+export interface FridaSymbol {
+    isGlobal: boolean;
+    type: string;
+    name: string;
+    address: string;
+    size?: number;
+    section?: {
+        id: string;
+        protection: string;
+    };
+}
+
+/** `:iej` — an export, debug symbol or header-derived entrypoint. */
+export interface FridaEntryPoint {
+    address: string;
+    name: string | null;
+    type?: "variable" | "function";
+    moduleName?: string | null;
+}
+
+/** `:dmj` — r2frida ranges, including anonymous memory. */
+export interface FridaMemoryRange {
+    base: string;
+    size: number;
+    protection: string;
+    file?: {
+        path: string;
+        offset: number;
+        size: number;
+    };
+}
+
+/** `:dmmj` — coalesced file-backed maps. */
+export interface FridaMemoryMap extends FridaMemoryRange {
+    file: NonNullable<FridaMemoryRange["file"]>;
+}

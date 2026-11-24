@@ -23,10 +23,10 @@
     "build": "cd sync && tsc -m node16 --target es2020 --declaration r2pipe.ts base64.ts ai.ts r2papi.ts esil.ts shell.ts outputs.ts index.ts",
     "abuild": "cd async && tsc -m node16 --target es2020 --declaration r2pipe.ts base64.ts ai.ts r2papi.ts esil.ts shell.ts outputs.ts index.ts",
     "lint": "eslint --no-warn-ignored async/*.ts",
-    "test": "npm run lint && npm run abuild && node tools/smoke.mjs",
-    "doc": "cd async && typedoc r2pipe.ts ai.ts r2papi.ts base64.ts shell.ts esil.ts outputs.ts",
-    "adoc": "cd async && typedoc r2pipe.ts ai.ts r2papi.ts base64.ts shell.ts esil.ts outputs.ts",
-    "sdoc": "cd sync && typedoc r2pipe.ts ai.ts r2papi.ts base64.ts shell.ts esil.ts outputs.ts",
+    "test": "npm run lint && npm run abuild && node --test tools/*.test.mjs && node tools/smoke.mjs",
+    "doc": "cd async && typedoc r2pipe.ts ai.ts r2papi.ts base64.ts shell.ts esil.ts outputs.ts r2frida.ts",
+    "adoc": "cd async && typedoc r2pipe.ts ai.ts r2papi.ts base64.ts shell.ts esil.ts outputs.ts r2frida.ts",
+    "sdoc": "cd sync && typedoc r2pipe.ts ai.ts r2papi.ts base64.ts shell.ts esil.ts outputs.ts r2frida.ts",
     "smoke": "npm run abuild && node tools/smoke.mjs"
   },
   "repository": {

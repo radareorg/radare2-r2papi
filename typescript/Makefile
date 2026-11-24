@@ -12,7 +12,7 @@ all: node_modules
 #	$(MAKE) build
 
 one: build
-	cd build ; cat shell.r2.js esil.r2.js base64.r2.js r2pipe.r2.js ai.r2.js r2papi.r2.js | grep -v require > ../r2papi.r2.js 
+	cd build ; cat shell.r2.js esil.r2.js base64.r2.js r2pipe.r2.js ai.r2.js r2frida.r2.js r2papi.r2.js | grep -v require > ../r2papi.r2.js
 	echo 'var R2Papi=R2PapiSync;' >> r2papi.r2.js
 
 #	cat $(addsuffix .r2.js,$(addprefix build/,$(FILES))) | grep -v require > one.r2.js
@@ -38,7 +38,7 @@ lint:
 	$(ESLINT) --no-warn-ignored $(SRCDIR)/*.ts
 
 # FILES=r2pipe r2papi opt esil shell base64 ai r2frida index
-FILES=shell esil base64 r2pipe outputs ai r2papi index
+FILES=shell esil base64 r2pipe outputs ai r2frida r2papi index
 
 # Create a 'sync' version of the original 'async'
 sync:

@@ -1,8 +1,9 @@
-import { R2Pipe, R2PipeAsync, newAsyncR2PipeFromSync } from "./r2pipe.js";
-
-declare global {
-    var r2: R2Pipe;
-}
+import { R2PipeAsync } from "./r2pipe.js";
+import type {
+    FridaClassMembers, FridaExport, FridaImport, FridaSymbol, FridaEntryPoint,
+    FridaMemoryRange, FridaMemoryMap, TargetDetails,
+} from "./outputs.js";
+export type { TargetDetails } from "./outputs.js";
 
 export class R2Frida {
     isAvailable: boolean;
@@ -11,60 +12,58 @@ export class R2Frida {
         this.r2 = r2;
         this.isAvailable = false;
     }
-    async checkAvailability() {
+    async checkAvailability(): Promise<void> {
         if (!this.isAvailable) {
-            const output = await r2.cmd("o~frida://");
+            const output = await this.r2.cmd("o~frida://");
             if (output.trim() === "") {
                 throw new Error("There's no frida session available");
             }
+            this.isAvailable = true;
         }
-        this.isAvailable = true;
     }
 
     async eval(expr: string): Promise<string> {
-        return r2.cmd(`"": ${expr}`);
+        return this.r2.call(`: ${expr}`);
     }
     async targetDetails(): Promise<TargetDetails> {
-        return r2.cmdj(":ij") as TargetDetails;
+        return this.r2.callj(":ij");
     }
-}
-
-/*
-export async function main() {
-    console.log("Hello from r2papi-r2frida");
-    const r2async = newAsyncR2PipeFromSync(r2);
-    const r2f = new R2Frida(r2async);
-    r2f.eval("console.log(123);");
-    const { pid, arch, cwd } = await r2f.targetDetails();
-    console.log(pid, arch, cwd);
-}
-main();
-*/
-
-export interface TargetDetails {
-    arch: string;
-    bits: number;
-    os: string;
-    pid: number;
-    uid: number;
-    runtime: string;
-    objc: boolean;
-    swift: boolean;
-    mainLoop: boolean;
-    pageSize: number;
-    pointerSize: number;
-    codeSigningPolicy: string;
-    isDebuggerAttached: boolean;
-    cwd: string;
-    bundle: string;
-    exename: string;
-    appname: string;
-    appversion: string;
-    appnumversion: string;
-    minOS: string;
-    modulename: string;
-    modulebase: string;
-    homedir: string;
-    tmpdir: string;
-    bundledir?: any;
+    async continue(): Promise<void> {
+        await this.r2.call(":dc");
+    }
+    async enumerateClasses(): Promise<string[]> {
+        return this.r2.callj(":icj");
+    }
+    /** Objective-C returns method addresses; Java returns member signatures. */
+    async enumerateMethods(className: string): Promise<FridaClassMembers> {
+        // r2frida splits arguments on spaces and does not unquote them.
+        if (!className || /\s/.test(className)) {
+            throw new Error("Expected a single class name");
+        }
+        return this.r2.callj(`:icj ${className}`);
+    }
+    /** Android package classes, or Objective-C classes in the current module. */
+    async enumerateApplicationClasses(): Promise<string[]> {
+        return this.r2.callj(":icj.");
+    }
+    async enumerateExports(): Promise<FridaExport[]> {
+        return this.r2.callj(":iEj");
+    }
+    async enumerateImports(): Promise<FridaImport[]> {
+        return this.r2.callj(":iij");
+    }
+    async enumerateSymbols(): Promise<FridaSymbol[]> {
+        return this.r2.callj(":isj");
+    }
+    async enumerateEntrypoints(): Promise<FridaEntryPoint[]> {
+        return this.r2.callj(":iej");
+    }
+    /** All memory ranges, including anonymous allocations. */
+    async enumerateMemoryRanges(): Promise<FridaMemoryRange[]> {
+        return this.r2.callj(":dmj");
+    }
+    /** Coalesced file-backed memory maps. */
+    async enumerateMemoryMaps(): Promise<FridaMemoryMap[]> {
+        return this.r2.callj(":dmmj");
+    }
 }

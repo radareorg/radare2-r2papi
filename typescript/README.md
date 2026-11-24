@@ -24,6 +24,26 @@ Install the Radare2 Skeleton tool and check the project templates in the [r2skel
 $ r2pm -ci r2skel
 ```
 
+## r2frida
+
+`R2Frida` uses the supplied r2 pipe connected to a `frida://` session:
+
+```ts
+import { R2Frida } from "r2papi-async";
+
+const frida = new R2Frida(pipe);
+await frida.checkAvailability();
+const symbols = await frida.enumerateExports();
+```
+
+The `r2papi` package provides the generated synchronous version. JSON addresses
+remain strings, preserving their full precision. `enumerateMethods(name)` returns
+an Objective-C method-to-address object or a Java array of member signatures.
+`enumerateApplicationClasses()` returns Android package classes or Objective-C
+classes in the current module. `enumerateMemoryRanges()` includes anonymous
+memory; `enumerateMemoryMaps()` returns coalesced file-backed maps. Symbol queries
+use the module at the current seek, following r2frida's command semantics.
+
 ## Development
 
 The source code is contained in the `async/` directory. The code is then converted into sync using a sed oneliner.
