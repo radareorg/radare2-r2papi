@@ -2,6 +2,22 @@
 
 import { R2Shell } from "./shell.js";
 import { newAsyncR2PipeFromSync, r2, R2PipeAsync } from "./r2pipe.js";
+import type {
+    BinObject,
+    BinPluginsOutput,
+    DebugThread,
+    ClassInfo,
+    Entrypoint,
+    ImportSymbol,
+    MapEntry,
+    OpenedFile,
+    PluginInfo,
+    RegisterDump,
+    Relocation,
+    Section,
+    Segment,
+    SymbolInfo
+} from "./outputs.js";
 
 export type InstructionType =
     | "mov"
@@ -23,6 +39,7 @@ export interface SearchResult {
 }
 
 export interface DebugModule {
+    /** base address as a hex string (e.g. "0x100000000") */
     base: string;
     name: string;
     path: string;
@@ -124,16 +141,23 @@ export interface BasicBlock {
     traced: boolean;
 }
 
+export interface BacktraceFrame {
+    addr: number;
+    sp?: number;
+    bp?: number;
+    [key: string]: unknown;
+}
+
 export class ThreadClass {
-    api: any = null;
-    constructor(r2: any) {
+    api: R2PipeAsync;
+    constructor(r2: R2PipeAsync) {
         this.api = r2;
     }
-    async backtrace() {
-        return r2.call("dbtj");
+    async backtrace(): Promise<BacktraceFrame[]> {
+        return this.api.callj("dbtj");
     }
-    async sleep(seconds: number) {
-        return r2.call("sleep " + seconds);
+    async sleep(seconds: number): Promise<void> {
+        await this.api.call("sleep " + seconds);
     }
 }
 
@@ -158,148 +182,262 @@ export interface Instruction {
     stack: string; // "inc"|"dec"|"get"|"set"|"nop"|"null";
 }
 
+async function loadModules(api: R2PipeAsync): Promise<DebugModule[]> {
+    // json.num=string makes 64-bit addresses survive as strings instead of
+    // being truncated to doubles; restore the user setting afterwards.
+    const prev = (await api.call("e cfg.json.num")).trim();
+    await api.call("e cfg.json.num=string");
+    try {
+        const isDebug = (await api.call("e cfg.debug")).trim() === "true";
+        if (isDebug) {
+            const mods: any[] = (await api.callj("dmmj")) || [];
+            return mods.map((mod) => {
+                const base = mod.base ?? mod.addr ?? mod.baddr ?? "0";
+                const size =
+                    mod.size !== undefined
+                        ? parseAddr(mod.size)
+                        : mod.addr_end !== undefined
+                          ? parseAddr(mod.addr_end) - parseAddr(base)
+                          : 0;
+                const file = mod.file ?? mod.path ?? mod.name ?? "";
+                return {
+                    base: String(base),
+                    size,
+                    path: String(file),
+                    name: String(mod.name ?? basename(String(file)))
+                };
+            });
+        }
+        const fname = (x: string) => {
+            const y = String(x).split("/");
+            return y[y.length - 1];
+        };
+        const res: DebugModule[] = [];
+        const bobjs: BinObject[] = (await api.callj("obj")) || [];
+        for (const obj of bobjs) {
+            res.push({
+                base: "0x" + Number(obj.addr).toString(16),
+                size: Number(obj.size) || 0,
+                path: obj.name,
+                name: fname(obj.name)
+            });
+        }
+        const libs: string[] = (await api.callj("ilj")) || [];
+        for (const lib of libs) {
+            res.push({ base: "0x0", size: 0, path: lib, name: fname(lib) });
+        }
+        return res;
+    } finally {
+        await api.call("e cfg.json.num=" + (prev || "number"));
+    }
+}
+
+function parseAddr(v: unknown): number {
+    if (typeof v === "number") {
+        return v;
+    }
+    const s = String(v).trim();
+    if (s.startsWith("0x") || s.startsWith("0X")) {
+        return parseInt(s, 16);
+    }
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+}
+
+function basename(p: string): string {
+    const y = p.split("/");
+    return y[y.length - 1] || p;
+}
+
+function toBigAddr(v: NativePointerValue): bigint {
+    if (v instanceof NativePointer) {
+        // NativePointer.addr may be a hex string expression like "$$+0x10";
+        // only plain addresses can be compared numerically.
+        const s = v.addr.trim();
+        return s.startsWith("0x") || /^\d+$/.test(s) ? BigInt(s) : 0n;
+    }
+    if (typeof v === "bigint") {
+        return v;
+    }
+    if (typeof v === "number") {
+        return BigInt(Math.trunc(v));
+    }
+    const s = String(v).trim();
+    try {
+        return BigInt(s);
+    } catch (e) {
+        return BigInt(parseAddr(s));
+    }
+}
+
 export class ModuleClass {
-    api: any = null;
+    api: R2PipeAsync;
     constructor(r2: R2PipeAsync) {
         this.api = r2;
     }
-    fileName(): Promise<string> {
-        return this.api.call("dpe").trim();
+    /** Path of the backing file of the current debuggee or binary. */
+    async fileName(): Promise<string> {
+        const debug = (await this.api.call("dpe")).trim();
+        if (debug) {
+            return debug;
+        }
+        return (await this.api.call("o.")).trim();
     }
-    name(): string {
-        return "Module";
+    async name(): Promise<string> {
+        return basename(await this.fileName());
     }
-    findBaseAddress() {
-        return "TODO";
+    /** Base address of the main binary loaded in the session. */
+    async findBaseAddress(): Promise<NativePointer> {
+        return this.getBaseAddress();
     }
-    getBaseAddress(name: string) {
-        return "TODO";
+    /**
+     * Base address of a module. When `name` is omitted the main (first)
+     * module is returned.
+     */
+    async getBaseAddress(name?: string): Promise<NativePointer> {
+        const mods = await loadModules(this.api);
+        const mod = name
+            ? mods.find(
+                  (m) =>
+                      m.name === name ||
+                      m.path === name ||
+                      m.path.endsWith("/" + name)
+              )
+            : mods[0];
+        if (!mod) {
+            throw new Error("Module not found: " + name);
+        }
+        return new NativePointer(mod.base);
     }
-    async getExportByName(name: string) : Promise<NativePointer> {
-        const res = await r2.call("iE,name/eq/" + name + ",vaddr/cols,:quiet");
-        return ptr(res);
+    async getExportByName(name: string): Promise<NativePointer> {
+        const hit = (await this.enumerateExports()).find((e) => e.name === name);
+        if (!hit) {
+            throw new Error("Export not found: " + name);
+        }
+        return new NativePointer("0x" + Number(hit.vaddr).toString(16));
     }
     async findExportByName(name: string): Promise<NativePointer> {
         return this.getExportByName(name);
     }
-    async enumerateExports() : Promise<any> {
-        // TODO: adjust to be the same output as Frida
-        return r2.callj("iEj");
+    async enumerateExports(): Promise<SymbolInfo[]> {
+        return this.api.callj("iEj");
     }
-    async enumerateImports() {
-        // TODO: adjust to be the same output as Frida
-        return r2.callj("iij");
+    async enumerateImports(): Promise<ImportSymbol[]> {
+        return this.api.callj("iij");
     }
-    async enumerateSymbols() : Promise<any> {
-        // TODO: adjust to be the same output as Frida
-        return r2.callj("isj");
+    async enumerateSymbols(): Promise<SymbolInfo[]> {
+        return this.api.callj("isj");
     }
-    async enumerateEntrypoints() : Promise<any> {
-        // TODO: adjust to be the same output as Frida
-        return r2.callj("iej");
+    async enumerateEntrypoints(): Promise<Entrypoint[]> {
+        return this.api.callj("iej");
     }
-    async enumerateRanges() : Promise<any> {
-        // TODO: adjust to be the same output as Frida
-        return r2.callj("omj");
+    async enumerateRanges(): Promise<MapEntry[]> {
+        return this.api.callj("omj");
     }
 }
 
 export class ProcessClass {
-    r2: any = null;
+    r2: R2PipeAsync;
     constructor(r2: R2PipeAsync) {
         this.r2 = r2;
     }
-    enumerateMallocRanges() {}
-    enumerateSystemRanges() {}
-    enumerateRanges() {}
-    enumerateThreads() {
-        return r2.callj("dptj");
+    /** Ranges backed by malloc */
+    async enumerateMallocRanges(): Promise<MapEntry[]> {
+        const maps = await this.enumerateRanges();
+        return maps.filter((m) => (m.name || "").includes("malloc"));
     }
-    async enumerateModules(): Promise<any> {
-        await r2.call("cfg.json.num=string"); // to handle 64bit values properly
-        if (r2.callj("e cfg.debug")) {
-            const modules = r2.callj("dmmj");
-            const res = [];
-            for (const mod of modules) {
-                const entry = {
-                    base: new NativePointer(mod.addr),
-                    size: new NativePointer(mod.addr_end).sub(mod.addr),
-                    path: mod.file,
-                    name: mod.name
-                };
-                res.push(entry);
+    /**
+     * Ranges that do not belong to the main heap. r2 has no direct notion
+     * of "system ranges", so this returns every map that is not a malloc
+     * range. Refine in your script if you need narrower semantics.
+     */
+    async enumerateSystemRanges(): Promise<MapEntry[]> {
+        const maps = await this.enumerateRanges();
+        return maps.filter((m) => !(m.name || "").includes("malloc"));
+    }
+    async enumerateRanges(): Promise<MapEntry[]> {
+        return this.r2.callj("omj");
+    }
+    async enumerateThreads(): Promise<DebugThread[]> {
+        return this.r2.callj("dptj");
+    }
+    async enumerateModules(): Promise<DebugModule[]> {
+        return loadModules(this.r2);
+    }
+    async getModuleByAddress(
+        addr: NativePointer | number | string
+    ): Promise<DebugModule | null> {
+        const needle = toBigAddr(addr);
+        const mods = await this.enumerateModules();
+        for (const mod of mods) {
+            const base = BigInt(parseAddr(mod.base));
+            const size = BigInt(Math.trunc(mod.size) || 0);
+            if (needle >= base && (size === 0n || needle < base + size)) {
+                return mod;
             }
-            return res;
-        } else {
-            const fname = (x: string) => {
-                const y = x.split("/");
-                return y[y.length - 1];
-            };
-            const bobjs = r2.callj("obj");
-            const res = [];
-            for (const obj of bobjs) {
-                const entry = {
-                    base: new NativePointer(obj.addr),
-                    size: obj.size,
-                    path: obj.file,
-                    name: fname(obj.file)
-                };
-                res.push(entry);
-            }
-            const libs = r2.callj("ilj");
-            for (const lib of libs) {
-                const entry = {
-                    base: 0,
-                    size: 0,
-                    path: lib,
-                    name: fname(lib)
-                };
-                res.push(entry);
-            }
-            return res;
         }
+        return null;
     }
-    getModuleByAddress(addr: NativePointer | number | string): any {}
-    getModuleByName(moduleName: string): any {}
+    async getModuleByName(moduleName: string): Promise<DebugModule | null> {
+        const mods = await this.enumerateModules();
+        return (
+            mods.find(
+                (m) =>
+                    m.name === moduleName ||
+                    m.path === moduleName ||
+                    m.path.endsWith("/" + moduleName)
+            ) ?? null
+        );
+    }
     codeSigningPolicy(): string {
+        // r2 does not expose the code signing policy of the debuggee; the
+        // value is kept for frida compatibility.
         return "optional";
     }
-    getTmpDir() {
-        return this.r2.call("e dir.tmp").trim();
+    async getTmpDir(): Promise<string> {
+        return (await this.r2.call("e dir.tmp")).trim();
     }
-    getHomeDir() {
-        return this.r2.call("e dir.home").trim();
+    async getHomeDir(): Promise<string> {
+        return (await this.r2.call("e dir.home")).trim();
     }
-    platform() {
-        return this.r2.call("e asm.os").trim();
+    async platform(): Promise<string> {
+        return (await this.r2.call("e asm.os")).trim();
     }
-    getCurrentDir() {
-        return this.r2.call("pwd").trim();
+    async getCurrentDir(): Promise<string> {
+        return (await this.r2.call("pwd")).trim();
     }
-    getCurrentThreadId(): number {
-        return +this.r2.call("dpq");
+    async getCurrentThreadId(): Promise<number> {
+        const dbg = (await this.r2.call("e cfg.debug")).trim() === "true";
+        if (!dbg) {
+            return this.id();
+        }
+        return parseInt((await this.r2.call("dpt.")).trim(), 10);
     }
-    pageSize(): number {
-        if (
-            this.r2.callj("e asm.bits") === 64 &&
-            this.r2.call("e asm.arch").startsWith("arm")
-        ) {
+    async pageSize(): Promise<number> {
+        const bits = parseInt((await this.r2.call("e asm.bits")).trim(), 10);
+        const arch = (await this.r2.call("e asm.arch")).trim();
+        if (bits === 64 && arch.startsWith("arm")) {
             return 16384;
         }
         return 4096;
     }
-    isDebuggerAttached(): boolean {
-        return this.r2.callj("e cfg.debug");
+    async isDebuggerAttached(): Promise<boolean> {
+        return (await this.r2.call("e cfg.debug")).trim() === "true";
     }
     setExceptionHandler() {
-        // do nothing
+        // r2 does not expose Mach exception ports to scripts; kept as a
+        // no-op for frida compatibility.
     }
-    id() {
-        //
-        return this.r2.callj("dpq").trim();
+    /** Pid of the debuggee when debugging, -1 otherwise. */
+    async id(): Promise<number> {
+        const dbg = (await this.r2.call("e cfg.debug")).trim() === "true";
+        if (!dbg) {
+            return -1;
+        }
+        return parseInt((await this.r2.call("dpq")).trim(), 10);
     }
-    pointerSize() {
-        return r2.callj("e asm.bits") / 8;
+    async pointerSize(): Promise<number> {
+        return parseInt((await this.r2.call("e asm.bits")).trim(), 10) / 8;
     }
 }
 
@@ -428,8 +566,8 @@ export class R2PapiAsync {
      *
      * @returns {number} the regsize
      */
-    getBits(): number {
-        return +this.cmd("-b");
+    async getBits(): Promise<number> {
+        return parseAddr((await this.cmd("e asm.bits")).trim());
     }
     /**
      * Get the name of the arch plugin selected, which tends to be the same target architecture.
@@ -462,7 +600,7 @@ export class R2PapiAsync {
     async setArch(arch: string, bits: number | undefined) {
         await this.cmd("-a " + arch);
         if (bits !== undefined) {
-            this.cmd("-b " + bits);
+            await this.cmd("-b " + bits);
         }
     }
 
@@ -481,15 +619,15 @@ export class R2PapiAsync {
      * should return the id for the new map using the given file descriptor
      */
     // rename to createMap or mapFile?
-    newMap(
+    async newMap(
         fd: number,
         vaddr: NativePointer,
         size: number,
         paddr: NativePointer,
         perm: Permission,
         name: string = ""
-    ): void {
-        this.cmd(`om ${fd} ${vaddr} ${size} ${paddr} ${perm} ${name}`);
+    ): Promise<void> {
+        await this.cmd(`om ${fd} ${vaddr} ${size} ${paddr} ${perm} ${name}`);
     }
 
     at(a: NativePointerValue): NativePointer {
@@ -516,16 +654,22 @@ export class R2PapiAsync {
         const output = await this.r2.cmd("uname -b");
         return output.trim();
     }
-    id(): number {
-        // getpid();
-        return +this.r2.cmd("?vi:$p");
+    /**
+     * Pid of the debuggee when debugging, or -1 when not debugging.
+     */
+    async id(): Promise<number> {
+        const dbg = (await this.r2.call("e cfg.debug")).trim() === "true";
+        if (!dbg) {
+            return -1;
+        }
+        return parseInt((await this.r2.call("dpq")).trim(), 10);
     }
     // Other stuff
     printAt(msg: string, x: number, y: number): void {
         // see pg, but pg is obrken :D
     }
-    clearScreen(): R2Papi {
-        this.r2.cmd("!clear");
+    async clearScreen(): Promise<R2Papi> {
+        await this.r2.cmd("!clear");
         return this;
     }
     async getConfig(key: string): Promise<Error | string> {
@@ -544,105 +688,117 @@ export class R2PapiAsync {
         return this;
     }
     async getRegisterStateForEsil(): Promise<string> {
-        const dre = await this.cmdj("dre");
-        return this.cmdj("dre");
+        return this.cmd("dre");
     }
-    async getRegisters(): Promise<any> {
-        // this.r2.log("winrar" + JSON.stringify(JSON.parse(this.r2.cmd("drj")),null, 2) );
+    async getRegisters(): Promise<RegisterDump> {
         return this.cmdj("drj");
     }
-    resizeFile(newSize: number): R2Papi {
-        this.cmd(`r ${newSize}`);
+    async resizeFile(newSize: number): Promise<R2Papi> {
+        await this.cmd(`r ${newSize}`);
         return this;
     }
-    insertNullBytes(
+    async insertNullBytes(
         newSize: number,
         at?: NativePointer | number | string
-    ): R2Papi {
+    ): Promise<R2Papi> {
         if (at === undefined) {
             at = "$$";
         }
-        this.cmd(`r+${newSize}@${at}`);
+        await this.cmd(`r+${newSize}@${at}`);
         return this;
     }
-    removeBytes(newSize: number, at?: NativePointer | number | string): R2Papi {
+    async removeBytes(newSize: number, at?: NativePointer | number | string): Promise<R2Papi> {
         if (at === undefined) {
             at = "$$";
         }
-        this.cmd(`r-${newSize}@${at}`);
+        await this.cmd(`r-${newSize}@${at}`);
         return this;
     }
-    seek(addr: number): R2Papi {
-        this.cmd(`s ${addr}`);
+    async seek(addr: number | string | NativePointer): Promise<R2Papi> {
+        await this.cmd(`s ${addr}`);
         return this;
     }
     currentSeek(): NativePointer {
         return new NativePointer("$$", this);
     }
-    seekToRelativeOpcode(nth: number): NativePointer {
-        this.cmd(`so ${nth}`);
+    async seekToRelativeOpcode(nth: number): Promise<NativePointer> {
+        await this.cmd(`so ${nth}`);
         return this.currentSeek();
     }
-    getBlockSize(): number {
-        return +this.cmd("b");
+    async getBlockSize(): Promise<number> {
+        return parseAddr((await this.cmd("b")).trim());
     }
-    setBlockSize(a: number): R2Papi {
-        this.cmd(`b ${a}`);
+    async setBlockSize(a: number): Promise<R2Papi> {
+        await this.cmd(`b ${a}`);
         return this;
     }
-    countFlags(): number {
-        return Number(this.cmd("f~?"));
+    async countFlags(): Promise<number> {
+        return Number((await this.cmd("f~?")).trim());
     }
-    countFunctions(): number {
-        return Number(this.cmd("aflc"));
+    async countFunctions(): Promise<number> {
+        return Number((await this.cmd("aflc")).trim());
     }
-    analyzeFunctionsWithEsil(depth?: number) {
-        this.cmd("aaef");
+    async analyzeFunctionsWithEsil(_depth?: number): Promise<R2Papi> {
+        await this.cmd("aaef");
+        return this;
     }
-    analyzeProgramWithEsil(depth?: number) {
-        this.cmd("aae");
+    async analyzeProgramWithEsil(_depth?: number): Promise<R2Papi> {
+        await this.cmd("aae");
+        return this;
     }
-    analyzeProgram(depth?: number) {
+    async analyzeProgram(depth?: number): Promise<R2Papi> {
         if (depth === undefined) {
             depth = 0;
         }
         switch (depth) {
             case 0:
-                this.cmd("aa");
+                await this.cmd("aa");
                 break;
             case 1:
-                this.cmd("aaa");
+                await this.cmd("aaa");
                 break;
             case 2:
-                this.cmd("aaaa");
+                await this.cmd("aaaa");
                 break;
             case 3:
-                this.cmd("aaaaa");
+                await this.cmd("aaaaa");
                 break;
         }
         return this;
     }
-    enumerateThreads(): ThreadContext[] {
-        // TODO: use apt/dpt to list threads at iterate over them to get the registers
-        const regs0 = this.cmdj("drj");
-        const thread0 = {
-            context: regs0,
-            id: 0,
-            state: "waiting",
-            selected: true
-        };
-        return [thread0];
+    async enumerateThreads(): Promise<ThreadContext[]> {
+        // dptj is only available when debugging; fall back to a single
+        // pseudo-thread holding the current register state otherwise.
+        const dbg = (await this.cmd("e cfg.debug")).trim() === "true";
+        if (dbg) {
+            const threads: DebugThread[] = (await this.cmdj("dptj")) || [];
+            return threads.map((t) => ({
+                context: null,
+                id: typeof t.pid === "number" ? t.pid : 0,
+                state: String(t.status ?? "unknown"),
+                selected: !!t.current
+            }));
+        }
+        const regs0 = await this.cmdj("drj");
+        return [
+            {
+                context: regs0,
+                id: 0,
+                state: "running",
+                selected: true
+            }
+        ];
     }
-    currentThreadId(): number {
-        if (+this.cmd("e cfg.debug")) {
-            return +this.cmd("dpt.");
+    async currentThreadId(): Promise<number> {
+        if ((await this.cmd("e cfg.debug")).trim() === "true") {
+            return parseInt((await this.cmd("dpt.")).trim(), 10);
         }
         return this.id();
     }
-    setRegisters(obj: any) {
+    async setRegisters(obj: Record<string, number | string>): Promise<void> {
         for (const r of Object.keys(obj)) {
             const v = obj[r];
-            this.r2.cmd("dr " + r + "=" + v);
+            await this.r2.cmd("dr " + r + "=" + v);
         }
     }
     async hex(s: number | string): Promise<string> {
@@ -653,42 +809,42 @@ export class R2PapiAsync {
         await this.r2.cmd("ds");
         return this;
     }
-    stepOver(): R2Papi {
-        this.r2.cmd("dso");
+    async stepOver(): Promise<R2Papi> {
+        await this.r2.cmd("dso");
         return this;
     }
-    math(expr: number | string): number {
-        return +this.r2.cmd("?v " + expr);
+    async math(expr: number | string): Promise<number> {
+        return parseAddr((await this.r2.cmd("?v " + expr)).trim());
     }
-    stepUntil(dst: NativePointer | string | number): void {
-        this.cmd(`dsu ${dst}`);
+    async stepUntil(dst: NativePointer | string | number): Promise<void> {
+        await this.cmd(`dsu ${dst}`);
     }
     async enumerateXrefsTo(s: string): Promise<string[]> {
         const output = await this.call("axtq " + s);
         return output.trim().split(/\n/);
     }
     // TODO: rename to searchXrefsTo ?
-    findXrefsTo(s: string, use_esil: boolean) {
+    async findXrefsTo(s: string, use_esil: boolean): Promise<void> {
         if (use_esil) {
-            this.call("/r " + s);
+            await this.call("/r " + s);
         } else {
-            this.call("/re " + s);
+            await this.call("/re " + s);
         }
     }
-    analyzeFunctionsFromCalls(): R2Papi {
-        this.call("aac");
+    async analyzeFunctionsFromCalls(): Promise<R2Papi> {
+        await this.call("aac");
         return this;
     }
-    autonameAllFunctions(): R2Papi {
-        this.call("aan");
+    async autonameAllFunctions(): Promise<R2Papi> {
+        await this.call("aan");
         return this;
     }
-    analyzeFunctionsWithPreludes(): R2Papi {
-        this.call("aap");
+    async analyzeFunctionsWithPreludes(): Promise<R2Papi> {
+        await this.call("aap");
         return this;
     }
-    analyzeObjCReferences(): R2Papi {
-        this.cmd("aao");
+    async analyzeObjCReferences(): Promise<R2Papi> {
+        await this.cmd("aao");
         return this;
     }
     async analyzeImports(): Promise<R2Papi> {
@@ -704,16 +860,16 @@ export class R2PapiAsync {
         return res;
     }
     async searchBytes(data: number[]): Promise<SearchResult[]> {
-        function num2hex(data: number): string {
-            return (data & 0xff).toString(16);
-        }
+        const num2hex = (data: number): string =>
+            (data & 0xff).toString(16).padStart(2, "0");
         const s = data.map(num2hex).join("");
         const res: SearchResult[] = await this.cmdj("/xj " + s);
         return res;
     }
     async binInfo(): Promise<BinFile> {
         try {
-            return this.cmdj("ij~{bin}");
+            const v = await this.cmdj("ij");
+            return (v && v.bin ? v.bin : {}) as BinFile;
         } catch (e: any) {
             return {} as BinFile;
         }
@@ -729,7 +885,7 @@ export class R2PapiAsync {
         if (ofd.trim() === nfd.trim()) {
             return new Error("Cannot open file");
         }
-        return parseInt(nfd);
+        return parseInt(nfd.trim(), 10);
     }
     async openFileNomap(name: string): Promise<number | Error> {
         const ofd = await this.call("oqq");
@@ -738,16 +894,19 @@ export class R2PapiAsync {
         if (ofd.trim() === nfd.trim()) {
             return new Error("Cannot open file");
         }
-        return parseInt(nfd);
+        return parseInt(nfd.trim(), 10);
     }
-    async currentFile(name: string): Promise<string> {
+    async currentFile(_name: string): Promise<string> {
         const v = await this.call("o.");
         return v.trim ();
     }
-    enumeratePlugins(type: PluginFamily): any {
+    async enumeratePlugins(type: PluginFamily): Promise<PluginInfo[]> {
         switch (type) {
-            case "bin":
-                return this.callj("Lij");
+            case "bin": {
+                // Lij returns {"bin": [...]} instead of a bare array
+                const out: BinPluginsOutput = await this.callj("Lij");
+                return (out && out.bin) || [];
+            }
             case "io":
                 return this.callj("Loj");
             case "core":
@@ -762,42 +921,42 @@ export class R2PapiAsync {
         return [];
     }
     async enumerateModules(): Promise<DebugModule[]> {
-        return this.callj("dmmj");
+        return loadModules(this.r2);
     }
-    async enumerateFiles(): Promise<any> {
+    async enumerateFiles(): Promise<OpenedFile[]> {
         return this.callj("oj");
     }
-    async enumerateBinaries(): Promise<any> {
+    async enumerateBinaries(): Promise<BinObject[]> {
         return this.callj("obj");
     }
-    async enumerateMaps(): Promise<any> {
+    async enumerateMaps(): Promise<MapEntry[]> {
         return this.callj("omj");
     }
-    async enumerateClasses(): Promise<any> {
+    async enumerateClasses(): Promise<ClassInfo[]> {
         return this.callj("icj");
     }
-    async enumerateSymbols(): Promise<any> {
+    async enumerateSymbols(): Promise<SymbolInfo[]> {
         return this.callj("isj");
     }
-    async enumerateExports(): Promise<any> {
+    async enumerateExports(): Promise<SymbolInfo[]> {
         return this.callj("iEj");
     }
-    async enumerateImports(): Promise<any> {
+    async enumerateImports(): Promise<ImportSymbol[]> {
         return this.callj("iij");
     }
     async enumerateLibraries(): Promise<string[]> {
         return this.callj("ilj");
     }
-    async enumerateSections(): Promise<any> {
+    async enumerateSections(): Promise<Section[]> {
         return this.callj("iSj");
     }
-    async enumerateSegments(): Promise<any> {
+    async enumerateSegments(): Promise<Segment[]> {
         return this.callj("iSSj");
     }
-    async enumerateEntrypoints(): Promise<any> {
+    async enumerateEntrypoints(): Promise<Entrypoint[]> {
         return this.callj("iej");
     }
-    async enumerateRelocations(): Promise<any> {
+    async enumerateRelocations(): Promise<Relocation[]> {
         return this.callj("irj");
     }
     async enumerateFunctions(): Promise<FunctionDetails[]> {
@@ -806,8 +965,8 @@ export class R2PapiAsync {
     async enumerateFlags(): Promise<Flag[]> {
         return this.cmdj("fj");
     }
-    skip() {
-        this.r2.cmd("dss");
+    async skip(): Promise<void> {
+        await this.r2.cmd("dss");
     }
     ptr(s: NativePointerValue): NativePointer {
         return new NativePointer(s, this);
@@ -1043,7 +1202,6 @@ function decodeUtf16Bytes(bytes: number[], littleEndian: boolean): string {
 }
 
 declare global {
-    // eslint-disable-next-line no-var
     var R: R2Papi;
     function print (a:string): void;
 }

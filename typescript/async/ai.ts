@@ -1,5 +1,4 @@
-import { R, Module, Process, Thread } from "./r2papi.js";
-import { r2, R2PipeAsync } from "./r2pipe.js";
+import { R2PipeAsync } from "./r2pipe.js";
 
 /**
  * Class that interacts with the `r2ai` plugin (requires `rlang-python` and `r2i` r2pm packages to be installed).
@@ -20,29 +19,36 @@ export class R2AI {
      * @type {string}
      */
     model: string = "";
+    num?: number;
     r2: R2PipeAsync;
 
     constructor(r2: R2PipeAsync, num?: number, model?: string) {
         this.r2 = r2;
         this.available = false;
+        if (model !== undefined) {
+            this.model = model;
+        }
+        this.num = num;
     }
 
     async checkAvailability(): Promise<boolean> {
         if (this.available) {
             return true;
         }
-        this.available = r2.cmd("r2ai -h").trim() !== "";
-        /*
-		if (this.available) {
-			if (num) {
-				r2.call(`r2ai -n ${num}`)
-			}
-			// r2.call('r2ai -e DEBUG=1')
-			if (model) {
-				this.model = model;
-			}
-		}
-		*/
+        try {
+            const out = await this.r2.call("r2ai -h");
+            this.available = out.trim() !== "";
+        } catch (e) {
+            this.available = false;
+        }
+        if (this.available) {
+            if (this.num !== undefined) {
+                await this.r2.call(`r2ai -n ${this.num}`);
+            }
+            if (this.model) {
+                await this.r2.call(`r2ai -m ${this.model}`);
+            }
+        }
         return this.available;
     }
     /**
@@ -51,7 +57,7 @@ export class R2AI {
     async reset() {
         await this.checkAvailability();
         if (this.available) {
-            await r2.call("r2ai -R");
+            await this.r2.call("r2ai -R");
         }
     }
     /**
@@ -62,7 +68,7 @@ export class R2AI {
      */
     async setRole(msg: string): Promise<boolean> {
         if (this.available) {
-            await r2.call(`r2ai -r ${msg}`);
+            await this.r2.call(`r2ai -r ${msg}`);
             return true;
         }
         return false;
@@ -76,7 +82,8 @@ export class R2AI {
      */
     async setModel(modelName: string): Promise<boolean> {
         if (this.available) {
-            await r2.call(`r2ai -m ${this.model}`);
+            await this.r2.call(`r2ai -m ${modelName}`);
+            this.model = modelName;
             return true;
         }
         return false;
@@ -88,7 +95,7 @@ export class R2AI {
      */
     async getModel(): Promise<string> {
         if (this.available) {
-            this.model = await r2.call("r2ai -m").trim();
+            this.model = (await this.r2.call("r2ai -m")).trim();
         }
         return this.model;
     }
@@ -99,7 +106,7 @@ export class R2AI {
      */
     async listModels(): Promise<string[]> {
         if (this.available) {
-            const models = await r2.call("r2ai -M");
+            const models = await this.r2.call("r2ai -M");
             return models
                 .replace(/-m /, "")
                 .trim()
@@ -119,7 +126,7 @@ export class R2AI {
             return "";
         }
         const fmsg = msg.trim().replace(/\n/g, ".");
-        const response = r2.call(`r2ai ${fmsg}`);
+        const response = await this.r2.call(`r2ai ${fmsg}`);
         return response.trim();
     }
 }

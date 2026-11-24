@@ -25,13 +25,13 @@ export class R2PipeAsyncFromSync {
         return this.r2p.call(command);
     }
     async callj(cmd: string): Promise<any> {
-        return this.r2p.cmdj(cmd);
+        return this.r2p.callj(cmd);
     }
     async callAt(
         command: string,
         address: number | string | any
     ): Promise<string> {
-        return this.r2p.cmdAt(command, address);
+        return this.r2p.callAt(command, address);
     }
     async log(msg: string) {
         return this.r2p.log(msg);
@@ -68,7 +68,7 @@ export interface R2Pipe {
      * Run a radare2 command in a different address. Same as `.cmd(x + '@ ' + a)`
      *
      * @param {string} command to be executed inside radare2.
-     * @param {number|string|NativePointer} command to be executed inside radare2.
+     * @param {number|string|NativePointer} address to seek to for the execution of the command
      * @returns {string} The output of the command execution
      */
     cmdAt(cmd: string, address: number | string | any): string;
@@ -154,7 +154,7 @@ export interface R2PipeAsync {
      * Run a radare2 command in a different address. Same as `.cmd(x + '@ ' + a)`
      *
      * @param {string} command to be executed inside radare2.
-     * @param {number|string|NativePointer} command to be executed inside radare2.
+     * @param {number|string|NativePointer} address to seek to for the execution of the command
      * @returns {string} The output of the command execution
      */
     cmdAt(cmd: string, address: number | string | any): Promise<string>;

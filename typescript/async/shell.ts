@@ -1,26 +1,23 @@
 // shell utilities on top of r2pipe
 
 import { R2Papi } from "./r2papi.js";
+import type { FileSystemPlugin, MountPoint, MountsOutput } from "./outputs.js";
+
+/** Escape a string for safe use as a single POSIX shell word. */
+function shQuote(s: string): string {
+    return "'" + String(s).replace(/'/g, "'\\''") + "'";
+}
 
 /**
- * Interface to hold the name and description for every filesystem type parser implementation.
+ * Describes an available virtual filesystem plugin.
+ *
+ * @deprecated Use FileSystemPlugin (from outputs.js) instead. The old
+ * `description` field never matched what `mLj` actually returns; the real
+ * field is `desc`.
  *
  * @typedef FileSystemType
  */
-export interface FileSystemType {
-    /**
-     * name of the filesystem format, to be used when mounting it.
-     *
-     * @type {string}
-     */
-    name: string;
-    /**
-     * short string that describes the plugin
-     *
-     * @type {string}
-     */
-    description: string;
-}
+export type FileSystemType = FileSystemPlugin;
 
 /**
  * Global static class providing information about the actual radare2 in use.
@@ -70,23 +67,20 @@ export class R2Shell {
      * @param {boolean?} disabled by default, but if it's true, it will create subdirectories recursively if necessary
      * @returns {boolean} true if successful
      */
-    mkdir(file: string, recursive?: boolean): boolean {
-        if (recursive === true) {
-            this.rp.call(`mkdir -p ${file}`);
-        } else {
-            this.rp.call(`mkdir ${file}`);
-        }
+    async mkdir(file: string, recursive?: boolean): Promise<boolean> {
+        const flag = recursive === true ? "-p " : "";
+        await this.rp.call(`!mkdir ${flag}${shQuote(file)}`);
         return true;
     }
 
     /**
      * Deletes a file
      *
-     * @param {string} path to the file to remove
+     * @param {string} file path to the file to remove
      * @returns {boolean} true if successful
      */
-    unlink(file: string): boolean {
-        this.rp.call(`rm ${file}`);
+    async unlink(file: string): Promise<boolean> {
+        await this.rp.call(`!rm -f ${shQuote(file)}`);
         return true;
     }
 
@@ -107,55 +101,55 @@ export class R2Shell {
      * @returns {string[]} array of file names
      */
     async ls(): Promise<string[]> {
-        const files = await this.rp.call(`ls -q`);
-        return files.trim().split("\n");
+        const files = await this.rp.call("!ls -1A");
+        return files.split("\n").map((x) => x.trim()).filter((x) => x.length > 0);
     }
 
     /**
-     * TODO: Checks if a file exists (not implemented)
+     * Checks if a file exists on the host filesystem.
      *
      * @returns {boolean} true if the file exists, false if it does not
      */
-    fileExists(path: string): boolean {
-        // TODO
-        return false;
+    async fileExists(path: string): Promise<boolean> {
+        const out = await this.rp.call(`!test -e ${shQuote(path)} && echo 1 || echo 0`);
+        return out.trim().endsWith("1");
     }
 
     /**
      * Opens an URL or application
      * Execute `xdg-open` on linux, `start` on windows, `open` on Mac
      *
-     * @param {string} URI or file to open by the system
+     * @param {string} arg URI or file to open by the system
      */
     async open(arg: string): Promise<void> {
-        await this.rp.call(`open ${arg}`);
+        const quoted = shQuote(arg);
+        // try the common openers in order of likelihood
+        await this.rp.call(`!open ${quoted} 2>/dev/null || xdg-open ${quoted} 2>/dev/null || start ${quoted}`);
     }
 
     /**
-     * Run a system command and get the return code
+     * Run a system command and get its exit code. Stdout/stderr pass through.
      *
-     * @param {string} system command to be executed
+     * @param {string} cmd command to be executed by the host shell
      * @returns {number} return code (0 is success)
      */
-    system(cmd: string): number {
-        this.rp.call(`!${cmd}`);
-        return 0;
+    async system(cmd: string): Promise<number> {
+        const out = await this.rp.call(`!sh -c ${shQuote(cmd + "; echo __r2papi_rc=$?")}`);
+        const m = /__r2papi_rc=(\d+)/.exec(out);
+        return m ? parseInt(m[1], 10) : -1;
     }
 
     /**
      * Mount the given offset on the specified path using the filesytem.
      * This is not a system-level mountpoint, it's using the internal filesystem abstraction of radare2.
      *
-     * @param {string} filesystem type name (see .
-     * @param {string} system command to be executed
-     * @param {string|number}
-     * @returns {number} return code (0 is success)
+     * @param {string} fstype filesystem type name (see `mLj`)
+     * @param {string} path where to mount the filesystem
+     * @param {string|number} addr address offset of the filesystem
+     * @returns {boolean} true if the mount command was sent
      */
-    mount(fstype: string, path: string, addr: string | number): boolean {
-        if (!addr) {
-            addr = 0;
-        }
-        this.rp.call(`m ${fstype} ${path} ${addr}`);
+    async mount(fstype: string, path: string, addr: string | number): Promise<boolean> {
+        await this.rp.call(`m ${fstype} ${path} ${addr ?? 0}`);
         return true;
     }
     /**
@@ -187,30 +181,32 @@ export class R2Shell {
         return files.trim().split("\n");
     }
     /**
-     * Enumerate all the mountpoints set in the internal virtual filesystem of radare2
-     * @returns {any[]} array of mount
+     * Enumerate the virtual filesystem plugins available in r2
+     * @returns {FileSystemPlugin[]} array of filesystem plugins (the `mLj` output)
      */
-    async enumerateFilesystemTypes(): Promise<any[]> {
+    async enumerateFilesystemTypes(): Promise<FileSystemPlugin[]> {
         return this.rp.cmdj("mLj");
     }
     /**
      * Enumerate all the mountpoints set in the internal virtual filesystem of radare2
-     * @returns {any[]} array of mount
+     * @returns {MountPoint[]} array of mountpoints (the `mountpoints` key of the `mj` output)
      */
-    async enumerateMountpoints(): Promise<any[]> {
-        const output = await this.rp.cmdj("mj");
-        return output["mountpoints"];
+    async enumerateMountpoints(): Promise<MountPoint[]> {
+        const output: MountsOutput = await this.rp.cmdj("mj");
+        return (output && output.mountpoints) || [];
     }
     /**
-     * TODO: not implemented
+     * Check if a path is a symbolic link on the host filesystem.
      */
-    isSymlink(file: string): boolean {
-        return false;
+    async isSymlink(file: string): Promise<boolean> {
+        const out = await this.rp.call(`!test -L ${shQuote(file)} && echo 1 || echo 0`);
+        return out.trim().endsWith("1");
     }
     /**
-     * TODO: not implemented
+     * Check if a path is a directory on the host filesystem.
      */
-    isDirectory(file: string): boolean {
-        return false;
+    async isDirectory(file: string): Promise<boolean> {
+        const out = await this.rp.call(`!test -d ${shQuote(file)} && echo 1 || echo 0`);
+        return out.trim().endsWith("1");
     }
 }

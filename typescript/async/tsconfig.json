@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "lib": ["es2020", "esnext"],
+    "lib": [
+      "es2020",
+      "esnext"
+    ],
     "module": "commonjs",
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -15,6 +18,7 @@
     "ai.ts",
     "base64.ts",
     "r2pipe.ts",
+    "outputs.ts",
     "r2papi.ts",
     "esil.ts",
     "shell.ts",

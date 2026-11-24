@@ -35,10 +35,10 @@ SYNCREGEX+=-e 's,R2PapiAsync,R2PapiSync,g'
 SYNCREGEX+=-e 's/Promise<\(.*\)>/\1/'
 
 lint:
-	$(ESLINT) $(SRCDIR)/*.ts
+	$(ESLINT) --no-warn-ignored $(SRCDIR)/*.ts
 
 # FILES=r2pipe r2papi opt esil shell base64 ai r2frida index
-FILES=shell esil base64 r2pipe ai r2papi
+FILES=shell esil base64 r2pipe outputs ai r2papi index
 
 # Create a 'sync' version of the original 'async'
 sync:
@@ -114,17 +114,20 @@ webdoc:
 	rm -rf .tmp
 
 npm publish pub:
-	$(MAKE) abuild
-	# Publishing the sync api
 	$(MAKE) build
 	cp -f README.md package.json package-lock.json build
 	cd build && npm publish
 	# Publishing the async api
-	$(MAKE) abuild
-	cp -f README.md build
-	sed -e 's,r2papi",r2papi-async",' < package.json > build/package.json
-	sed -e 's,r2papi",r2papi-async",' < package-lock.json > build/package-lock.json
-	cd build && npm publish
+	rm -rf build-async
+	mkdir build-async
+	cp -f $(SRCDIR)/*.ts $(SRCDIR)/tsconfig.json build-async/
+	cd build-async && $(TSC) -p tsconfig.json -d && cd ..
+	rm -f build-async/*.ts
+	cp -f README.md build-async
+	cp -f build/r2papi.r2.js build-async/r2papi.r2.js
+	sed -e 's,"name": "r2papi","name": "r2papi-async",' < package.json > build-async/package.json
+	sed -e 's,"name": "r2papi","name": "r2papi-async",' < package-lock.json > build-async/package-lock.json
+	cd build-async && npm publish
 
 unpub unpublish:
 	npm unpublish r2papi@${MODVER}
