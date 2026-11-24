@@ -1,5 +1,6 @@
 import { R2PipeAsync } from "./r2pipe.js";
 export { R2PipeAsync, R2Pipe, newAsyncR2PipeFromSync } from "./r2pipe.js";
+export { R2Frida } from "./r2frida.js";
 export { R2AI } from "./ai.js";
 export {
     R,
